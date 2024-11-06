@@ -1,6 +1,7 @@
 // lib/bottom_navigation.dart
 
 import 'package:flutter/material.dart';
+import 'package:skin_id/screen/home.dart';
 
 class BottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -16,15 +17,41 @@ class BottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
-      onTap: onTap,
+      onTap: (index) {
+        if (index == currentIndex) return; // Avoids redundant navigation
+
+        // Navigate to the selected page based on index
+        switch (index) {
+          case 0:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Home()),
+            );
+            break;
+          case 1:
+            // Navigator.pushReplacement(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => FaceScanPage(cameras: []), // Ganti `[]` dengan daftar kamera jika diperlukan
+            //   ),
+            // );
+            break;
+          case 2:
+            // Navigator.pushReplacement(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => ProfilePage()),
+            // );
+            break;
+        }
+      },
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.explore),
-          label: 'Explore',
+          icon: Icon(Icons.camera_alt),
+          label: 'Camera',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),

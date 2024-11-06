@@ -13,17 +13,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MainScreen(),
+      home: Home(),
     );
   }
 }
 
-class MainScreen extends StatefulWidget {
+class Home extends StatefulWidget {
   @override
-  _MainScreenState createState() => _MainScreenState();
+  _HomeState createState() => _HomeState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _HomeState extends State<Home> {
   int _currentIndex = 0;
 
   // List of screens for each bottom navigation item
