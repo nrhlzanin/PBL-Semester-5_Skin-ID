@@ -9,8 +9,11 @@ import 'package:permission_handler/permission_handler.dart';
 class FaceScanPage extends StatefulWidget {
   final List<CameraDescription> cameras;
 
-  FaceScanPage(this.cameras);
+  // FaceScanPage(this.cameras);
+  final String userId;
 
+  // Tambahkan nilai default atau buat parameter opsional
+  FaceScanPage({this.userId = 'defaultUserId', required this.cameras});
   @override
   _FaceScanPageState createState() => _FaceScanPageState();
 }
@@ -34,7 +37,8 @@ class _FaceScanPageState extends State<FaceScanPage> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Camera Permission Required'),
-          content: Text('This app requires camera access to function properly.'),
+          content:
+              Text('This app requires camera access to function properly.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -114,7 +118,8 @@ class _FaceScanPageState extends State<FaceScanPage> {
       ),
       // Replace the BottomNavigationBar with your custom BottomNavigation widget
       bottomNavigationBar: BottomNavigation(
-        currentIndex: 1, // The current tab index for the scan page (adjust if necessary)
+        currentIndex:
+            1, // The current tab index for the scan page (adjust if necessary)
         onTap: (index) {
           // Handle tab tap if needed, you can navigate or update the UI
           // For example, if you want to navigate to other pages:

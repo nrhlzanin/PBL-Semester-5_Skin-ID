@@ -10,7 +10,7 @@ class TopWidget extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text("Home Page (before login)"),
+      title: Text("Home"),
       actions: [
         IconButton(
           icon: Icon(Icons.search),
