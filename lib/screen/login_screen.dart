@@ -6,6 +6,8 @@ class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  LoginScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +54,7 @@ class LoginScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 253, 253, 253),
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                               color: Colors.black12,
                               blurRadius: 10,
@@ -131,7 +133,6 @@ class LoginScreen extends StatelessWidget {
                                           Navigator.pop(
                                               context); // Go back to the previous screen
                                         },
-                                        child: Text('Back'),
                                         style: ElevatedButton.styleFrom(
                                           padding: EdgeInsets.symmetric(
                                               vertical: 15, horizontal: 20),
@@ -141,6 +142,7 @@ class LoginScreen extends StatelessWidget {
                                               Colors.white, // White text
                                           textStyle: TextStyle(fontSize: 18),
                                         ),
+                                        child: Text('Back'),
                                       ),
 
                                       // Login Button
@@ -165,7 +167,6 @@ class LoginScreen extends StatelessWidget {
                                             );
                                           }
                                         },
-                                        child: Text('Login'),
                                         style: ElevatedButton.styleFrom(
                                           padding: EdgeInsets.symmetric(
                                               vertical: 15, horizontal: 50),
@@ -175,6 +176,7 @@ class LoginScreen extends StatelessWidget {
                                               .white, // White text for Login
                                           textStyle: TextStyle(fontSize: 18),
                                         ),
+                                        child: Text('Login'),
                                       ),
                                     ],
                                   ),
