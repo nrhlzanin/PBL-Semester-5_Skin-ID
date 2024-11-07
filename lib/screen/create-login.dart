@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import, file_names
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:skin_id/screen/home_screen.dart';
@@ -6,7 +8,7 @@ import 'package:skin_id/screen/new_account_screen.dart';
 import 'package:skin_id/screen/verification_screen.dart';
 
 class CreateLogin extends StatelessWidget {
-  const CreateLogin({Key? key}) : super(key: key);
+  const CreateLogin({super.key});
 
   @override
   Widget build(BuildContext context) {
