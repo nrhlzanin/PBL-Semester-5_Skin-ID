@@ -8,6 +8,7 @@ import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/login_screen.dart';
 import 'package:skin_id/screen/makeup_Section.dart';
 import 'package:skin_id/screen/new_account_screen.dart';
+import 'package:skin_id/screen/notification_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Disables the debug banner
       home: CreateLogin(),
       // home: MakeupSection(),
+      // home: NotificationScreen(),
       // home: CameraPage(),
     );
   }

@@ -3,6 +3,7 @@
 // ignore_for_file: use_super_parameters, prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:skin_id/screen/notification_screen.dart'; // Impor halaman NotificationScreen
 
 class TopWidget extends StatelessWidget implements PreferredSizeWidget {
   const TopWidget({Key? key}) : super(key: key);
@@ -21,7 +22,14 @@ class TopWidget extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: Icon(Icons.notifications_none),
           onPressed: () {
-            // Fungsi untuk notifikasi
+            // Navigasi ke halaman notifikasi
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    NotificationScreen(), // Arahkan ke halaman NotificationScreen
+              ),
+            );
           },
         ),
       ],
