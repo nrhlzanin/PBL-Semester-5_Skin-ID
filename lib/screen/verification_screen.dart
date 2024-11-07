@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 
 class VerificationScreen extends StatelessWidget {
@@ -5,6 +7,8 @@ class VerificationScreen extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+
+  VerificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
