@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:skin_id/screen/home.dart';
-import 'package:skin_id/screen/home_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>(); // Key to track the form state
