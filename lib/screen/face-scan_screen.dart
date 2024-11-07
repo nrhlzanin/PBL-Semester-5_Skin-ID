@@ -1,7 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
-import 'package:skin_id/screen/home.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -37,34 +36,6 @@ class _CameraPageState extends State<CameraPage> {
     super.dispose();
   }
 
-  void _onTabTapped(int index) {
-    if (index != _currentIndex) {
-      setState(() => _currentIndex = index);
-      // Navigasi ke halaman yang sesuai berdasarkan index
-      switch (index) {
-        case 0:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => Home()),
-          );
-          break;
-        case 1:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => CameraPage()),
-          );
-          break;
-        // Tambahkan halaman Profile jika dibutuhkan
-        case 2:
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => ProfilePage()),
-          // );
-          break;
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,6 +52,7 @@ class _CameraPageState extends State<CameraPage> {
         ),
         child: Stack(
           children: [
+            // Camera preview positioned in the center, stretching down
             if (_isCameraInitialized)
               Positioned(
                 left: 30,
@@ -95,6 +67,7 @@ class _CameraPageState extends State<CameraPage> {
             else
               Center(child: CircularProgressIndicator()),
 
+            // "Let our AI find best make up that suits you!" text
             Positioned(
               left: 26,
               bottom: 50,
@@ -115,9 +88,12 @@ class _CameraPageState extends State<CameraPage> {
               ),
             ),
 
+            // IconButton positioned at the bottom center
             Positioned(
-              bottom: 20,
-              left: MediaQuery.of(context).size.width / 2 - 30,
+              bottom:
+                  20, // Adjust this value to change the distance from the bottom
+              left: MediaQuery.of(context).size.width / 2 -
+                  30, // Center the button
               child: IconButton(
                 icon: Icon(Icons.camera, color: Colors.black, size: 40),
                 onPressed: () async {
@@ -136,8 +112,11 @@ class _CameraPageState extends State<CameraPage> {
         ),
       ),
       bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
+        currentIndex:
+            0, // Set the current index, you can update it based on state
+        onTap: (index) {
+          // Handle tap actions here
+        },
       ),
     );
   }
