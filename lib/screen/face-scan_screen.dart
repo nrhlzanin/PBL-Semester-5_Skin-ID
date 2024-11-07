@@ -45,7 +45,7 @@ class _CameraPageState extends State<CameraPage> {
           gradient: LinearGradient(
             begin: Alignment(0.20, -0.98),
             end: Alignment(-0.2, 0.98),
-            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C), Color(0xFFFEE1CC)],
+            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C)],
           ),
         ),
         child: Stack(
@@ -68,7 +68,7 @@ class _CameraPageState extends State<CameraPage> {
             // "Let our AI find best make up that suits you!" text
             Positioned(
               left: 26,
-              bottom: 130,
+              bottom: 50,
               child: SizedBox(
                 width: MediaQuery.of(context).size.width - 52,
                 height: 60,
@@ -86,39 +86,24 @@ class _CameraPageState extends State<CameraPage> {
               ),
             ),
 
-            // Button row container
+            // IconButton positioned at the bottom center
             Positioned(
-              left: 0,
-              bottom: 0,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Color(0xFFD6843C), width: 1),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: IconButton(
-                          icon: Icon(Icons.camera, color: Colors.black),
-                          onPressed: () async {
-                            try {
-                              XFile picture = await _controller!.takePicture();
-                              // Save or process the captured image here
-                              print("Picture taken: ${picture.path}");
-                            } catch (e) {
-                              print(e);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              bottom:
+                  20, // Adjust this value to change the distance from the bottom
+              left: MediaQuery.of(context).size.width / 2 -
+                  30, // Center the button
+              child: IconButton(
+                icon: Icon(Icons.camera, color: Colors.black, size: 40),
+                onPressed: () async {
+                  try {
+                    XFile picture = await _controller!.takePicture();
+                    print("Picture taken: ${picture.path}");
+                  } catch (e) {
+                    print(e);
+                  }
+                },
+                padding: EdgeInsets.all(20),
+                iconSize: 40,
               ),
             ),
           ],
