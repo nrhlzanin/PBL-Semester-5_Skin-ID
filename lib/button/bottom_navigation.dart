@@ -1,6 +1,7 @@
 // lib/bottom_navigation.dart
 
 import 'package:flutter/material.dart';
+import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home.dart';
 
 class BottomNavigation extends StatelessWidget {
@@ -29,12 +30,12 @@ class BottomNavigation extends StatelessWidget {
             );
             break;
           case 1:
-            // Navigator.pushReplacement(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => FaceScanPage(cameras: []), // Ganti `[]` dengan daftar kamera jika diperlukan
-            //   ),
-            // );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      CameraPage()), // Ganti `[]` dengan daftar kamera jika diperlukan
+            );
             break;
           case 2:
             // Navigator.pushReplacement(
