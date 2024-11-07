@@ -1,9 +1,12 @@
 // ignore_for_file: unused_import
 
 import 'package:flutter/material.dart';
+import 'package:skin_id/screen/face-scan_screen.dart';
+import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/login_screen.dart';
+import 'package:skin_id/screen/makeup_Section.dart';
 import 'package:skin_id/screen/new_account_screen.dart';
 
 void main() {
@@ -19,6 +22,8 @@ class MyApp extends StatelessWidget {
       title: 'Verification App',
       debugShowCheckedModeBanner: false, // Disables the debug banner
       home: CreateLogin(),
+      // home: MakeupSection(),
+      // home: CameraPage(),
     );
   }
 }

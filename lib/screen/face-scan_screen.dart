@@ -1,129 +1,134 @@
-// lib/face_scan_page.dart
-// ignore_for_file: file_names, prefer_const_constructors_in_immutables, use_key_in_widget_constructors, library_private_types_in_public_api, use_build_context_synchronously, prefer_const_literals_to_create_immutables
-
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
-import 'package:camera/camera.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-class FaceScanPage extends StatefulWidget {
-  final List<CameraDescription> cameras;
-
-  // FaceScanPage(this.cameras);
-  final String userId;
-
-  // Tambahkan nilai default atau buat parameter opsional
-  FaceScanPage({this.userId = 'defaultUserId', required this.cameras});
+class CameraPage extends StatefulWidget {
   @override
-  _FaceScanPageState createState() => _FaceScanPageState();
+  _CameraPageState createState() => _CameraPageState();
 }
 
-class _FaceScanPageState extends State<FaceScanPage> {
-  CameraController? _cameraController;
+class _CameraPageState extends State<CameraPage> {
+  CameraController? _controller;
+  List<CameraDescription>? cameras;
   bool _isCameraInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeCameraWithPermissionCheck();
-  }
-
-  Future<void> _initializeCameraWithPermissionCheck() async {
-    var status = await Permission.camera.request();
-    if (status.isGranted) {
-      await _initializeCamera();
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Camera Permission Required'),
-          content:
-              Text('This app requires camera access to function properly.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+    _initializeCamera();
   }
 
   Future<void> _initializeCamera() async {
-    if (widget.cameras.isNotEmpty) {
-      _cameraController = CameraController(
-        widget.cameras.length > 1 ? widget.cameras[1] : widget.cameras[0],
-        ResolutionPreset.medium,
-      );
-      await _cameraController?.initialize();
-      if (mounted) {
-        setState(() {
-          _isCameraInitialized = true;
-        });
-      }
-    }
+    cameras = await availableCameras();
+    _controller = CameraController(cameras![0], ResolutionPreset.high);
+
+    await _controller!.initialize();
+    setState(() {
+      _isCameraInitialized = true;
+    });
   }
 
   @override
   void dispose() {
-    _cameraController?.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Face Scan"),
-        backgroundColor: Colors.orange[700],
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: _isCameraInitialized
-                ? AspectRatio(
-                    aspectRatio: _cameraController!.value.aspectRatio,
-                    child: CameraPreview(_cameraController!),
-                  )
-                : Container(
-                    color: Colors.grey[300],
-                    child: Center(
-                      child: Text(
-                        'Loading Camera...',
-                        style: TextStyle(color: Colors.black),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment(0.20, -0.98),
+            end: Alignment(-0.2, 0.98),
+            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C), Color(0xFFFEE1CC)],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Camera preview positioned in the center, stretching down
+            if (_isCameraInitialized)
+              Positioned(
+                left: 30,
+                top: 80,
+                right: 30,
+                bottom: 120,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(40),
+                  child: CameraPreview(_controller!),
+                ),
+              )
+            else
+              Center(child: CircularProgressIndicator()),
+
+            // "Let our AI find best make up that suits you!" text
+            Positioned(
+              left: 26,
+              bottom: 130,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width - 52,
+                height: 60,
+                child: Text(
+                  'Let our AI find the best makeup that suits you!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.02,
+                  ),
+                ),
+              ),
+            ),
+
+            // Button row container
+            Positioned(
+              left: 0,
+              bottom: 0,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Color(0xFFD6843C), width: 1),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: IconButton(
+                          icon: Icon(Icons.camera, color: Colors.black),
+                          onPressed: () async {
+                            try {
+                              XFile picture = await _controller!.takePicture();
+                              // Save or process the captured image here
+                              print("Picture taken: ${picture.path}");
+                            } catch (e) {
+                              print(e);
+                            }
+                          },
+                        ),
                       ),
                     ),
-                  ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Show us your pretty face!",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
+                  ],
+                ),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              "Let our AI find the best makeup shade that suits you!",
-              style: TextStyle(fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(height: 16),
-        ],
+          ],
+        ),
       ),
-      // Replace the BottomNavigationBar with your custom BottomNavigation widget
       bottomNavigationBar: BottomNavigation(
         currentIndex:
-            1, // The current tab index for the scan page (adjust if necessary)
+            0, // Set the current index, you can update it based on state
         onTap: (index) {
-          // Handle tab tap if needed, you can navigate or update the UI
-          // For example, if you want to navigate to other pages:
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+          // Handle tap actions here
         },
       ),
     );
