@@ -75,11 +75,11 @@ def register_user(request):
             raise ValidationError("Username, email, dan password diperlukan")
 
         # Cek apakah username sudah ada
-        if User.objects.filter(username=username).exists():
+        if user.objects.filter(username=username).exists():
             return Response({'error': 'Username sudah digunakan'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Membuat pengguna baru
-        user = User.objects.create_user(username=username, password=password, email=email)
+        user = user.objects.create_user(username=username, password=password, email=email)
 
         # Kembalikan response sukses dengan data pengguna
         return Response({

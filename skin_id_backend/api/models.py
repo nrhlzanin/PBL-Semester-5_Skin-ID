@@ -13,6 +13,9 @@ class Brand(models.Model):
 
     def __str__(self):
         return self.brand_name
+    
+    class Meta:
+        db_table = 'Brand'
 
 # Model Categories
 class Category(models.Model):
@@ -23,6 +26,8 @@ class Category(models.Model):
 
     def __str__(self):
         return self.category_name
+    class Meta:
+        db_table = 'Category'
 
 # Model BrandCategories
 class BrandCategory(models.Model):
@@ -32,7 +37,8 @@ class BrandCategory(models.Model):
 
     def __str__(self):
         return f"{self.brand.brand_name} - {self.category.category_name}"
-
+    class Meta:
+        db_table = 'BrandCategory'
 # Model SkinTones
 class SkinTone(models.Model):
     SKIN_TONE_CHOICES = [
@@ -48,6 +54,8 @@ class SkinTone(models.Model):
 
     def __str__(self):
         return self.skintone_name
+    class Meta:
+        db_table = 'SkinTone'
 
 # Model Users
 class User(models.Model):
@@ -61,6 +69,8 @@ class User(models.Model):
 
     def __str__(self):
         return self.username
+    class Meta:
+        db_table = 'User'
 
 # Model Products
 class Product(models.Model):
@@ -75,6 +85,8 @@ class Product(models.Model):
 
     def __str__(self):
         return self.product_name
+    class Meta:
+        db_table = 'Product'
 
 # Model Recommendations
 class Recommendation(models.Model):
@@ -85,3 +97,5 @@ class Recommendation(models.Model):
 
     def __str__(self):
         return f"Recommendation for {self.user.username} - {self.product.product_name}"
+    class Meta:
+        db_table = 'Recommendation'
