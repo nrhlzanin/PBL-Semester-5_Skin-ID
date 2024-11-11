@@ -26,8 +26,7 @@ class TopWidget extends StatelessWidget implements PreferredSizeWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    NotificationScreen(), // Arahkan ke halaman NotificationScreen
+                builder: (context) => NotificationScreen(), // Arahkan ke halaman NotificationScreen
               ),
             );
           },
