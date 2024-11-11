@@ -59,31 +59,3 @@ def fetch_makeup_products(request):
     except requests.exceptions.RequestException as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-@api_view(['POST'])
-def register_user(request):
-    """
-    Endpoint untuk registrasi pengguna baru
-    """
-    if request.method == 'POST':
-        # Ambil data dari request
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email')
-
-        # Validasi input
-        if not username or not password or not email:
-            raise ValidationError("Username, email, dan password diperlukan")
-
-        # Cek apakah username sudah ada
-        if user.objects.filter(username=username).exists():
-            return Response({'error': 'Username sudah digunakan'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Membuat pengguna baru
-        user = user.objects.create_user(username=username, password=password, email=email)
-
-        # Kembalikan response sukses dengan data pengguna
-        return Response({
-            'username': user.username,
-            'email': user.email,
-            'message': 'User berhasil dibuat'
-        }, status=status.HTTP_201_CREATED)
