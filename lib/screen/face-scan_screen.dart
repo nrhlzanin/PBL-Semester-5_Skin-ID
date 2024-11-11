@@ -2,6 +2,10 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/screen/home.dart';
+import 'dart:typed_data';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+// import 'package:path/path.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -23,7 +27,7 @@ class _CameraPageState extends State<CameraPage> {
 
   Future<void> _initializeCamera() async {
     cameras = await availableCameras();
-    _controller = CameraController(cameras![0], ResolutionPreset.high);
+    _controller = CameraController(cameras![1], ResolutionPreset.high);
 
     await _controller!.initialize();
     setState(() {
@@ -120,7 +124,8 @@ class _CameraPageState extends State<CameraPage> {
                 icon: Icon(Icons.camera, color: Colors.black, size: 40),
                 onPressed: () async {
                   try {
-                    XFile picture = await _controller!.takePicture();
+                    await _initializeCamera();
+                    final picture = await _controller!.takePicture();
                     print("Picture taken: ${picture.path}");
                   } catch (e) {
                     print(e);
