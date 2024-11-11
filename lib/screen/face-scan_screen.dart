@@ -1,7 +1,9 @@
-import 'package:camera/camera.dart';
+import 'dart:typed_data'; // Untuk bekerja dengan Uint8List
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/screen/home.dart';
+import 'dart:html' as html; // Untuk bekerja dengan elemen HTML (Web)
 
 class CameraPage extends StatefulWidget {
   @override
@@ -14,6 +16,7 @@ class _CameraPageState extends State<CameraPage> {
   bool _isCameraInitialized = false;
 
   int _currentIndex = 1;
+  Uint8List? _imageBytes; // Menyimpan gambar yang diambil dalam bentuk bytes
 
   @override
   void initState() {
@@ -120,10 +123,37 @@ class _CameraPageState extends State<CameraPage> {
                 icon: Icon(Icons.camera, color: Colors.black, size: 40),
                 onPressed: () async {
                   try {
+                    // Menangkap gambar sebagai bytes (untuk Web)
                     XFile picture = await _controller!.takePicture();
                     print("Picture taken: ${picture.path}");
+
+                    // Membaca file gambar sebagai bytes
+                    final byteData = await picture.readAsBytes();
+                    setState(() {
+                      _imageBytes = byteData; // Menyimpan bytes gambar
+                    });
+
+                    // Menampilkan gambar dalam dialog
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Captured Image'),
+                        content: _imageBytes == null
+                            ? CircularProgressIndicator()
+                            : Image.memory(
+                                _imageBytes!), // Menampilkan gambar dari memory
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
                   } catch (e) {
-                    print(e);
+                    print("Error capturing image: $e");
                   }
                 },
                 padding: EdgeInsets.all(20),
