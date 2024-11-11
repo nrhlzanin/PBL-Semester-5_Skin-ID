@@ -1,13 +1,13 @@
 import 'dart:typed_data'; // Untuk bekerja dengan Uint8List
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/screen/home.dart';
-import 'dart:html' as html; // Untuk bekerja dengan elemen HTML (Web)
-import 'dart:typed_data';
+// import 'dart:html' as html; // Untuk bekerja dengan elemen HTML (Web)
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-// import 'package:path/path.dart';
+
 
 class CameraPage extends StatefulWidget {
   @override
@@ -127,7 +127,8 @@ class _CameraPageState extends State<CameraPage> {
                 icon: Icon(Icons.camera, color: Colors.black, size: 40),
                 onPressed: () async {
                   try {
-                    XFile picture = await _controller!.takePicture();
+                    await _initializeCamera();
+                    final picture = await _controller!.takePicture();
                     print("Picture taken: ${picture.path}");
 
                     // Membaca file gambar sebagai bytes
