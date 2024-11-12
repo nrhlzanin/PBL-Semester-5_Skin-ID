@@ -71,7 +71,7 @@ class CreateLogin extends StatelessWidget {
                     ),
                     Expanded(child: SizedBox()),
 
-                    // "Login With Email" button
+                    // "Login With IG" button
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: Align(
@@ -81,7 +81,7 @@ class CreateLogin extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => VerificationScreen(),
+                                  builder: (context) => InstagramLoginScreen(),
                                 ));
                           },
                           child: Container(
@@ -104,7 +104,7 @@ class CreateLogin extends StatelessWidget {
                       ),
                     ),
 
-                    // "Existing user" button
+                    // "EMail" button
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: Align(
