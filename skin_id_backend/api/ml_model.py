@@ -7,16 +7,12 @@ from sklearn.preprocessing import StandardScaler
 from PIL import Image
 import os
 from django.conf import settings
-
-# Load model dan scaler
-# model_filename = 'knn_skin_tone_model_hsv.pkl'
-# scaler_filename = 'scaler_model_hsv.pkl'
-# knn_model = joblib.load(model_filename)
-# scaler = joblib.load(scaler_filename)
+from django.views.decorators.http import require_POST
 
 # Mendapatkan path file model dan scaler
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/knn_skin_tone_model_hsv.pkl')
 SCALER_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/scaler_model_hsv.pkl')
+HAARCASCADE = os.path.join(settings.BASE_DIR, 'api/machine_learning/haarcascade_frontalface_default.xml')
 
 # Load model dan scaler
 knn_model = joblib.load(MODEL_PATH)
@@ -31,10 +27,22 @@ fitzpatrick_map_reverse = {
     5: "Brown",
     6: "Dark"
 }
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Fungsi untuk prediksi skin tone
 def predict_skin_tone(image):
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # Menggunakan Haar Cascade untuk mendeteksi wajah
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+    if len(faces) == 0:
+        return "No face detected"
+
+    # Jika wajah ditemukan, ambil wajah pertama yang terdeteksi
+    (x, y, w, h) = faces[0]
+    face_region = image[y:y+h, x:x+w]  # Ambil area wajah
+    
+    hsv_image = cv2.cvtColor(face_region, cv2.COLOR_BGR2HSV)
     
     h_mean = np.mean(hsv_image[:, :, 0])
     s_mean = np.mean(hsv_image[:, :, 1])
@@ -50,8 +58,10 @@ def predict_skin_tone(image):
     
     return skin_tone
 
+@require_POST
 @csrf_exempt
 def predict_skin_tone_view(request):
+    print(f"Received request method: {request.method}")
     if request.method == 'POST':
         image_file = request.FILES.get('image')
         if image_file is None:
@@ -65,5 +75,7 @@ def predict_skin_tone_view(request):
         skin_tone = predict_skin_tone(image)
         
         return JsonResponse({'skin_tone': skin_tone})
+    elif request.method=='GET':
+        return JsonResponse({'message':'Endpoint ini hanya menerima POST request'})
     
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+    return JsonResponse({'error': 'Invalid request method bang'}, status=405)
