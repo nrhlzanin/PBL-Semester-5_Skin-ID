@@ -9,7 +9,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
-# @api_view(['POST'])
 @require_http_methods(["GET"])
 def fetch_filtered_makeup_products(request):
     api_url = "http://makeup-api.herokuapp.com/api/v1/products.json"
@@ -36,7 +35,7 @@ def fetch_filtered_makeup_products(request):
             }
             filtered_data.append(filtered_product)
         
-        filtered_data = filtered_data[:5]
+        # filtered_data = filtered_data[:1]
         return JsonResponse(filtered_data, safe=False, status=200)        
     except requests.exceptions.RequestException as e:
         return JsonResponse({"error": str(e)}, status = 500)
