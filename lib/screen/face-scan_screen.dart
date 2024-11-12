@@ -1,7 +1,15 @@
-import 'package:camera/camera.dart';
+import 'dart:typed_data'; // Untuk bekerja dengan Uint8List
+import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/screen/home.dart';
+// import 'dart:html' as html; // Untuk bekerja dengan elemen HTML (Web)
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'dart:typed_data';
+import 'package:http/http.dart' as http;
 
 class CameraPage extends StatefulWidget {
   @override
@@ -12,8 +20,9 @@ class _CameraPageState extends State<CameraPage> {
   CameraController? _controller;
   List<CameraDescription>? cameras;
   bool _isCameraInitialized = false;
-
   int _currentIndex = 1;
+  Uint8List? _imageBytes; // Menyimpan gambar yang diambil dalam bentuk bytes
+  String? skinToneResult;
 
   @override
   void initState() {
@@ -23,12 +32,70 @@ class _CameraPageState extends State<CameraPage> {
 
   Future<void> _initializeCamera() async {
     cameras = await availableCameras();
-    _controller = CameraController(cameras![0], ResolutionPreset.high);
+    _controller = CameraController(cameras![1], ResolutionPreset.high);
 
     await _controller!.initialize();
     setState(() {
       _isCameraInitialized = true;
     });
+  }
+
+  Future<void> _captureAndPredict() async {
+    try {
+      // Ambil gambar
+      final picture = await _controller!.takePicture();
+      final imageBytes = await picture.readAsBytes();
+
+      // Kirim gambar ke Django API
+      final response = await _sendImageToServer(imageBytes);
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        setState(() {
+          skinToneResult = responseData['skin_tone'];
+        });
+      } else {
+        setState(() {
+          skinToneResult = "Failed to get prediction";
+        });
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  Future<http.Response> _sendImageToServer(Uint8List imageBytes) async {
+    final url =
+        Uri.parse('http://127.0.0.1:8000/api/predict/'); //Masih kirim ke local
+    final request = http.MultipartRequest('POST', url);
+    request.files.add(
+      http.MultipartFile.fromBytes('image', imageBytes, filename: 'skin.jpg'),
+    );
+    final response = await http.Response.fromStream(await request.send());
+    return response;
+  }
+
+  void _showPredictionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Prediction Result'),
+        content: skinToneResult == null
+            ? CircularProgressIndicator()
+            : Text(
+                'Detected Skin Tone: $skinToneResult',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -120,10 +187,51 @@ class _CameraPageState extends State<CameraPage> {
                 icon: Icon(Icons.camera, color: Colors.black, size: 40),
                 onPressed: () async {
                   try {
-                    XFile picture = await _controller!.takePicture();
+                    await _initializeCamera();
+                    final picture = await _controller!.takePicture();
                     print("Picture taken: ${picture.path}");
+
+                    // Membaca file gambar sebagai bytes
+                    final byteData = await picture.readAsBytes();
+                    setState(() {
+                      _imageBytes = byteData; // Menyimpan bytes gambar
+                    });
+
+                    await _captureAndPredict();
+                    // Menampilkan gambar dalam dialog
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Captured Image'),
+                        content: _imageBytes == null
+                            ? CircularProgressIndicator()
+                            : Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.memory(
+                                      _imageBytes!), // Menampilkan gambar dari memory
+                                  SizedBox(height: 10),
+                                  Text(
+                                    skinToneResult ?? "No result available",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ), // Menampilkan gambar dari memory
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
                   } catch (e) {
-                    print(e);
+                    print("Error capturing image: $e");
                   }
                 },
                 padding: EdgeInsets.all(20),

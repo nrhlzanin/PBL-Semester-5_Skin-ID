@@ -58,19 +58,19 @@ class SkinTone(models.Model):
         db_table = 'SkinTone'
 
 # Model Users
-class User(models.Model):
+class Pengguna(models.Model):
     user_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=255)
     email = models.EmailField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+    skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
 
     def __str__(self):
         return self.username
     class Meta:
-        db_table = 'User'
+        db_table = 'Pengguna'
 
 # Model Products
 class Product(models.Model):
