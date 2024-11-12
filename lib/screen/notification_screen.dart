@@ -54,8 +54,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
             // Row with Back Button and Search Icon
             Container(
               width: double.infinity,
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              height: 80,
+              padding:
+                  const EdgeInsets.only(top: 40.0, left: 16.0, right: 16.0),
               decoration: BoxDecoration(color: Colors.white),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
