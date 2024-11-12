@@ -1,11 +1,7 @@
-// ignore_for_file: unused_import, file_names
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:skin_id/screen/home_screen.dart';
-import 'package:skin_id/screen/login_screen.dart';
-import 'package:skin_id/screen/new_account_screen.dart';
 import 'package:skin_id/screen/verification_screen.dart';
+import 'package:skin_id/screen/login_screen.dart';
 
 class CreateLogin extends StatelessWidget {
   const CreateLogin({super.key});
@@ -43,16 +39,11 @@ class CreateLogin extends StatelessWidget {
           // SafeArea and positioning the text to the left-center
           SafeArea(
             child: Center(
-              // This will center the entire content
               child: Padding(
-                padding: const EdgeInsets.only(
-                    top: 200, left: 20, right: 20), // Added top padding here
-
+                padding: const EdgeInsets.only(top: 200, left: 20, right: 20),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start, // Align text to the left
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, // Center vertically
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'DETEKSI',
@@ -78,12 +69,11 @@ class CreateLogin extends StatelessWidget {
                         color: Colors.black,
                       ),
                     ),
-                    // Using an Expanded widget to push the button down to the bottom
                     Expanded(child: SizedBox()),
-                    // Button section at the bottom with added margin
+
+                    // "Login With IG" button
                     Padding(
-                      padding: const EdgeInsets.only(
-                          bottom: 20), // Added bottom padding
+                      padding: const EdgeInsets.only(bottom: 20),
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: InkWell(
@@ -91,30 +81,32 @@ class CreateLogin extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => VerificationScreen(),
+                                  builder: (context) => InstagramLoginScreen(),
                                 ));
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 130),
+                                vertical: 15, horizontal: 40),
                             decoration: BoxDecoration(
                               color: Colors.white24,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              "Create an account",
+                              "Login With Instagram",
                               style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                                color: Colors.black,
+                                fontSize: 18, // Ukuran font yang lebih besar
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
 
+                    // "EMail" button
                     Padding(
-                      padding: const EdgeInsets.only(
-                          bottom: 20), // Added bottom padding
+                      padding: const EdgeInsets.only(bottom: 20),
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: InkWell(
@@ -127,16 +119,18 @@ class CreateLogin extends StatelessWidget {
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 150),
+                                vertical: 15, horizontal: 40),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              "Existing user",
+                              " Login With Email",
                               style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                                color: Colors.black,
+                                fontSize: 18, // Ukuran font yang lebih besar
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
