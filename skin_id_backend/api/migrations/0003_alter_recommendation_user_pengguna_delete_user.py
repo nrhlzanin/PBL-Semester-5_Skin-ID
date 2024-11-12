@@ -4,7 +4,19 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-
+def add_default_skintones(apps, schema_editor):
+    SkinTone = apps.get_model('api', 'SkinTone')
+    skintones = [
+        {"skintone_name": "Sangat Putih", "skintone_description": "Rentan terhadap sengatan matahari, membutuhkan produk yang lembut dan melembapkan. Carilah produk dengan SPF dan bahan-bahan yang menenangkan seperti lidah buaya dan chamomile."},
+        {"skintone_name": "Putih", "skintone_description": "Mudah terbakar, manfaatkan produk yang lembut dengan SPF. Carilah produk dengan antioksidan dan bahan pencerah seperti vitamin C."},
+        {"skintone_name": "Putih Kecoklatan", "skintone_description": "Cenderung menjadi cokelat secara bertahap, membutuhkan produk dengan SPF dan hidrasi. Carilah produk dengan keseimbangan bahan yang menghidrasi dan mengeksfoliasi."},
+        {"skintone_name": "Sawo Matang", "skintone_description": "Cenderung mudah berjemur, membutuhkan produk dengan SPF dan hidrasi. Carilah produk dengan bahan-bahan yang mencerahkan dan menentang penuaan."},
+        {"skintone_name": "Coklat Gelap", "skintone_description": "Jarang terbakar, membutuhkan produk dengan SPF dan hidrasi. Carilah produk dengan bahan pencerah dan pengelupasan kulit."},
+        {"skintone_name": "Gelap", "skintone_description": "Jarang terbakar, membutuhkan produk dengan SPF dan hidrasi. Carilah produk dengan bahan pencerah dan pengelupasan kulit."},
+        
+    ]
+    for skintone in skintones:
+        SkinTone.objects.create(**skintone)
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -36,4 +48,5 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name='User',
         ),
+        migrations.RunPython(add_default_skintones),
     ]

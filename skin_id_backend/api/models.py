@@ -41,14 +41,10 @@ class BrandCategory(models.Model):
         db_table = 'BrandCategory'
 # Model SkinTones
 class SkinTone(models.Model):
-    SKIN_TONE_CHOICES = [
-        ('light', 'Light'),
-        ('medium', 'Medium'),
-        ('dark', 'Dark'),
-    ]
 
     skintone_id = models.AutoField(primary_key=True)
-    skintone_name = models.CharField(max_length=10, choices=SKIN_TONE_CHOICES)
+    skintone_name = models.CharField(max_length=20, null=True, blank=True)
+    skintone_description = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
