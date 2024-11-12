@@ -84,7 +84,7 @@ class AccountScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigation(
-        currentIndex: 0, // Sesuaikan dengan halaman aktif
+        currentIndex: 2, // Sesuaikan dengan halaman aktif
         onTap: (index) {
           // Implementasi navigasi ke halaman lain jika diperlukan
         },
