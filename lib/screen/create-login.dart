@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:skin_id/screen/login_sosmed.dart';
 import 'package:skin_id/screen/verification_screen.dart';
-import 'package:skin_id/screen/login_screen.dart';
+import 'package:skin_id/screen/create_account.dart';
 
 class CreateLogin extends StatelessWidget {
   const CreateLogin({super.key});
@@ -92,7 +93,7 @@ class CreateLogin extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              "Login With Instagram",
+                              "Login With Instagram/Email",
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18, // Ukuran font yang lebih besar
@@ -114,7 +115,7 @@ class CreateLogin extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => LoginScreen(),
+                                  builder: (context) => CreateAccount(),
                                 ));
                           },
                           child: Container(
@@ -125,7 +126,7 @@ class CreateLogin extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              " Login With Email",
+                              "Create Account",
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18, // Ukuran font yang lebih besar

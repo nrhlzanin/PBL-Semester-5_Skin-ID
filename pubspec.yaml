@@ -33,6 +33,7 @@ dependencies:
   camera: ^0.11.0+2
   permission_handler: ^11.0.1
   path_provider: ^2.0.15
+  image_picker: ^0.8.5+3  # Pastikan versi sesuai dengan yang terbaru
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -64,6 +65,7 @@ flutter:
   assets:
     - assets/image/makeup.jpg
     - assets/image/Instagram_icon.png
+    - assets/image/Logo-google-icon-PNG.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
