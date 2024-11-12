@@ -7,8 +7,10 @@ plugins {
 
 android {
     namespace = "com.example.skin_id"
-    compileSdk = 33
-    ndkVersion = "21.3.6528147"
+    // compileSdk = 33
+    // ndkVersion = "21.3.6528147"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -16,26 +18,31 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        // jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_1_8
     }
 
     defaultConfig {
         applicationId = "com.example.skin_id"
-        minSdk = 21
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        // minSdk = 21
+        // targetSdk = 33
+        // versionCode = 1
+        // versionName = "1.0"
     }
 
     buildTypes {
-        debug {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+        // debug {
+        //     minifyEnabled false
+        //     proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        // }
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            // minifyEnabled false
+            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig = signingConfigs.debug
         }
     }
 }
@@ -44,21 +51,21 @@ flutter {
     source = "../.."
 }
 
-buildscript {
-    ext.kotlin_version = "1.8.0"
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
+// buildscript {
+//     ext.kotlin_version = "1.8.0"
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+//     dependencies {
+//         classpath 'com.android.tools.build:gradle:8.0.2'
+//         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+//     }
+// }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+// allprojects {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+// }
