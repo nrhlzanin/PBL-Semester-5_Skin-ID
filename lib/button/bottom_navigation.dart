@@ -1,6 +1,7 @@
 // lib/bottom_navigation.dart
 
 import 'package:flutter/material.dart';
+import 'package:skin_id/screen/account_screen.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home.dart';
 
@@ -38,10 +39,10 @@ class BottomNavigation extends StatelessWidget {
             );
             break;
           case 2:
-            // Navigator.pushReplacement(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => ProfilePage()),
-            // );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => AccountScreen()),
+            );
             break;
         }
       },
