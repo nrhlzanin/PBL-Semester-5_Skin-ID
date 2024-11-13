@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/button/top_widget.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -13,6 +15,36 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  List<dynamic> _makeupProducts = [];
+
+  Future<List<dynamic>> fetchMakeupProducts() async {
+    final url =
+        'http://127.0.0.1:8000/api/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        // Parsing JSON dari response API
+        final List<dynamic> data = json.decode(response.body);
+        return data;
+      } else {
+        throw Exception('Failed to load makeup products');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      return [];
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMakeupProducts().then((data) {
+      setState(() {
+        _makeupProducts = data;
+      });
+    });
+  }
 
   void _onBottomNavTapped(int index) {
     setState(() {
@@ -59,7 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 30,
                         height: 30,
                         decoration: BoxDecoration(
-                          color: Color.lerp(Colors.brown.shade100, Colors.brown, index / 5),
+                          color: Color.lerp(
+                              Colors.brown.shade100, Colors.brown, index / 5),
                           borderRadius: BorderRadius.circular(5),
                         ),
                       );
@@ -83,20 +116,46 @@ class _HomeScreenState extends State<HomeScreen> {
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
-                children: List.generate(5, (index) {
-                  return Container(
-                    width: 100,
-                    height: 100,
-                    margin: EdgeInsets.only(right: 16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text("Shade"),
-                    ),
-                  );
-                }),
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: _makeupProducts.isNotEmpty
+                    ? List.generate(
+                        _makeupProducts.length >= 6
+                            ? 6
+                            : _makeupProducts.length,
+                        (index) {
+                          final product = _makeupProducts[index];
+                          return GestureDetector(
+                            onTap: () {
+                              // Tambahkan fungsi jika Anda ingin melakukan sesuatu ketika gambar di-klik
+                              print('Clicked on ${product['name']}');
+                            },
+                            child: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                    product['image_link'] ??
+                                        'https://via.placeholder.com/50', // Gambar default jika image_link kosong
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                                borderRadius: BorderRadius.circular(5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : [
+                        Text('No makeup products available')
+                      ], // Pesan saat data kosong
               ),
             ),
             SizedBox(height: 24),
@@ -143,11 +202,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(Icons.favorite_border, size: 20, color: Colors.grey),
+                              Icon(Icons.favorite_border,
+                                  size: 20, color: Colors.grey),
                               SizedBox(width: 4),
                               Text("2.1k"),
                               SizedBox(width: 16),
-                              Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey),
+                              Icon(Icons.chat_bubble_outline,
+                                  size: 20, color: Colors.grey),
                               SizedBox(width: 4),
                               Text("975"),
                             ],
