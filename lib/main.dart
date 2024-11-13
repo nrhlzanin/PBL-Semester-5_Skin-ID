@@ -22,7 +22,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Disables the debug banner
       home: CreateLogin(), // Start with the CreateLogin screen
       routes: {
-        '/createaccount': (context) => CreateAccount(), // Define the /login route
+        '/createaccount': (context) =>
+            CreateAccount(), // Define the /login route
         '/homescreen': (context) => HomeScreen(), // Define the /home route
         '/home': (context) => Home(), // Define the Home screen route
         // Add other routes if needed

@@ -94,6 +94,7 @@ class _CreateAccountState extends State<CreateAccount> {
                                 children: [
                                   // Email Field (for Create Account step)
                                   if (!_isVerificationStep) ...[
+                                    SizedBox(height: 20),
                                     TextFormField(
                                       controller: _emailController,
                                       decoration: InputDecoration(
@@ -101,8 +102,20 @@ class _CreateAccountState extends State<CreateAccount> {
                                         border: OutlineInputBorder(),
                                         prefixIcon: Icon(Icons.email),
                                       ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter your email';
+                                        }
+                                        // Regular expression to validate email format
+                                        String emailPattern =
+                                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
+                                        if (!RegExp(emailPattern)
+                                            .hasMatch(value)) {
+                                          return 'Please enter a valid email address';
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                    SizedBox(height: 20),
 
                                     // Password Field
                                     TextFormField(
