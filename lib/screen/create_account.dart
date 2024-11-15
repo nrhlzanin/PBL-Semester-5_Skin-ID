@@ -1,250 +1,259 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:skin_id/screen/home_screen.dart';
+import 'package:skin_id/screen/login.dart';
+
+void main() {
+  runApp(CreateAccount());
+}
 
 class CreateAccount extends StatefulWidget {
-  const CreateAccount({super.key});
-
   @override
   _CreateAccountState createState() => _CreateAccountState();
 }
 
 class _CreateAccountState extends State<CreateAccount> {
-  final _formKey = GlobalKey<FormState>(); // Key to track the form state
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _verificationCodeController =
-      TextEditingController();
-  bool _isVerificationStep =
-      false; // Flag to toggle between form and verification step
+  bool _isAccountCreated = false; // Track if account is created
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background image
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/image/makeup.jpg"),
-                fit: BoxFit.cover,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false, // Hides the debug banner
+      home: Scaffold(
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background image
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/image/makeup.jpg"),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-          // Gradient overlay
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.brown.shade100.withOpacity(0.1),
-                  const Color.fromARGB(255, 180, 87, 54),
-                ],
+            // Gradient overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color.fromARGB(158, 163, 85, 56),
+                    Color(0xFFB68D40).withOpacity(0.5),
+                    Color.fromARGB(255, 39, 39, 39).withOpacity(0.5),
+                  ],
+                ),
               ),
             ),
-          ),
-          // SafeArea to prevent content from being under the status bar
-          SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: SingleChildScrollView(
+            // Check if account is created
+            if (!_isAccountCreated)
+              Center(
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  margin: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // White container with form
-                      Container(
-                        padding: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 253, 253, 253),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              offset: Offset(0, 5),
-                            ),
-                          ],
+                      Text(
+                        'Create an Account',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: Column(
+                      ),
+                      SizedBox(height: 20),
+                      TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Username',
+                          hintText: 'Type your username',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          hintText: 'Enter your email',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          hintText: 'Type your password',
+                          border: OutlineInputBorder(),
+                        ),
+                        obscureText: true,
+                      ),
+                      SizedBox(height: 20),
+                      TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Confirm password',
+                          hintText: 'Type your password',
+                          border: OutlineInputBorder(),
+                        ),
+                        obscureText: true,
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _isAccountCreated =
+                                true; // Show verification screen
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Create account',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: Image.asset(
+                          "assets/image/Logo-google-icon-PNG.png",
+                          height: 20,
+                          width: 20,
+                        ),
+                        label: Text(
+                          'Continue with Google',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: Colors.grey),
+                          padding: EdgeInsets.symmetric(
+                              vertical: 13, horizontal: 142),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Text.rich(
+                        TextSpan(
+                          text: 'Already have one? ',
                           children: [
-                            SizedBox(
-                                height: 20), // Space between title and form
-                            // Title
-                            Text(
-                              _isVerificationStep
-                                  ? 'Enter Verification Code'
-                                  : 'Create Account',
+                            TextSpan(
+                              text: 'Log in',
                               style: TextStyle(
-                                fontSize: 32,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                decoration: TextDecoration.underline,
                               ),
-                            ),
-                            SizedBox(height: 20),
-
-                            // Form for email and password (or verification code)
-                            Form(
-                              key: _formKey,
-                              child: Column(
-                                children: [
-                                  // Email Field (for Create Account step)
-                                  if (!_isVerificationStep) ...[
-                                    SizedBox(height: 20),
-                                    TextFormField(
-                                      controller: _emailController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Email',
-                                        border: OutlineInputBorder(),
-                                        prefixIcon: Icon(Icons.email),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter your email';
-                                        }
-                                        // Regular expression to validate email format
-                                        String emailPattern =
-                                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
-                                        if (!RegExp(emailPattern)
-                                            .hasMatch(value)) {
-                                          return 'Please enter a valid email address';
-                                        }
-                                        return null;
-                                      },
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Login(),
                                     ),
-
-                                    // Password Field
-                                    TextFormField(
-                                      controller: _passwordController,
-                                      obscureText: true,
-                                      decoration: InputDecoration(
-                                        labelText: 'Password',
-                                        border: OutlineInputBorder(),
-                                        prefixIcon: Icon(Icons.lock),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter your password';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    SizedBox(height: 30),
-                                  ],
-
-                                  // Verification Code Field (for Verification step)
-                                  if (_isVerificationStep) ...[
-                                    TextFormField(
-                                      controller: _verificationCodeController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Verification Code',
-                                        border: OutlineInputBorder(),
-                                        prefixIcon: Icon(Icons.lock),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Please enter the verification code';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    SizedBox(height: 30),
-                                  ],
-
-                                  // Row for Back Button and Next/Submit Button
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      // Back Button (only for verification step)
-                                      if (_isVerificationStep)
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _isVerificationStep =
-                                                  false; // Go back to create account form
-                                            });
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 15, horizontal: 20),
-                                            backgroundColor:
-                                                Colors.red, // Red background
-                                            foregroundColor:
-                                                Colors.white, // White text
-                                            textStyle: TextStyle(fontSize: 18),
-                                          ),
-                                          child: Text('Back'),
-                                        ),
-
-                                      // Continue Button (for both steps)
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          if (_formKey.currentState!
-                                              .validate()) {
-                                            if (_isVerificationStep) {
-                                              // Process the verification code
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                    content: Text(
-                                                        'Verification Successful')),
-                                              );
-                                              // Navigate to HomeScreen on successful verification
-                                              Navigator.pushReplacement(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      HomeScreen(),
-                                                ),
-                                              );
-                                            } else {
-                                              // Process the account creation
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                    content: Text(
-                                                        'Account Created! Please check your email for verification code')),
-                                              );
-                                              setState(() {
-                                                _isVerificationStep =
-                                                    true; // Move to verification step
-                                              });
-                                            }
-                                          }
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 50),
-                                          backgroundColor: Colors
-                                              .green, // Green background for Continue
-                                          foregroundColor:
-                                              Colors.white, // White text
-                                          textStyle: TextStyle(fontSize: 18),
-                                        ),
-                                        child: Text(_isVerificationStep
-                                            ? 'Verify Code'
-                                            : 'Create Account'),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                  );
+                                },
                             ),
                           ],
                         ),
+                        style: TextStyle(fontSize: 14),
                       ),
                     ],
                   ),
                 ),
+              )
+            else
+              // If account is created, show confirmation message
+              Center(
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  margin: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: 20),
+                      Text(
+                        'Verification',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w800,
+                          decoration: TextDecoration.underline,
+                          height: 1.5,
+                          letterSpacing: 0.02,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'We sent you an Email!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w700,
+                          height: 1.5,
+                          letterSpacing: 0.01,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text:
+                                  'We have sent you a verification link to your email address before you can use ',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w400,
+                                height: 1.5,
+                                letterSpacing: 0.01,
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'Skin-ID',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontFamily: 'Pacifico',
+                                fontWeight: FontWeight.w400,
+                                height: 1.5,
+                                letterSpacing: 0.01,
+                              ),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 20),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

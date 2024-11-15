@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:skin_id/screen/login_sosmed.dart';
-import 'package:skin_id/screen/verification_screen.dart';
 import 'package:skin_id/screen/create_account.dart';
+import 'package:skin_id/screen/verification_screen.dart';
+import 'package:skin_id/screen/login.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -36,8 +36,11 @@ class CreateLogin extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.brown.shade100.withOpacity(0.1),
-                  const Color.fromARGB(255, 180, 87, 54),
+                  Color.fromARGB(158, 163, 85, 56),
+                  Color(0xFFB68D40)
+                      .withOpacity(0.5), // Warna coklat muda dengan opasitas
+                  Color.fromARGB(255, 39, 39, 39)
+                      .withOpacity(0.5) // Warna coklat muda dengan opasitas
                 ],
               ),
             ),
@@ -87,18 +90,18 @@ class CreateLogin extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => InstagramLoginScreen(),
+                                  builder: (context) => CreateAccount(),
                                 ));
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 40),
+                                vertical: 10, horizontal: 100),
                             decoration: BoxDecoration(
                               color: Colors.white24,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              "Login With Instagram/Email",
+                              "create an account",
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18, // Ukuran font yang lebih besar
@@ -110,7 +113,7 @@ class CreateLogin extends StatelessWidget {
                       ),
                     ),
 
-                    // "EMail" button
+                   
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: Align(
@@ -120,18 +123,18 @@ class CreateLogin extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CreateAccount(),
+                                  builder: (context) => Login(),
                                 ));
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 40),
+                                vertical: 10, horizontal: 100),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              "Create Account",
+                              "existing account",
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18, // Ukuran font yang lebih besar
