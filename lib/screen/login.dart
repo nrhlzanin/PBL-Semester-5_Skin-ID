@@ -138,6 +138,39 @@ class _LoginAccountState extends State<Login> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () {
+                        // Logic for navigating to the sign-up screen
+                        print("Navigating to Create Account");
+                      },
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Create an Account',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold, // Bold text
+                                fontFamily: 'Montserrat',
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' if you don’t have one yet',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 10,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
