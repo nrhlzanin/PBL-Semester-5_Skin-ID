@@ -153,8 +153,12 @@ class HomePage extends StatelessWidget {
             ),
             // Updated makeup section with proper styling
             Container(
+              width: double.infinity, // Mengisi lebar penuh layar
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
-              decoration: BoxDecoration(color: Color(0xFF242424)),
+              decoration: BoxDecoration(
+                color: Color(0xFF242424),
+              ),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

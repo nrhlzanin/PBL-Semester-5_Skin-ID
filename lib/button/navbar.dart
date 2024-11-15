@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:skin_id/screen/account_screen.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 
@@ -10,16 +11,51 @@ class Navbar extends StatelessWidget {
       color: Color(0xFF2E2E2E), // Warna hitam keabuan
       child: Column(
         children: <Widget>[
-          DrawerHeader(
-            child: Text(
-              'Skin_id',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+          // Foto Profil dan Nama Pengguna
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Row(
+              children: [
+                // Foto Profil
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: CircleAvatar(
+                    radius: 30, // Ukuran avatar
+                    backgroundImage: AssetImage(
+                        'assets/image/avatar1.jpeg'), // Ganti dengan foto profil dari sumber Anda
+                  ),
+                ),
+                // Nama Pengguna
+                Expanded(
+                  child: Text(
+                    'Aku_cantiks', // Ganti dengan nama pengguna
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14, // Ukuran font yang lebih pas
+                      fontWeight: FontWeight.bold,
+                      overflow: TextOverflow
+                          .ellipsis, // Jika nama terlalu panjang, akan dipotong
+                    ),
+                    softWrap:
+                        false, // Nama tidak akan dibungkus ke baris berikutnya
+                    maxLines: 1, // Membatasi hanya 1 baris untuk nama pengguna
+                  ),
+                ),
+              ],
             ),
           ),
+          // Drawer Header (judul sidebar)
+
+          Text(
+            'YourSkin-ID',
+            style: GoogleFonts.caveat(
+              color: Colors.black,
+              fontSize: 28,
+              fontWeight: FontWeight.w400,
+              height: 0.06,
+            ),
+          ),
+          // Daftar menu
           ListTile(
             leading: Icon(Icons.home, color: Colors.white),
             title: Text('Home', style: TextStyle(color: Colors.white)),
