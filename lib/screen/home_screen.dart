@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http; // Import http package
+import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/face-scan_screen.dart'; // Import CameraPage
 
 void main() {
@@ -54,6 +55,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Navbar(),
       appBar: AppBar(
         title: Text(
           'YourSkin-ID',
@@ -88,13 +90,6 @@ class HomePage extends StatelessWidget {
                 );
               },
             ),
-          ),
-          SizedBox(width: 8),
-          IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              // Action for menu
-            },
           ),
         ],
       ),
