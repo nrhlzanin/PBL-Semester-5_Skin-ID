@@ -1,12 +1,12 @@
-// lib/home_screen.dart
-
-// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api, prefer_const_constructors, prefer_const_literals_to_create_immutables
-
-import 'package:flutter/material.dart';
-import 'package:skin_id/button/bottom_navigation.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:skin_id/button/top_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http; // Import http package
+import 'package:skin_id/screen/face-scan_screen.dart'; // Import CameraPage
+
+void main() {
+  runApp(HomeScreen());
+}
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -37,195 +37,460 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    fetchMakeupProducts().then((data) {
-      setState(() {
-        _makeupProducts = data;
-      });
-    });
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'YourSkin-ID',
+      theme: ThemeData(
+        primarySwatch: Colors.grey,
+        fontFamily: 'caveat',
+      ),
+      debugShowCheckedModeBanner: false, // Remove debug banner
+      home: HomePage(),
+    );
   }
+}
 
-  void _onBottomNavTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TopWidget(),
+      appBar: AppBar(
+        title: Text(
+          'YourSkin-ID',
+          style: GoogleFonts.caveat(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w400,
+            height: 0.06,
+          ),
+        ),
+        actions: [
+          Container(
+            width: 40,
+            height: 40,
+            padding: const EdgeInsets.all(1),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: Color(0xFF242424),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.camera_alt),
+              color: Colors.white,
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          CameraPage()), // Ganti `[]` dengan daftar kamera jika diperlukan
+                );
+              },
+            ),
+          ),
+          SizedBox(width: 8),
+          IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () {
+              // Action for menu
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Skin Tone Section
-            Container(
-              margin: EdgeInsets.all(16.0),
-              padding: EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade100,
-                borderRadius: BorderRadius.circular(12),
+            Text(
+              'Check Your Skin Tone',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 30,
+                fontFamily: 'Playfair Display',
+                fontWeight: FontWeight.w700,
+                height: 0,
+                letterSpacing: 0.03,
               ),
-              child: Column(
-                children: [
-                  Text(
-                    "Check Your Skin Tone with our AI feature",
+            ),
+            Row(
+              children: [
+                CameraButton(),
+                SizedBox(width: 20),
+                Text(
+                  'Use me!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SizedBox(width: 8.0),
+                Expanded(
+                  child: Text(
+                    'Identify your skin tone using our AI for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                        color: Colors.black,
+                        fontSize: 17), // Set color of the text
                   ),
-                  SizedBox(height: 8),
+                ),
+              ],
+            ),
+            SizedBox(height: 32.0),
+            Row(
+              children: [
+                AvatarImage(imageUrl: "assets/image/avatar1.jpeg"),
+                SizedBox(width: 16.0),
+                AvatarImage(imageUrl: "assets/image/avatar2.jpeg"),
+              ],
+            ),
+            SizedBox(height: 16.0),
+            Row(
+              children: [
+                SkinToneColor(color: Color(0xFFF4C2C2)),
+                SkinToneColor(color: Color(0xFFE6A57E)),
+                SkinToneColor(color: Color(0xFFD2B48C)),
+                SkinToneColor(color: Color(0xFFC19A6B)),
+                SkinToneColor(color: Color(0xFF8D5524)),
+                SkinToneColor(color: Color(0xFF7D4B3E)),
+              ],
+            ),
+            // Updated makeup section with proper styling
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+              decoration: BoxDecoration(color: Color(0xFF242424)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 7.0),
                   Text(
-                    "Check your skin tone for better understanding to your skin. More personalized makeup and content recommendation based on your skin tone will come soon!",
-                    textAlign: TextAlign.center,
+                    'Makeup ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontFamily: 'Playfair Display',
+                      fontWeight: FontWeight.w700,
+                      height: 0.03,
+                    ),
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 15.0),
+                  Text(
+                    'Find makeup that suits you with choices from many brands around the world.',
+                    style:
+                        TextStyle(color: Colors.white), // Ensure text is white
+                  ),
+                  SizedBox(height: 16.0),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(6, (index) {
-                      return Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: Color.lerp(
-                              Colors.brown.shade100, Colors.brown, index / 5),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      );
-                    }),
+                    children: [
+                      FilterButton(
+                          label: 'All',
+                          isSelected: true,
+                          textColor: Colors.white), // Text color set to white
+                      SizedBox(width: 8.0),
+                      FilterButton(
+                          label: 'Lipstick',
+                          textColor: Colors.white), // Text color set to white
+                      SizedBox(width: 8.0),
+                      FilterButton(
+                          label: 'Eyeliner',
+                          textColor: Colors.white), // Text color set to white
+                      SizedBox(width: 8.0),
+                      FilterButton(
+                          label: 'Mascara',
+                          textColor: Colors.white), // Text color set to white
+                    ],
                   ),
+                  SizedBox(height: 16.0),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 16.0,
+                    mainAxisSpacing: 16.0,
+                    children: [
+                      // Menggunakan data yang didapatkan dari API
+                      ProductCard(
+                        image: NetworkImage(
+                          'https://via.placeholder.com/50', // Gambar default jika image_link kosong
+                        ),
+                        title: 'Nama Produk Tidak Ditemukan', // Nama produk
+                        brand: 'Brand Tidak Ditemukan',
+                        imageUrl: '', // Brand produk
+                      ),
+                      // Product lainnya dengan data yang sesuai dari API
+                      ProductCard(
+                        image: NetworkImage(
+                          'https://via.placeholder.com/50', // Gambar default jika image_link kosong
+                        ),
+                        title: 'Nama Produk Tidak Ditemukan', // Nama produk
+                        brand: 'Brand Tidak Ditemukan',
+                        imageUrl: '', // Brand produk
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.0),
+                  Row(
+                    children: [
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Action for browsing more
+                          },
+                          child: Text('Browse for more'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 255, 255, 255),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.0),
                 ],
               ),
             ),
-            SizedBox(height: 16),
-
-            // Make Up Section
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                "Make Up Section",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text(
+              'Inspirations from the community',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 30,
+                fontFamily: 'Playfair Display',
+                fontWeight: FontWeight.w700,
+                height: 4,
               ),
             ),
-            SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _makeupProducts.isNotEmpty
-                    ? List.generate(
-                        _makeupProducts.length >= 6
-                            ? 6
-                            : _makeupProducts.length,
-                        (index) {
-                          final product = _makeupProducts[index];
-                          return GestureDetector(
-                            onTap: () {
-                              // Tambahkan fungsi jika Anda ingin melakukan sesuatu ketika gambar di-klik
-                              print('Clicked on ${product['name']}');
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                    product['image_link'] ??
-                                        'https://via.placeholder.com/50', // Gambar default jika image_link kosong
-                                  ),
-                                  fit: BoxFit.cover,
-                                ),
-                                borderRadius: BorderRadius.circular(5),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    : [
-                        Text('No makeup products available')
-                      ], // Pesan saat data kosong
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // What is Popular Around
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                "What is Popular Around",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            SizedBox(height: 8),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: List.generate(2, (index) {
-                  return Container(
-                    width: double.infinity,
-                    height: 150,
-                    margin: EdgeInsets.only(bottom: 16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 4,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            index == 0
-                                ? "Tutorial make up shade warna cerah"
-                                : "Cara memilih skin care yang baik sesuai jenis kulit",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(Icons.favorite_border,
-                                  size: 20, color: Colors.grey),
-                              SizedBox(width: 4),
-                              Text("2.1k"),
-                              SizedBox(width: 16),
-                              Icon(Icons.chat_bubble_outline,
-                                  size: 20, color: Colors.grey),
-                              SizedBox(width: 4),
-                              Text("975"),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              children: [
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
+                  title: 'Tutorial make up shade',
+                  subtitle: 'Tutorial make up',
+                  author: 'Beauty',
+                  likes: 2017,
+                  comments: 333,
+                ),
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
+                  title: 'Lumme brand new products',
+                  subtitle: 'Lumme',
+                  author: 'Women',
+                  likes: 1115,
+                  comments: 555,
+                ),
+              ],
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: _onBottomNavTapped,
+    );
+  }
+}
+
+class CameraButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 60,
+      height: 60,
+      padding: const EdgeInsets.all(1),
+      clipBehavior: Clip.antiAlias,
+      decoration: ShapeDecoration(
+        color: Color(0xFF242424),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(Icons.camera_alt),
+        color: Colors.white,
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    CameraPage()), // Ganti `[]` dengan daftar kamera jika diperlukan
+          );
+        },
+      ),
+    );
+  }
+}
+
+class AvatarImage extends StatelessWidget {
+  final String imageUrl;
+  const AvatarImage({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 64.0,
+      height: 64.0,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(imageUrl),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+}
+
+class SkinToneColor extends StatelessWidget {
+  final Color color;
+  const SkinToneColor({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      color: color,
+      margin: EdgeInsets.all(4.0),
+    );
+  }
+}
+
+class FilterButton extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  const FilterButton({
+    required this.label,
+    this.isSelected = false,
+    required Color textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {},
+      child: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isSelected
+            ? const Color.fromARGB(255, 186, 190, 199)
+            : const Color.fromARGB(255, 255, 255, 255),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+    );
+  }
+}
+
+class ProductCard extends StatelessWidget {
+  final String imageUrl;
+  final String title;
+  final String brand;
+  const ProductCard(
+      {required this.imageUrl,
+      required this.title,
+      required this.brand,
+      required NetworkImage image});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 8.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Column(
+        children: [
+          Image.network(imageUrl),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4.0),
+                Text(brand),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CommunityCard extends StatelessWidget {
+  final String imageUrl;
+  final String title;
+  final String subtitle;
+  final String author;
+  final int likes;
+  final int comments;
+
+  const CommunityCard({
+    required this.imageUrl,
+    required this.title,
+    required this.subtitle,
+    required this.author,
+    required this.likes,
+    required this.comments,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 8.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Column(
+        children: [
+          Image.network(imageUrl),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4.0),
+                Text(subtitle),
+                SizedBox(height: 4.0),
+                Text('By $author'),
+                SizedBox(height: 8.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.thumb_up, size: 16),
+                        SizedBox(width: 4.0),
+                        Text('$likes'),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.comment, size: 16),
+                        SizedBox(width: 4.0),
+                        Text('$comments'),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -18,6 +18,25 @@ class _LoginAccountState extends State<Login> {
   bool _isVerificationStep =
       false; // Flag to toggle between form and verification step
 
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        .hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password';
+    } else if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -59,119 +78,130 @@ class _LoginAccountState extends State<Login> {
                   color: Colors.white.withOpacity(0.8),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Welcome Back!',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        hintText: 'Type your email',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        hintText: 'Enter your password',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Add login logic here
-                        print("Logging in...");
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        padding:
-                            EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                child: Form(
+                  key: _formKey, // Assigning the form key here
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Welcome Back!',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      child: Center(
-                        child: Text(
-                          'Login',
-                          style: TextStyle(color: Colors.white),
+                      SizedBox(height: 20),
+                      // Email TextFormField with validation
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          hintText: 'Type your email',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: _validateEmail, // Validator for email
+                      ),
+                      SizedBox(height: 20),
+                      // Password TextFormField with validation
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          hintText: 'Enter your password',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: _validatePassword, // Validator for password
+                      ),
+                      SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Check if the form is valid before proceeding
+                          if (_formKey.currentState!.validate()) {
+                            // If the form is valid, proceed with the login logic
+                            print("Logging in...");
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomeScreen()),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Login',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        // Add Google login logic here
-                        print("Continue with Google");
-                      },
-                      icon: Image.asset(
-                        "assets/image/Logo-google-icon-PNG.png",
-                        height: 20,
-                        width: 20,
-                      ),
-                      label: Text(
-                        'Continue with Google',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        side: BorderSide(color: Colors.grey),
-                        padding:
-                            EdgeInsets.symmetric(vertical: 13, horizontal: 142),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                      SizedBox(height: 10),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // Add Google login logic here
+                          print("Continue with Google");
+                        },
+                        icon: Image.asset(
+                          "assets/image/Logo-google-icon-PNG.png",
+                          height: 20,
+                          width: 20,
+                        ),
+                        label: Text(
+                          'Continue with Google',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: BorderSide(color: Colors.grey),
+                          padding: EdgeInsets.symmetric(
+                              vertical: 13, horizontal: 142),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: () {
-                        // Logic for navigating to the sign-up screen
-                        print("Navigating to Create Account");
-                      },
-                      child: RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'Create an Account',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold, // Bold text
-                                fontFamily: 'Montserrat',
-                                decoration: TextDecoration.underline,
+                      SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () {
+                          // Logic for navigating to the sign-up screen
+                          print("Navigating to Create Account");
+                        },
+                        child: RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Create an Account',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold, // Bold text
+                                  fontFamily: 'Montserrat',
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
-                            ),
-                            TextSpan(
-                              text: ' if you don’t have one yet',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 10,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w300,
+                              TextSpan(
+                                text: ' if you don’t have one yet',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 10,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w300,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
