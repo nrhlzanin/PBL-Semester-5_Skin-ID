@@ -1,2 +1,2 @@
 from rest_framework import serializers
-from .models import SkinTone
+from ..models import SkinTone
