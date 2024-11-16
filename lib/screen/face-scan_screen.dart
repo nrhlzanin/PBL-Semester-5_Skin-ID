@@ -67,8 +67,8 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Future<http.Response> _sendImageToServer(Uint8List imageBytes) async {
-    final url =
-        Uri.parse('http://127.0.0.1:8000/api/predict/'); //Masih kirim ke local
+    final url = Uri.parse(
+        'http://192.168.1.7:8000/api/user/predict/'); //Masih kirim ke local
     final request = http.MultipartRequest('POST', url);
     request.files.add(
       http.MultipartFile.fromBytes('image', imageBytes, filename: 'skin.jpg'),

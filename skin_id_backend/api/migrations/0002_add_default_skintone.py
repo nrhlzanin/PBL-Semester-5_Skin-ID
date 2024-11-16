@@ -3,7 +3,7 @@ from django.db import migrations
 def add_default_skintones(apps, schema_editor):
     SkinTone = apps.get_model('api', 'SkinTone')
     skintones = [
-        {"skintone_name": "very_ligth", "skintone_description": "Rentan terhadap sengatan matahari"},
+        {"skintone_name": "very_light", "skintone_description": "Rentan terhadap sengatan matahari"},
         {"skintone_name": "ligt", "skintone_description": "Mudah terbakar panas matahari"},
         {"skintone_name": "medium", "skintone_description": "Cenderung menjadi cokelat secara bertahap"},
         {"skintone_name": "olive", "skintone_description": "Kulit cenderung mudah menjadi coklat"},

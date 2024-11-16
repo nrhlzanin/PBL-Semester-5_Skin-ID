@@ -10,8 +10,8 @@ from django.conf import settings
 from django.views.decorators.http import require_POST
 
 # Mendapatkan path file model dan scaler
-MODEL_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/knn_skin_tone_model_hsv.pkl')
-SCALER_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/scaler_model_hsv.pkl')
+MODEL_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/knn_skin_tone_model_hsv_optimized_smote.pkl')
+SCALER_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/scaler_model_hsv_optimized_smote.pkl')
 HAARCASCADE = os.path.join(settings.BASE_DIR, 'api/machine_learning/haarcascade_frontalface_default.xml')
 
 # Load model dan scaler
