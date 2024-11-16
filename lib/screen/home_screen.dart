@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http; // Import http package
 import 'package:skin_id/button/navbar.dart';
-import 'package:skin_id/screen/face-scan_screen.dart'; // Import CameraPage
+import 'package:skin_id/screen/face-scan_screen.dart';
+import 'package:skin_id/screen/makeup_detail.dart'; // Import CameraPage
 
 void main() {
   runApp(HomeScreen());
@@ -208,23 +209,19 @@ class HomePage extends StatelessWidget {
                     crossAxisSpacing: 16.0,
                     mainAxisSpacing: 16.0,
                     children: [
-                      // Menggunakan data yang didapatkan dari API
+                      // Menggunakan data yang didapatkan dari API atau data default
                       ProductCard(
-                        image: NetworkImage(
-                          'https://via.placeholder.com/50', // Gambar default jika image_link kosong
-                        ),
+                        imageUrl:
+                            'assets/image/makeup.jpg', // Gambar dari asset
                         title: 'Nama Produk Tidak Ditemukan', // Nama produk
-                        brand: 'Brand Tidak Ditemukan',
-                        imageUrl: '', // Brand produk
+                        brand: 'Brand Tidak Ditemukan', // Brand produk
                       ),
-                      // Product lainnya dengan data yang sesuai dari API
+                      // Product lainnya dengan data yang sesuai dari API atau data default
                       ProductCard(
-                        image: NetworkImage(
-                          'https://via.placeholder.com/50', // Gambar default jika image_link kosong
-                        ),
+                        imageUrl:
+                            'assets/image/makeup.jpg', // Gambar placeholder dari asset
                         title: 'Nama Produk Tidak Ditemukan', // Nama produk
-                        brand: 'Brand Tidak Ditemukan',
-                        imageUrl: '', // Brand produk
+                        brand: 'Brand Tidak Ditemukan', // Brand produk
                       ),
                     ],
                   ),
@@ -390,37 +387,54 @@ class ProductCard extends StatelessWidget {
   final String imageUrl;
   final String title;
   final String brand;
-  const ProductCard(
-      {required this.imageUrl,
-      required this.title,
-      required this.brand,
-      required NetworkImage image});
+
+  const ProductCard({
+    required this.imageUrl,
+    required this.title,
+    required this.brand,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 8.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Column(
-        children: [
-          Image.network(imageUrl),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4.0),
-                Text(brand),
-              ],
-            ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MakeupDetail(),
           ),
-        ],
+        );
+      },
+      child: Card(
+        elevation: 8.0,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        child: Column(
+          children: [
+            Image.asset(
+              imageUrl, // Menampilkan gambar dari asset
+              fit: BoxFit.cover,
+              height: 150, // Atur tinggi gambar sesuai kebutuhan
+              width: double.infinity, // Lebar gambar mengikuti lebar container
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Text(
+                    title,
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    brand,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

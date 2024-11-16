@@ -1,178 +1,222 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:skin_id/button/bottom_navigation.dart';
-import 'package:skin_id/button/top_widget.dart'; // Import TopWidget
+import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/face-scan_screen.dart';
+import 'package:skin_id/screen/home_screen.dart';
+import 'package:skin_id/screen/makeup_detail.dart'; // Import CameraPage
+// Import BottomNavigation
 
 void main() {
   runApp(MakeupDetail());
 }
 
-class MakeupDetail extends StatelessWidget {
+class MakeupDetail extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.orange,
-        textTheme: TextTheme(
-          bodyMedium: TextStyle(fontFamily: 'Roboto'),
-        ),
-      ),
-      home: HomePage(),
-    );
+  _MakeUpDetailState createState() => _MakeUpDetailState();
+}
+
+class _MakeUpDetailState extends State<MakeupDetail> {
+  int _currentIndex = 0; // To keep track of selected bottom navigation item
+  List<dynamic> _makeupProducts = [];
+
+  // Fetch makeup products from the API
+  Future<List<dynamic>> fetchMakeupProducts() async {
+    final url = 'http://127.0.0.1:8000/api/makeup-products/';
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data;
+      } else {
+        throw Exception('Failed to load makeup products');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      return [];
+    }
   }
-}
 
-class HomePage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _currentIndex = 1;
-
-  // Handle tab tap to change screen
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
+  void initState() {
+    super.initState();
+    // Fetch makeup products when the widget is initialized
+    fetchMakeupProducts().then((products) {
+      setState(() {
+        _makeupProducts = products;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80.0), // Height of the app bar
-        child: TopWidget(), // Use your TopWidget here
+    return MaterialApp(
+      title: 'YourSkin-ID',
+      theme: ThemeData(
+        primarySwatch: Colors.grey,
+        fontFamily: 'caveat',
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C), Color(0xFFFEE1CC)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        drawer: Navbar(),
+        appBar: AppBar(
+          title: Text(
+            'YourSkin-ID',
+            style: GoogleFonts.caveat(
+              color: Colors.black,
+              fontSize: 28,
+              fontWeight: FontWeight.w400,
+              height: 0.06,
+            ),
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Shade Section title
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Text(
-                  "Shade Section",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+        body: Stack(
+          // Stack digunakan untuk menumpuk widget
+          children: [
+            // Background hitam
+            Positioned.fill(
+              child: Container(
+                margin: const EdgeInsets.symmetric(
+                    horizontal:
+                        20.0), // Memberikan ruang 20px di kiri dan kanan
+                color: Color(0xFF242424), // Background hitam
               ),
+            ),
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(25.0),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16.0),
+                        child: Image.network(
+                          'assets/image/makeup.jpg',
+                          height: 300,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    // Konten lainnya
+                    Text(
+                      "L'Absolu Rouge Drama - Matte Lipstick",
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                    SizedBox(height: 8.0),
+                    Text(
+                      'LANCOME',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: 16.0),
+                    Text(
+                      "Where luxury meets bold. L'Absolu Rouge Drama Matte Lipstick is the ultimate bold lipstick powered by pure pigments for a vibrant and matte finish. Our new formula is enriched with rose extracts and hyaluronic acid to provide lips with lasting moisture and comfort. Available in 18 beautiful shades, the petal shaped bullet allows for ease of application for bold lipstick color in one swipe.",
+                      style: TextStyle(fontSize: 14, color: Colors.white),
+                    ),
 
-              // Brand List
-              Text(
-                "Brand List",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-              SizedBox(height: 16),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: List.generate(4, (index) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black12, blurRadius: 4),
+                    SizedBox(height: 16.0),
+                    Text(
+                      'Recommendation Colors',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+
+                    SizedBox(height: 8.0),
+                    Row(
+                      children: [
+                        ColorCircle(Colors.red[600]!),
+                        ColorCircle(Colors.red[400]!),
+                        ColorCircle(Colors.red[800]!),
                       ],
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text("Brand Logo"),
+                    SizedBox(height: 16.0),
+                    Text(
+                      'All colors',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
-                  );
-                }),
-              ),
-              SizedBox(height: 24),
-
-              // Product Grid
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: 4,
-                  itemBuilder: (context, index) {
-                    return ProductCard();
-                  },
+                    SizedBox(height: 8.0),
+                    Row(
+                      children: [
+                        ColorCircle(Colors.red[600]!),
+                        ColorCircle(Colors.red[400]!),
+                        ColorCircle(Colors.purple[600]!),
+                        ColorCircle(Colors.purple[400]!),
+                        ColorCircle(Colors.red[800]!),
+                      ],
+                    ),
+                    SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () {
+                            // Pindah ke halaman CameraPage ketika button di-tap
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    HomeScreen(), // Ganti dengan halaman yang sesuai
+                              ),
+                            );
+                          },
+                          icon: Icon(Icons.arrow_back),
+                          label: Text('Back',
+                              style: TextStyle(
+                                  color: Colors
+                                      .white)), // Menambahkan warna putih pada teks
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
+        bottomNavigationBar: BottomNavigation(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+            // You can use Navigator to navigate between different screens as needed.
+          },
+        ), // Add the BottomNavigation widget
       ),
     );
   }
 }
 
-class ProductCard extends StatelessWidget {
+class ColorCircle extends StatelessWidget {
+  final Color color;
+
+  ColorCircle(this.color);
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to the MakeupDetail page when the product is clicked
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MakeupDetail()),
-        );
-      },
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        elevation: 4,
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(
-                'https://storage.googleapis.com/a1aa/image/e930f6lGcDjlYE5NrhyWrkRvKLeh1IYwRuyEre3GUSqSyACPB.jpg',
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Shade",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "by Emina",
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4.0),
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
       ),
     );
   }

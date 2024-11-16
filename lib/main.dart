@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Verification App',
       debugShowCheckedModeBanner: false, // Disables the debug banner
-      home: CreateLogin(), // Start with the CreateLogin screen
+      home: MakeupDetail(), // Start with the CreateLogin screen
       // home: MakeupDetail(), // Start with the CreateLogin screen
       routes: {
         '/login': (context) => Login(), // Define the /login route
