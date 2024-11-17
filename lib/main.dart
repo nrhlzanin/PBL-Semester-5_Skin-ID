@@ -25,14 +25,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Verification App',
       debugShowCheckedModeBanner: false, // Disables the debug banner
-      home: CreateLogin(), // Start with the CreateLogin screen
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
-      // home: MakeupDetail(), // Start with the CreateLogin screen
+      // home: SkinIdentificationPage(), // Start with the CreateLogin screen
+      home: Home(), // Start with the CreateLogin screen
       routes: {
         '/login': (context) => Login(), // Define the /login route
         '/homescreen': (context) => HomeScreen(), // Define the /home route
         '/home': (context) => Home(), // Define the Home screen route
-        '/skin-identification': (context) => SkinIdentificationPage(), // Define the skin identification
+        '/skin-identification': (context) =>
+            SkinIdentificationPage(), // Define the skin identification
         // Add other routes if needed
       },
     );

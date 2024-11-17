@@ -148,96 +148,90 @@ class HomePage extends StatelessWidget {
               ],
             ),
             Container(
-              width: double.infinity, // Mengisi lebar penuh layar
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+              width: double.infinity, // Mengisi lebar penuh layar
               decoration: BoxDecoration(
                 color: Color(0xFF242424),
               ),
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 7.0),
                   Text(
-                    'Makeup ',
+                    'Makeup',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 30,
                       fontFamily: 'Playfair Display',
                       fontWeight: FontWeight.w700,
-                      height: 0.03,
+                      height: 1.2,
                     ),
                   ),
                   SizedBox(height: 15.0),
                   Text(
                     'Find makeup that suits you with choices from many brands around the world.',
-                    style:
-                        TextStyle(color: Colors.white), // Ensure text is white
+                    style: TextStyle(
+                        color: Colors.white), // Pastikan teks berwarna putih
+                  ),
+                  SizedBox(height: 15.0),
+                  // Filter Buttons Section
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        FilterButton(
+                            label: 'All',
+                            isSelected: true,
+                            textColor: Colors.white),
+                        SizedBox(width: 8.0),
+                        FilterButton(
+                            label: 'Lipstick', textColor: Colors.white),
+                        SizedBox(width: 8.0),
+                        FilterButton(
+                            label: 'Eyeliner', textColor: Colors.white),
+                        SizedBox(width: 8.0),
+                        FilterButton(label: 'Mascara', textColor: Colors.white),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 16.0),
-                  Row(
-                    children: [
-                      FilterButton(
-                          label: 'All',
-                          isSelected: true,
-                          textColor: Colors.white), // Text color set to white
-                      SizedBox(width: 8.0),
-                      FilterButton(
-                          label: 'Lipstick',
-                          textColor: Colors.white), // Text color set to white
-                      SizedBox(width: 8.0),
-                      FilterButton(
-                          label: 'Eyeliner',
-                          textColor: Colors.white), // Text color set to white
-                      SizedBox(width: 8.0),
-                      FilterButton(
-                          label: 'Mascara',
-                          textColor: Colors.white), // Text color set to white
-                    ],
-                  ),
-                  SizedBox(height: 16.0),
-                  GridView.count(
-                    crossAxisCount: 2,
+                  // Responsive GridView Section
+                  GridView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 16.0,
-                    mainAxisSpacing: 16.0,
-                    children: [
-                      // Menggunakan data yang didapatkan dari API atau data default
-                      ProductCard(
-                        imageUrl:
-                            'assets/image/makeup.jpg', // Gambar dari asset
-                        title: 'Nama Produk Tidak Ditemukan', // Nama produk
-                        brand: 'Brand Tidak Ditemukan', // Brand produk
-                      ),
-                      // Product lainnya dengan data yang sesuai dari API atau data default
-                      ProductCard(
-                        imageUrl:
-                            'assets/image/makeup.jpg', // Gambar placeholder dari asset
-                        title: 'Nama Produk Tidak Ditemukan', // Nama produk
-                        brand: 'Brand Tidak Ditemukan', // Brand produk
-                      ),
-                    ],
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).size.width > 600
+                          ? 3
+                          : 2, // 3 kolom untuk layar lebar, 2 kolom untuk layar kecil
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                    ),
+                    itemCount:
+                        4, // Menyesuaikan dengan jumlah produk yang Anda punya
+                    itemBuilder: (context, index) {
+                      return ProductCard(
+                        imageUrl: 'assets/image/makeup.jpg',
+                        title: 'Nama Produk Tidak Ditemukan',
+                        brand: 'Brand Tidak Ditemukan',
+                      );
+                    },
                   ),
                   SizedBox(height: 16.0),
-                  Row(
-                    children: [
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Action for browsing more
-                          },
-                          child: Text('Browse for more'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 255, 255, 255),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24.0),
-                            ),
-                          ),
+                  // Browse Button
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Action for browsing more
+                      },
+                      child: Text('Browse for more'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 255, 255, 255),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24.0),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                   SizedBox(height: 10.0),
                 ],
@@ -489,29 +483,47 @@ class ProductCard extends StatelessWidget {
         );
       },
       child: Card(
-        elevation: 8.0,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Image.asset(
-              imageUrl, // Menampilkan gambar dari asset
-              fit: BoxFit.cover,
-              height: 150, // Atur tinggi gambar sesuai kebutuhan
-              width: double.infinity, // Lebar gambar mengikuti lebar container
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+                child: Image.asset(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style:
-                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 14, // Adjusted font size
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Montserrat',
+                    ),
+                    maxLines: 1, // Ensures the title does not overflow
+                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
                   ),
+                  SizedBox(height: 4),
                   Text(
                     brand,
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 12, // Adjusted font size
+                      color: Colors.grey[700],
+                      fontFamily: 'Montserrat',
+                    ),
+                    maxLines: 1, // Ensures the brand does not overflow
+                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
                   ),
                 ],
               ),
@@ -549,21 +561,44 @@ class CommunityCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Image.network(imageUrl),
+          // Set a fixed height for the image
+          Container(
+            height: 150, // Fixed height for the image
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
+              image: DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Title with overflow handling
                 Text(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   title,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 4.0),
-                Text(subtitle),
+                // Subtitle with overflow handling
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 SizedBox(height: 4.0),
-                Text('By $author'),
+                // Author text
+                Text(
+                  'By $author',
+                  style: TextStyle(fontSize: 12),
+                ),
                 SizedBox(height: 8.0),
+                // Likes and comments section
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
