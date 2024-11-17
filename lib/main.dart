@@ -10,6 +10,7 @@ import 'package:skin_id/screen/makeup_Section.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/new_account_screen.dart';
 import 'package:skin_id/screen/notification_screen.dart';
+import 'package:skin_id/screen/skin_identification.dart';
 
 void main() {
   runApp(MyApp());
@@ -24,11 +25,13 @@ class MyApp extends StatelessWidget {
       title: 'Verification App',
       debugShowCheckedModeBanner: false, // Disables the debug banner
       home: CreateLogin(), // Start with the CreateLogin screen
+      // home: SkinIdentificationPage(), // Start with the CreateLogin screen
       // home: MakeupDetail(), // Start with the CreateLogin screen
       routes: {
         '/login': (context) => Login(), // Define the /login route
         '/homescreen': (context) => HomeScreen(), // Define the /home route
         '/home': (context) => Home(), // Define the Home screen route
+        '/skin-identification': (context) => SkinIdentificationPage(), // Define the skin identification
         // Add other routes if needed
       },
     );
