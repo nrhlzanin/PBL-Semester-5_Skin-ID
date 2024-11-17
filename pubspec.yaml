@@ -66,6 +66,8 @@ flutter:
     - assets/image/makeup.jpg
     - assets/image/Instagram_icon.png
     - assets/image/Logo-google-icon-PNG.png
+    - assets/image/avatar1.jpeg
+    - assets/image/avatar2.jpeg
     
 
   # An image asset can refer to one or more resolution-specific "variants", see

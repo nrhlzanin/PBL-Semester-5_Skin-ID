@@ -31,12 +31,12 @@ class BottomNavigation extends StatelessWidget {
             );
             break;
           case 1:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      CameraPage()), // Ganti `[]` dengan daftar kamera jika diperlukan
-            );
+            // Navigator.pushReplacement(
+            //   context,
+            //   MaterialPageRoute(
+            //       builder: (context) =>
+            //           CameraPage()), // Ganti `[]` dengan daftar kamera jika diperlukan
+            // );
             break;
           case 2:
             Navigator.pushReplacement(
@@ -52,8 +52,8 @@ class BottomNavigation extends StatelessWidget {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.camera_alt),
-          label: 'Camera',
+          icon: Icon(Icons.search),
+          label: 'Search',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
