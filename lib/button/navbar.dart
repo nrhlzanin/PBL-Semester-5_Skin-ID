@@ -12,6 +12,7 @@ class Navbar extends StatelessWidget {
       child: Column(
         children: <Widget>[
           // Foto Profil dan Nama Pengguna
+
           Container(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Row(
@@ -25,6 +26,7 @@ class Navbar extends StatelessWidget {
                         'assets/image/avatar1.jpeg'), // Ganti dengan foto profil dari sumber Anda
                   ),
                 ),
+
                 // Nama Pengguna
                 Expanded(
                   child: Text(
@@ -46,15 +48,6 @@ class Navbar extends StatelessWidget {
           ),
           // Drawer Header (judul sidebar)
 
-          Text(
-            'YourSkin-ID',
-            style: GoogleFonts.caveat(
-              color: Colors.black,
-              fontSize: 28,
-              fontWeight: FontWeight.w400,
-              height: 0.06,
-            ),
-          ),
           // Daftar menu
           ListTile(
             leading: Icon(Icons.home, color: Colors.white),

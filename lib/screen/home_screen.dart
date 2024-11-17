@@ -4,7 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http; // Import http package
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
-import 'package:skin_id/screen/makeup_detail.dart'; // Import CameraPage
+import 'package:skin_id/screen/makeup_detail.dart';
+import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
 
 void main() {
   runApp(HomeScreen());
@@ -69,25 +70,13 @@ class HomePage extends StatelessWidget {
         ),
         actions: [
           Container(
-            width: 40,
-            height: 40,
-            padding: const EdgeInsets.all(1),
-            clipBehavior: Clip.antiAlias,
-            decoration: ShapeDecoration(
-              color: Color(0xFF242424),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50),
-              ),
-            ),
             child: IconButton(
-              icon: Icon(Icons.camera_alt),
-              color: Colors.white,
+              icon: Icon(Icons.notifications),
+              color: Colors.black,
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          CameraPage()), // Ganti `[]` dengan daftar kamera jika diperlukan
+                  MaterialPageRoute(builder: (context) => NotificationScreen()),
                 );
               },
             ),

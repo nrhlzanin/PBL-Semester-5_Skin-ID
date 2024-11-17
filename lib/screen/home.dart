@@ -1,21 +1,14 @@
-// lib/home_screen.dart
-// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api, prefer_const_constructors_in_immutables
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:skin_id/button/bottom_navigation.dart';
-import 'package:skin_id/button/top_widget.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http; // Import http package
+import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/face-scan_screen.dart';
+import 'package:skin_id/screen/makeup_detail.dart';
+import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
 
 void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Home(),
-    );
-  }
+  runApp(Home());
 }
 
 class Home extends StatefulWidget {
@@ -25,204 +18,410 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
+  List<dynamic> _makeupProducts = [];
 
-  // List of screens for each bottom navigation item
-  final List<Widget> _screens = [
-    HomeScreen(),
-    ExploreScreen(),
-    ProfileScreen(),
-  ];
+  Future<List<dynamic>> fetchMakeupProducts() async {
+    final url =
+        'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+    try {
+      final response = await http.get(Uri.parse(url));
 
-  void _onTap(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+      if (response.statusCode == 200) {
+        // Parsing JSON dari response API
+        final List<dynamic> data = json.decode(response.body);
+        return data;
+      } else {
+        throw Exception('Failed to load makeup products');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      return [];
+    }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'YourSkin-ID',
+      theme: ThemeData(
+        canvasColor: Color(0xFFFFE8D4),
+        fontFamily: 'caveat',
+      ),
+      debugShowCheckedModeBanner: false, // Remove debug banner
+      home: HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TopWidget(), // Using custom TopWidget
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: _onTap,
-      ),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SkinToneSection(),
-          MakeUpSection(),
-          SocialMediaSection(),
-        ],
-      ),
-    );
-  }
-}
-
-class ExploreScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text("Explore Screen"),
-    );
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text("Profile Screen"),
-    );
-  }
-}
-
-class SkinToneSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      color: Colors.orange[100],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Your Skin Tone is : Medium",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      drawer: Navbar(),
+      appBar: AppBar(
+        title: Text(
+          'YourSkin-ID',
+          style: GoogleFonts.caveat(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w400,
+            height: 0.06,
           ),
-          SizedBox(height: 8),
-          Text(
-            "Description and Characteristics:",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          Text(
-            "You have medium tone skin. This skin reacts to sunlight mildly, burns gradually, and tans to olive.",
-            style: TextStyle(fontSize: 14),
-          ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(
-              6,
-              (index) => Expanded(
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4),
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.orange[200 + (index * 100)],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
+        ),
+        actions: [
+          Container(
+            child: IconButton(
+              icon: Icon(Icons.notifications),
+              color: Colors.black,
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => NotificationScreen()),
+                );
+              },
             ),
           ),
         ],
       ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Check Your Skin Tone',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 30,
+                fontFamily: 'Playfair Display',
+                fontWeight: FontWeight.w700,
+                height: 0,
+                letterSpacing: 0.03,
+              ),
+            ),
+            Row(
+              children: [
+                CameraButton(),
+                SizedBox(width: 20),
+                Text(
+                  'Use me!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SizedBox(width: 8.0),
+                Expanded(
+                  child: Text(
+                    'Identify your skin tone using our AI for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 17), // Set color of the text
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 32.0),
+            Row(
+              children: [
+                AvatarImage(imageUrl: "assets/image/avatar1.jpeg"),
+                SizedBox(width: 16.0),
+                AvatarImage(imageUrl: "assets/image/avatar2.jpeg"),
+              ],
+            ),
+            SizedBox(height: 16.0),
+            Row(
+              children: [
+                SkinToneColor(color: Color(0xFFF4C2C2)),
+                SkinToneColor(color: Color(0xFFE6A57E)),
+                SkinToneColor(color: Color(0xFFD2B48C)),
+                SkinToneColor(color: Color(0xFFC19A6B)),
+                SkinToneColor(color: Color(0xFF8D5524)),
+                SkinToneColor(color: Color(0xFF7D4B3E)),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkinIdentificationCard(),
+              ],
+            ),
+            Container(
+              width: double.infinity, // Mengisi lebar penuh layar
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+              decoration: BoxDecoration(
+                color: Color(0xFF242424),
+              ),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 7.0),
+                  Text(
+                    'Makeup ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontFamily: 'Playfair Display',
+                      fontWeight: FontWeight.w700,
+                      height: 0.03,
+                    ),
+                  ),
+                  SizedBox(height: 15.0),
+                  Text(
+                    'Find makeup that suits you with choices from many brands around the world.',
+                    style:
+                        TextStyle(color: Colors.white), // Ensure text is white
+                  ),
+                  SizedBox(height: 16.0),
+                  Row(
+                    children: [
+                      FilterButton(
+                          label: 'All',
+                          isSelected: true,
+                          textColor: Colors.white), // Text color set to white
+                      SizedBox(width: 8.0),
+                      FilterButton(
+                          label: 'Lipstick',
+                          textColor: Colors.white), // Text color set to white
+                      SizedBox(width: 8.0),
+                      FilterButton(
+                          label: 'Eyeliner',
+                          textColor: Colors.white), // Text color set to white
+                      SizedBox(width: 8.0),
+                      FilterButton(
+                          label: 'Mascara',
+                          textColor: Colors.white), // Text color set to white
+                    ],
+                  ),
+                  SizedBox(height: 16.0),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 16.0,
+                    mainAxisSpacing: 16.0,
+                    children: [
+                      // Menggunakan data yang didapatkan dari API atau data default
+                      ProductCard(
+                        imageUrl:
+                            'assets/image/makeup.jpg', // Gambar dari asset
+                        title: 'Nama Produk Tidak Ditemukan', // Nama produk
+                        brand: 'Brand Tidak Ditemukan', // Brand produk
+                      ),
+                      // Product lainnya dengan data yang sesuai dari API atau data default
+                      ProductCard(
+                        imageUrl:
+                            'assets/image/makeup.jpg', // Gambar placeholder dari asset
+                        title: 'Nama Produk Tidak Ditemukan', // Nama produk
+                        brand: 'Brand Tidak Ditemukan', // Brand produk
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.0),
+                  Row(
+                    children: [
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Action for browsing more
+                          },
+                          child: Text('Browse for more'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 255, 255, 255),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.0),
+                ],
+              ),
+            ),
+            Text(
+              'Inspirations from the community',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 30,
+                fontFamily: 'Playfair Display',
+                fontWeight: FontWeight.w700,
+                height: 4,
+              ),
+            ),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              children: [
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
+                  title: 'Tutorial make up shade',
+                  subtitle: 'Tutorial make up',
+                  author: 'Beauty',
+                  likes: 2017,
+                  comments: 333,
+                ),
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
+                  title: 'Lumme brand new products',
+                  subtitle: 'Lumme',
+                  author: 'Women',
+                  likes: 1115,
+                  comments: 555,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class MakeUpSection extends StatelessWidget {
+class CameraButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Make Up Section",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+    return Container(
+      width: 60,
+      height: 60,
+      padding: const EdgeInsets.all(1),
+      clipBehavior: Clip.antiAlias,
+      decoration: ShapeDecoration(
+        color: Color(0xFF242424),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(Icons.camera_alt),
+        color: Colors.white,
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    CameraPage()), // Ganti `[]` dengan daftar kamera jika diperlukan
+          );
+        },
+      ),
+    );
+  }
+}
+
+class AvatarImage extends StatelessWidget {
+  final String imageUrl;
+  const AvatarImage({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 64.0,
+      height: 64.0,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(imageUrl),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+}
+
+class SkinToneColor extends StatelessWidget {
+  final Color color;
+  const SkinToneColor({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      color: color,
+      margin: EdgeInsets.all(4.0),
+    );
+  }
+}
+
+class SkinIdentificationCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFE8D4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset(0, 4),
           ),
-          SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
+        ],
+      ),
+      width: 800,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Start of added content (from the second code)
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Color(0xFF2B2B2B),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
               children: [
-                MakeUpItem('Shade'),
-                MakeUpItem('Lipstik'),
-                MakeUpItem('Maskara'),
-                MakeUpItem('Eyeliner'),
+                Text(
+                  'Your Skin Tone Is',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Colors.white,
+                ),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSkinToneColor(Color(0xFFF5E4D7)),
+                    _buildSkinToneColor(Color(0xFFE0C4A8)),
+                    _buildSkinToneColor(Color(0xFFC49A6C)),
+                    _buildSkinToneColor(Color(0xFFA66B3F)),
+                    _buildSkinToneColor(Color(0xFF7B3F1B)),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'White',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class MakeUpItem extends StatelessWidget {
-  final String label;
-  MakeUpItem(this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(right: 8),
-      width: 80,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.image, size: 40, color: Colors.grey),
-          SizedBox(height: 8),
-          Text(label),
-        ],
-      ),
-    );
-  }
-}
-
-class SocialMediaSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+          SizedBox(height: 16),
           Text(
-            "Social Media Section",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          SizedBox(height: 8),
-          Column(
-            children: [
-              SocialMediaPost(
-                username: "User123",
-                content: "Tutorial make up shade warna netral",
-                likes: 2305,
-                comments: 105,
-              ),
-              SizedBox(height: 16),
-              SocialMediaPost(
-                username: "Sbeauty",
-                content: "Cara memilih skin care yang baik sesuai jenis kulit",
-                likes: 4530,
-                comments: 300,
-              ),
-            ],
+            'This skin has higher skin moisture, low skin elasticity, good gloss, low melanin and erythema levels. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.',
+            style: TextStyle(
+              color: Color(0xFF2B2B2B),
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -230,59 +429,162 @@ class SocialMediaSection extends StatelessWidget {
   }
 }
 
-class SocialMediaPost extends StatelessWidget {
-  final String username;
-  final String content;
+Widget _buildSkinToneColor(Color color) {
+  return Container(
+    width: 32,
+    height: 32,
+    decoration: BoxDecoration(
+      color: color,
+      border: Border.all(color: Colors.white),
+    ),
+  );
+}
+
+class FilterButton extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  const FilterButton({
+    required this.label,
+    this.isSelected = false,
+    required Color textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {},
+      child: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isSelected
+            ? const Color.fromARGB(255, 186, 190, 199)
+            : const Color.fromARGB(255, 255, 255, 255),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+    );
+  }
+}
+
+class ProductCard extends StatelessWidget {
+  final String imageUrl;
+  final String title;
+  final String brand;
+
+  const ProductCard({
+    required this.imageUrl,
+    required this.title,
+    required this.brand,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MakeupDetail(),
+          ),
+        );
+      },
+      child: Card(
+        elevation: 8.0,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        child: Column(
+          children: [
+            Image.asset(
+              imageUrl, // Menampilkan gambar dari asset
+              fit: BoxFit.cover,
+              height: 150, // Atur tinggi gambar sesuai kebutuhan
+              width: double.infinity, // Lebar gambar mengikuti lebar container
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Text(
+                    title,
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    brand,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CommunityCard extends StatelessWidget {
+  final String imageUrl;
+  final String title;
+  final String subtitle;
+  final String author;
   final int likes;
   final int comments;
 
-  SocialMediaPost({
-    required this.username,
-    required this.content,
+  const CommunityCard({
+    required this.imageUrl,
+    required this.title,
+    required this.subtitle,
+    required this.author,
     required this.likes,
     required this.comments,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: Offset(0, 3),
-          ),
-        ],
+    return Card(
+      elevation: 8.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            content,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(username),
-              Row(
-                children: [
-                  Icon(Icons.thumb_up, color: Colors.grey),
-                  SizedBox(width: 4),
-                  Text('$likes'),
-                  SizedBox(width: 8),
-                  Icon(Icons.comment, color: Colors.grey),
-                  SizedBox(width: 4),
-                  Text('$comments'),
-                ],
-              ),
-            ],
+          Image.network(imageUrl),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4.0),
+                Text(subtitle),
+                SizedBox(height: 4.0),
+                Text('By $author'),
+                SizedBox(height: 8.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.thumb_up, size: 16),
+                        SizedBox(width: 4.0),
+                        Text('$likes'),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.comment, size: 16),
+                        SizedBox(width: 4.0),
+                        Text('$comments'),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
