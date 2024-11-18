@@ -161,7 +161,9 @@ class _LoginAccountState extends State<Login> {
                           backgroundColor: Colors.white,
                           side: BorderSide(color: Colors.grey),
                           padding: EdgeInsets.symmetric(
-                              vertical: 13, horizontal: 142),
+                            vertical: 13,
+                            horizontal: 73,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
