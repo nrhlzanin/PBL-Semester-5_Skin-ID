@@ -1,5 +1,7 @@
 // lib/bottom_navigation.dart
 
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
 import 'package:skin_id/screen/account_screen.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';

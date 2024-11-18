@@ -1,3 +1,5 @@
+import 'package:google_fonts/google_fonts.dart';
+import 'package:skin_id/button/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
 
@@ -21,13 +23,15 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Navbar(),
       appBar: AppBar(
-        backgroundColor: Colors.black,
         title: Text(
           'YourSkin-ID',
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.bold,
+          style: GoogleFonts.caveat(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w400,
+            height: 0.06,
           ),
         ),
         actions: [

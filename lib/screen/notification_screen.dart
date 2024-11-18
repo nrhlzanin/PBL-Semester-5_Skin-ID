@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
+import 'package:skin_id/button/navbar.dart';
 
 class NotificationScreen extends StatefulWidget {
   @override
@@ -10,19 +11,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
   // List of dummy notifications to display on the screen
   final List<Map<String, String>> notifications = [
     {
-      'title': 'New Message',
-      'subtitle': 'You have received a new message.',
-      'time': '2 min ago',
+      'title': 'Dermina just add new product you might interested',
+      'subtitle': '',
+      'time': '',
     },
     {
-      'title': 'Order Update',
-      'subtitle': 'Your order #1234 has been shipped.',
-      'time': '1 hour ago',
+      'title': 'Herniawan liked your video',
+      'subtitle': '',
+      'time': '',
     },
     {
-      'title': 'Reminder',
-      'subtitle': 'Don\'t forget your meeting at 3 PM.',
-      'time': '3 hours ago',
+      'title': 'ZealinaaA liked your video',
+      'subtitle': '',
+      'time': '',
+    },
+    {
+      'title': 'Thoriq_123 followed you',
+      'subtitle': '',
+      'time': '',
     },
   ];
 
@@ -38,40 +44,40 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Navbar(),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(0.20, -0.98),
-            end: Alignment(-0.2, 0.98),
-            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C), Color(0xFFFEE1CC)],
-          ),
+          color: Colors.white, 
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Row with Back Button and Search Icon
+            // Header Notification
             Container(
               width: double.infinity,
               height: 80,
-              padding:
-                  const EdgeInsets.only(top: 40.0, left: 16.0, right: 16.0),
+              padding: const EdgeInsets.only(top: 40.0, left: 16.0, right: 16.0),
               decoration: BoxDecoration(color: Colors.white),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: Color(0xFFFCB77A),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
+                  Builder(
+                    builder: (context) {
+                      return IconButton(
+                        icon: Icon(
+                          Icons.menu,
+                          color: Colors.black,
+                        ),
+                        onPressed: () {
+                          Scaffold.of(context).openDrawer();
+                        },
+                      );
                     },
                   ),
                   Text(
-                    'Notifications',
+                    'Notification',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -81,7 +87,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   IconButton(
                     icon: Icon(
                       Icons.search,
-                      color: Color(0xFFFCB77A),
+                      color: Colors.black,
                     ),
                     onPressed: () {
                       // Add search functionality here
@@ -118,12 +124,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Color(0xFFFCB77A),
+                            color: Colors.grey.shade300,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.notifications,
-                            color: Colors.white,
+                            color: Colors.black,
                             size: 20,
                           ),
                         ),
@@ -140,22 +146,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   color: Colors.black87,
                                 ),
                               ),
-                              SizedBox(height: 5),
-                              Text(
-                                notification['subtitle']!,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
+                              if (notification['subtitle']!.isNotEmpty)
+                                SizedBox(height: 5),
+                              if (notification['subtitle']!.isNotEmpty)
+                                Text(
+                                  notification['subtitle']!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 5),
-                              Text(
-                                notification['time']!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.black38,
+                              if (notification['time']!.isNotEmpty)
+                                SizedBox(height: 5),
+                              if (notification['time']!.isNotEmpty)
+                                Text(
+                                  notification['time']!,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black38,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
