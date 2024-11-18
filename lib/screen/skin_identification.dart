@@ -12,7 +12,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   String skinTone = "Light"; // Contoh data, bisa diatur dari hasil prediksi
   String skinDescription =
       "Your skin has higher skin moisture, low skin elasticity, good sebum, low moisture, and uneven texture. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.";
-  int _currentIndex = 0; // Tambahkan variabel ini
+  int _currentIndex = 0;
 
   void _onTabTapped(int index) {
     setState(() {
@@ -31,17 +31,10 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
             color: Colors.black,
             fontSize: 28,
             fontWeight: FontWeight.w400,
-            height: 0.06,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              // Tambahkan fungsi jika diperlukan
-            },
-          ),
-        ],
+        backgroundColor: Colors.orange[200],
+        iconTheme: IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -71,6 +64,17 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                         fontFamily: 'Montserrat',
                       ),
                     ),
+                    SizedBox(height: 16.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildSkinToneColor(Color(0xFFF5E4D7)),
+                          _buildSkinToneColor(Color(0xFFE0C4A8)),
+                          _buildSkinToneColor(Color(0xFFC49A6C)),
+                          _buildSkinToneColor(Color(0xFFA66B3F)),
+                          _buildSkinToneColor(Color(0xFF7B3F1B)),
+                        ],
+                      ),
                     SizedBox(height: 10),
                     Container(
                       width: 150,
@@ -167,7 +171,8 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           // Logika filter dapat ditambahkan di sini
         },
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.black, backgroundColor: Colors.orange[200],
+          foregroundColor: Colors.black,
+          backgroundColor: Colors.orange[200],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -229,4 +234,15 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       ),
     );
   }
+}
+
+Widget _buildSkinToneColor(Color color) {
+  return Container(
+    width: 32,
+    height: 32,
+    decoration: BoxDecoration(
+      color: color,
+      border: Border.all(color: Colors.white),
+    ),
+  );
 }
