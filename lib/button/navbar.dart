@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:skin_id/screen/account_screen.dart';
+import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/notification_screen.dart';
+import 'package:skin_id/screen/account_screen.dart';
+import 'package:skin_id/screen/skin_identification.dart';
 
 class Navbar extends StatelessWidget {
   @override
@@ -53,7 +55,10 @@ class Navbar extends StatelessWidget {
                   leading: Icon(Icons.home, color: Colors.white),
                   title: Text('Home', style: TextStyle(color: Colors.white)),
                   onTap: () {
-                    // Action when Home item is tapped
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Home()),
+                    );
                   },
                 ),
                 ListTile(
@@ -71,7 +76,10 @@ class Navbar extends StatelessWidget {
                   title: Text('Rekomendasi',
                       style: TextStyle(color: Colors.white)),
                   onTap: () {
-                    // Action when Rekomendasi item is tapped
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => SkinIdentificationPage()),
+                    );
                   },
                 ),
                 ListTile(

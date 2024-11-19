@@ -22,7 +22,7 @@ class _HomeState extends State<Home> {
 
   Future<List<dynamic>> fetchMakeupProducts() async {
     final url =
-        'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+        'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
     try {
       final response = await http.get(Uri.parse(url));
 
