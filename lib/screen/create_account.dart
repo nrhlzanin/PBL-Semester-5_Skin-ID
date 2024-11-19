@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/login.dart';
 
 void main() {
@@ -13,6 +15,64 @@ class CreateAccount extends StatefulWidget {
 
 class _CreateAccountState extends State<CreateAccount> {
   bool _isAccountCreated = false; // Track if account is created
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  Future<void> registerUser() async {
+    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+      print('Error: Semua field harus diisi!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('All fields are required')),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.1.7:8000/api/user/register/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'email': email,
+          'password': password,
+        }),
+      );
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        // Success: Account Created
+        setState(() {
+          _isAccountCreated = true;
+        });
+      } else {
+        final data = jsonDecode(response.body);
+        print('Error: ${data['error']}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['error'] ?? 'Registration failed')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error connecting to server')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +129,7 @@ class _CreateAccountState extends State<CreateAccount> {
                       ),
                       SizedBox(height: 20),
                       TextField(
+                        controller: _usernameController,
                         decoration: InputDecoration(
                           labelText: 'Username',
                           hintText: 'Type your username',
@@ -77,6 +138,7 @@ class _CreateAccountState extends State<CreateAccount> {
                       ),
                       SizedBox(height: 20),
                       TextField(
+                        controller: _emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
                           hintText: 'Enter your email',
@@ -85,6 +147,7 @@ class _CreateAccountState extends State<CreateAccount> {
                       ),
                       SizedBox(height: 20),
                       TextField(
+                        controller: _passwordController,
                         decoration: InputDecoration(
                           labelText: 'Password',
                           hintText: 'Type your password',
@@ -94,6 +157,7 @@ class _CreateAccountState extends State<CreateAccount> {
                       ),
                       SizedBox(height: 20),
                       TextField(
+                        controller: _confirmPasswordController,
                         decoration: InputDecoration(
                           labelText: 'Confirm password',
                           hintText: 'Type your password',
@@ -103,12 +167,7 @@ class _CreateAccountState extends State<CreateAccount> {
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _isAccountCreated =
-                                true; // Show verification screen
-                          });
-                        },
+                        onPressed: registerUser,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           padding: EdgeInsets.symmetric(
@@ -140,7 +199,7 @@ class _CreateAccountState extends State<CreateAccount> {
                           backgroundColor: Colors.white,
                           side: BorderSide(color: Colors.grey),
                           padding: EdgeInsets.symmetric(
-                              vertical: 13, horizontal: 142),
+                              vertical: 13, horizontal: 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),

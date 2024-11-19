@@ -140,8 +140,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'teamid207@gmail.com'
-# EMAIL_HOST_PASSWORD = 'pmts fuik miyk ipoq'
-EMAIL_HOST_PASSWORD = 'skintone'
+EMAIL_HOST_PASSWORD = 'pmts fuik miyk ipoq'
+# EMAIL_HOST_PASSWORD = 'skintone'
 DEFAULT_FROM_EMAIL = 'teamid207@gmail.com'
 
 # URL Frontend

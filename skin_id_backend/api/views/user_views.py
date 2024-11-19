@@ -1,9 +1,10 @@
-from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.conf import settings
-from django.urls import reverse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -17,54 +18,32 @@ import string
 
 @api_view(['POST'])
 def register_user(request):
-    if request.method == 'POST':
-        # Ambil data dari request
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email')
+    username = request.data.get('username')
+    password = request.data.get('password')
+    email = request.data.get('email')
 
-        # Validasi input
-        if not username or not password or not email:
-            return Response({"error": "Username, email, dan password diperlukan"}, status=status.HTTP_400_BAD_REQUEST)
+    if not username or not password or not email:
+        return Response({"error": "Username, email, dan password diperlukan"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Cek apakah username sudah ada
-        if Pengguna.objects.filter(username=username).exists():
-            return Response({'error': 'Username sudah digunakan'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Cek apakah email sudah digunakan
-        if Pengguna.objects.filter(email=email).exists():
-            return Response({"error": "Email already used"}, status=status.HTTP_400_BAD_REQUEST)
+    if Pengguna.objects.filter(username=username).exists():
+        return Response({"error": "Username sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Membuat pengguna baru
-        role = Role.objects.get(role_id = '1')
-        
-        token = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
-        pengguna = Pengguna.objects.create(
-            username=username, 
-            password=make_password(password), 
-            email=email,
-            role_id=role,
-            # verification_token = token,
-            is_verified = False
-        )
+    if Pengguna.objects.filter(email=email).exists():
+        return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Generate verification token
-        verification_link = f"http://192.168.1.7:8000/api/verify/{token}"
-        # Kirim Email Verifikasi
-        send_mail(
-            'Verifikasi Akun Anda',
-            f'Klik link berikut untuk verifikasi akun Anda: {verification_link}',
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
-        # Kembalikan response sukses dengan data pengguna
-        return Response({
-            'username': pengguna.username,
-            'email': pengguna.email,
-            'role': pengguna.role_id,
-            'message': 'User berhasil dibuat. Tolong verifikasi email'
-        }, status=status.HTTP_201_CREATED)
+    role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
+
+    pengguna = Pengguna.objects.create(
+        username=username,
+        password=make_password(password),
+        email=email,
+        role_id=role,
+    )
+
+    send_verification_email(pengguna)
+
+    return Response({"message": "Registrasi berhasil. Silakan verifikasi email Anda."}, status=status.HTTP_201_CREATED)
+
 
 @api_view(['POST'])
 def login_user(request):
@@ -116,3 +95,37 @@ def verify_email(request, token):
         return Response({'message': 'Account verified successfully'}, status=status.HTTP_200_OK)
     except Pengguna.DoesNotExist:
         return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+def send_verification_email(user):
+    """
+    Fungsi untuk mengirim email verifikasi ke pengguna
+    """
+    # Ambil email pengguna
+    user_email = user.email
+
+    # Buat token verifikasi
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+    # Buat URL untuk link verifikasi
+    verification_link = f"http://192.168.1.7:8000/api/verify-email/{uid}/{token}/"
+
+    # Subjek dan isi email
+    subject = 'Verifikasi Akun Skin-ID'
+    message = f'''
+    Halo {user.username},
+    Terima kasih telah mendaftar di aplikasi kami.
+    Silakan klik link berikut untuk memverifikasi akun Anda:
+    {verification_link}
+
+    Jika Anda tidak merasa mendaftar di aplikasi ini, abaikan pesan ini.
+    '''
+
+    # Kirim email
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,  # Email pengirim (default di settings.py)
+        [user_email],                # Email penerima
+        fail_silently=False          # Jika ada error, jangan abaikan
+    )
