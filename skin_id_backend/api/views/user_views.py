@@ -25,7 +25,7 @@ def register_user(request):
 
         # Validasi input
         if not username or not password or not email:
-            raise ValidationError("Username, email, dan password diperlukan")
+            return Response({"error": "Username, email, dan password diperlukan"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Cek apakah username sudah ada
         if Pengguna.objects.filter(username=username).exists():
@@ -37,6 +37,7 @@ def register_user(request):
 
         # Membuat pengguna baru
         role = Role.objects.get(role_id = '1')
+        
         token = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
         pengguna = Pengguna.objects.create(
             username=username, 
@@ -48,7 +49,7 @@ def register_user(request):
         )
 
         # Generate verification token
-        verification_link = f"http://localhost:8000/api/verify/{token}"
+        verification_link = f"http://192.168.1.7:8000/api/verify/{token}"
         # Kirim Email Verifikasi
         send_mail(
             'Verifikasi Akun Anda',

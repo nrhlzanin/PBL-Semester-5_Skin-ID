@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinLengthValidator
+from django.core.validators import MaxLengthValidator
+
 import uuid
 
 # Model Brands
@@ -64,7 +67,7 @@ class Role(models.Model):
 class Pengguna(models.Model):
     user_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=50, unique=True)
-    password = models.CharField(max_length=255)
+    password = models.CharField(max_length=255, validators=[MinLengthValidator(6)])
     email = models.EmailField(max_length=100, unique=True)
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
     role_id = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )

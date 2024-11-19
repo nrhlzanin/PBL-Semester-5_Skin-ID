@@ -11,9 +11,10 @@ import joblib
 import mediapipe as mp
 from sklearn.impute import SimpleImputer
 from imblearn.over_sampling import SMOTE
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 # Directory dataset
-dataset_dir = r'E:\ML model\ML PBL\mst-e_data'
+dataset_dir = r'F:\Dataset PBL\mst-e_data\mst-e_data'
 
 data = []
 labels = []
@@ -157,6 +158,13 @@ best_knn = random_search.best_estimator_
 y_pred = best_knn.predict(X_test)
 final_accuracy = accuracy_score(y_test, y_pred)
 print(f"Final Test Accuracy with Best Parameters from Randomized Search: {final_accuracy * 100:.2f}%")
+
+cm = confusion_matrix(y_test, y_pred)
+
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_encoder.classes_)
+disp.plot(cmap='Blues')
+plt.title('Confusion Matrix for KNN Skin Tone Model')
+plt.show()
 
 joblib.dump(best_knn, 'knn_skin_tone_model_hsv_optimized_smote.pkl')
 joblib.dump(scaler, 'scaler_model_hsv_optimized_smote.pkl')
