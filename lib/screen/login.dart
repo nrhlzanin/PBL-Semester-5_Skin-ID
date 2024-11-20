@@ -15,7 +15,7 @@ class _LoginAccountState extends State<Login> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _verificationCodeController =
       TextEditingController();
-  bool _isVerificationStep =
+  final bool _isVerificationStep =
       false; // Flag to toggle between form and verification step
 
   String? _validateEmail(String? value) {

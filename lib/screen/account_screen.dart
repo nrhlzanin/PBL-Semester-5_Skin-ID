@@ -183,11 +183,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _saveChanges,
-                child: Text('Save Changes'),
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   backgroundColor: Color(0xFFD6843C), // Button color
                 ),
+                child: Text('Save Changes'),
               ),
             ],
           ),

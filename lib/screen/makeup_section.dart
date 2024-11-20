@@ -195,7 +195,7 @@ class MakeupSection extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
-                                Container(
+                                SizedBox(
                                   width: double.infinity,
                                   height: 48,
                                   child: Column(

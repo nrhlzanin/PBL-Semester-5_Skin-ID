@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_unnecessary_containers
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,11 +19,11 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _currentIndex = 0;
-  List<dynamic> _makeupProducts = [];
+  final int _currentIndex = 0;
+  final List<dynamic> _makeupProducts = [];
 
   Future<List<dynamic>> fetchMakeupProducts() async {
-    final url =
+    const url =
         'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
     try {
       final response = await http.get(Uri.parse(url));
@@ -223,7 +225,6 @@ class HomePage extends StatelessWidget {
                       onPressed: () {
                         // Action for browsing more
                       },
-                      child: Text('Browse for more'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             const Color.fromARGB(255, 255, 255, 255),
@@ -231,6 +232,7 @@ class HomePage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(24.0),
                         ),
                       ),
+                      child: Text('Browse for more'),
                     ),
                   ),
                   SizedBox(height: 10.0),
@@ -447,7 +449,6 @@ class FilterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () {},
-      child: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: isSelected
             ? const Color.fromARGB(255, 186, 190, 199)
@@ -456,6 +457,7 @@ class FilterButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
       ),
+      child: Text(label),
     );
   }
 }

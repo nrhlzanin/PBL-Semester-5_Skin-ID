@@ -1,7 +1,6 @@
 // ignore_for_file: unused_import, duplicate_import
 
 import 'dart:typed_data'; // Untuk bekerja dengan Uint8List
-import 'dart:ui';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';

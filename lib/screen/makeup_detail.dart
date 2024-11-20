@@ -24,7 +24,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
 
   // Fetch makeup products from the API
   Future<List<dynamic>> fetchMakeupProducts() async {
-    final url = 'http://127.0.0.1:8000/api/makeup-products/';
+    const url = 'http://127.0.0.1:8000/api/makeup-products/';
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -206,7 +206,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
 class ColorCircle extends StatelessWidget {
   final Color color;
 
-  ColorCircle(this.color);
+  const ColorCircle(this.color);
 
   @override
   Widget build(BuildContext context) {
