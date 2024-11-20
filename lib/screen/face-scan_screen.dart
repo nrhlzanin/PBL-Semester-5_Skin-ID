@@ -68,8 +68,7 @@ class _CameraPageState extends State<CameraPage> {
   Future<http.Response> _sendImageToServer(Uint8List imageBytes) async {
     final url = Uri.parse(
         // 'http://192.168.64.224:8000/api/user/predict/'
-        'http://192.168.56.217:8000/api/user/predict/'
-        ); //Masih kirim ke local
+        'http://192.168.56.217:8000/api/user/predict/'); //Masih kirim ke local
     final request = http.MultipartRequest('POST', url);
     request.files.add(
       http.MultipartFile.fromBytes('image', imageBytes, filename: 'skin.jpg'),
@@ -146,7 +145,7 @@ class _CameraPageState extends State<CameraPage> {
           gradient: LinearGradient(
             begin: Alignment(0.20, -0.98),
             end: Alignment(-0.2, 0.98),
-            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C)],
+            colors: [Color.fromARGB(255, 255, 255, 255)],
           ),
         ),
         child: Stack(

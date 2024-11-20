@@ -59,16 +59,16 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                       ),
                     ),
                     SizedBox(height: 16.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildSkinToneColor(Color(0xFFF5E4D7)),
-                          _buildSkinToneColor(Color(0xFFE0C4A8)),
-                          _buildSkinToneColor(Color(0xFFC49A6C)),
-                          _buildSkinToneColor(Color(0xFFA66B3F)),
-                          _buildSkinToneColor(Color(0xFF7B3F1B)),
-                        ],
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildSkinToneColor(Color(0xFFF5E4D7)),
+                        _buildSkinToneColor(Color(0xFFE0C4A8)),
+                        _buildSkinToneColor(Color(0xFFC49A6C)),
+                        _buildSkinToneColor(Color(0xFFA66B3F)),
+                        _buildSkinToneColor(Color(0xFF7B3F1B)),
+                      ],
+                    ),
                     SizedBox(height: 10),
                     Container(
                       width: 150,
