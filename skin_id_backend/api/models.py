@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinLengthValidator
+from django.core.validators import MaxLengthValidator
+from django.contrib.auth.models import AbstractUser
 import uuid
 
 # Model Brands
@@ -64,7 +67,7 @@ class Role(models.Model):
 class Pengguna(models.Model):
     user_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=50, unique=True)
-    password = models.CharField(max_length=255)
+    password = models.CharField(max_length=255, validators=[MinLengthValidator(6)])
     email = models.EmailField(max_length=100, unique=True)
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
     role_id = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
@@ -72,12 +75,26 @@ class Pengguna(models.Model):
     verification_token = models.UUIDField(default=None, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    last_login = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    def get_email_field_name(self):
+        return "email"
+    
     def __str__(self):
         return self.username
     class Meta:
         db_table = 'Pengguna'
-    
+
+# class Pengguna(AbstractUser):
+#     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
+#     role_id = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna')
+#     is_verified = models.BooleanField(default=False)
+#     verification_token = models.UUIDField(default=None, null=True)
+
+#     class Meta:
+#         db_table = 'Pengguna'
+        
 # Model Products
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
