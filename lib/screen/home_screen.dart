@@ -91,21 +91,27 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Check Your Skin Tone',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 30,
-                fontFamily: 'Playfair Display',
-                fontWeight: FontWeight.w700,
-                height: 0,
-                letterSpacing: 0.03,
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Check Your Skin Tone',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 30,
+                  fontFamily: 'Playfair Display',
+                  fontWeight: FontWeight.w700,
+                  height: 0,
+                  letterSpacing: 0.03,
+                ),
               ),
             ),
             Row(
               children: [
-                CameraButton(),
-                SizedBox(width: 20),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: CameraButton(),
+                ),
+                SizedBox(width: 5),
                 Text(
                   'Use me!',
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -116,33 +122,45 @@ class HomePage extends StatelessWidget {
               children: [
                 SizedBox(width: 8.0),
                 Expanded(
-                  child: Text(
-                    'Identify your skin tone using our AI for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 17), // Set color of the text
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Identify your skin tone using our AI for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 17), // Set color of the text
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 32.0),
+            SizedBox(height: 2.0),
             Row(
               children: [
-                AvatarImage(imageUrl: "assets/image/avatar1.jpeg"),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+                  child: AvatarImage(imageUrl: "assets/image/avatar1.jpeg"),
+                ),
                 SizedBox(width: 16.0),
-                AvatarImage(imageUrl: "assets/image/avatar2.jpeg"),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: AvatarImage(imageUrl: "assets/image/avatar2.jpeg"),
+                ),
               ],
             ),
             SizedBox(height: 16.0),
-            Row(
-              children: [
-                SkinToneColor(color: Color(0xFFF4C2C2)),
-                SkinToneColor(color: Color(0xFFE6A57E)),
-                SkinToneColor(color: Color(0xFFD2B48C)),
-                SkinToneColor(color: Color(0xFFC19A6B)),
-                SkinToneColor(color: Color(0xFF8D5524)),
-                SkinToneColor(color: Color(0xFF7D4B3E)),
-              ],
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  SkinToneColor(color: Color(0xFFF4C2C2)),
+                  SkinToneColor(color: Color(0xFFE6A57E)),
+                  SkinToneColor(color: Color(0xFFD2B48C)),
+                  SkinToneColor(color: Color(0xFFC19A6B)),
+                  SkinToneColor(color: Color(0xFF8D5524)),
+                  SkinToneColor(color: Color(0xFF7D4B3E)),
+                ],
+              ),
             ),
             // Updated makeup section with proper styling
             Container(
