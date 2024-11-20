@@ -4,13 +4,15 @@ import 'dart:typed_data'; // Untuk bekerja dengan Uint8List
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:skin_id/button/bottom_navigation.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/home.dart';
 // import 'dart:html' as html; // Untuk bekerja dengan elemen HTML (Web)
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:skin_id/screen/notification_screen.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -137,17 +139,39 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Navbar(),
+      appBar: AppBar(
+        title: Text(
+          'YourSkin-ID',
+          style: GoogleFonts.caveat(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w400,
+            height: 0.06,
+          ),
+        ),
+        actions: [
+          Container(
+            child: IconButton(
+              icon: Icon(Icons.notifications),
+              color: Colors.black,
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => NotificationScreen()),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(0.20, -0.98),
-            end: Alignment(-0.2, 0.98),
-            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C)],
+          color: Colors.white,
           ),
-        ),
         child: Stack(
           children: [
             if (_isCameraInitialized)
@@ -198,7 +222,6 @@ class _CameraPageState extends State<CameraPage> {
                     setState(() {
                       _imageBytes = byteData; // Menyimpan bytes gambar
                     });
-
                     await _captureAndPredict();
                     // Menampilkan gambar dalam dialog
                     showDialog(
@@ -242,10 +265,6 @@ class _CameraPageState extends State<CameraPage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
       ),
     );
   }

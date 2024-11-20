@@ -56,212 +56,176 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
         ],
       ),
       body: SingleChildScrollView(
-        child: Container(
-          color: Colors.grey[900],
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Section: Skin Identification
               Text(
                 'Skin Identification',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontFamily: 'Montserrat',
+                  color: Colors.black87,
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 16),
               Center(
                 child: Column(
                   children: [
                     Text(
                       'Your Skin Tone Is',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black87,
                         fontSize: 18,
-                        fontFamily: 'Montserrat',
                       ),
                     ),
-                    SizedBox(height: 16.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildSkinToneColor(Color(0xFFF5E4D7)),
-                        _buildSkinToneColor(Color(0xFFE0C4A8)),
-                        _buildSkinToneColor(Color(0xFFC49A6C)),
-                        _buildSkinToneColor(Color(0xFFA66B3F)),
-                        _buildSkinToneColor(Color(0xFF7B3F1B)),
-                      ],
-                    ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 16),
                     Container(
-                      width: 150,
-                      height: 40,
+                      width: 50,
+                      height: 50,
                       decoration: BoxDecoration(
                         color: Colors.orange[200],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Text(
-                          skinTone,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontFamily: 'Montserrat',
-                          ),
-                        ),
+                        shape: BoxShape.circle,
                       ),
                     ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        skinDescription,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontFamily: 'Montserrat',
-                        ),
+                    SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.grey[300],
                       ),
+                      child: Row(
+                        children: [
+                          for (var color in [
+                            Colors.orange[100],
+                            Colors.orange[300],
+                            Colors.orange[400],
+                            Colors.orange[600],
+                            Colors.orange[800],
+                          ])
+                            Expanded(
+                              child: Container(color: color),
+                            ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      skinTone,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange[800],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      skinDescription,
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 32),
+
+              // Section: Makeup Recommendation
               Text(
                 'Makeup Recommendation',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontFamily: 'Montserrat',
+                  color: Colors.black87,
                 ),
               ),
-              SizedBox(height: 10),
-              SizedBox(
-                height: 40,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _buildFilterButton('All'),
-                    _buildFilterButton('Lipstick'),
-                    _buildFilterButton('Eyeliner'),
-                    _buildFilterButton('Mascara'),
-                  ],
-                ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: ['All', 'Lipstick', 'EyeLiner', 'Mascara']
+                    .map((label) => OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.orange),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          onPressed: () {},
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              color: Colors.orange[800],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ))
+                    .toList(),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 16),
               GridView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 0.7,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.8,
                 ),
-                itemCount: 4, // Sesuaikan dengan jumlah data
-                itemBuilder: (context, index) {
-                  return _buildMakeupCard(
-                    'LIP GLACQUER SLEEK SATIN',
-                    'LANCOME',
-                    'assets/lipstick.jpg', // Ubah sesuai path gambar
-                  );
-                },
+                itemCount: 4,
+                itemBuilder: (context, index) => Card(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(15),
+                        ),
+                        child: Image.asset(
+                          'assets/lipstick.jpg', // Sesuaikan path gambar
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'L’Absolu Rouge Drama',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'LANCOME',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-      ),
     );
   }
-
-  Widget _buildFilterButton(String label) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: ElevatedButton(
-        onPressed: () {
-          // Logika filter dapat ditambahkan di sini
-        },
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.black,
-          backgroundColor: Colors.orange[200],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontFamily: 'Montserrat',
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMakeupCard(String title, String brand, String imagePath) {
-    return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-            child: Image.asset(
-              imagePath,
-              height: 120,
-              fit: BoxFit.cover,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Montserrat',
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  brand,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                    fontFamily: 'Montserrat',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-Widget _buildSkinToneColor(Color color) {
-  return Container(
-    width: 32,
-    height: 32,
-    decoration: BoxDecoration(
-      color: color,
-      border: Border.all(color: Colors.white),
-    ),
-  );
 }
