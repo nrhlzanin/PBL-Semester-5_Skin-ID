@@ -1,22 +1,25 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import authenticate
+from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from api.models import Pengguna
 from api.models import Role
+import uuid
 import jwt
 import requests
 import random
 import string
 
 @api_view(['POST'])
+@csrf_exempt
 def register_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
@@ -38,6 +41,7 @@ def register_user(request):
         password=make_password(password),
         email=email,
         role_id=role,
+        verification_token=uuid.uuid4()
     )
 
     send_verification_email(pengguna)
@@ -49,6 +53,7 @@ def register_user(request):
 def login_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
+    is_verified = request.data.get('is_verified')
 
     if not username or not password:
         raise ValidationError("Username dan password diperlukan")
@@ -61,7 +66,10 @@ def login_user(request):
         # verifikasi password
         if not check_password(password, pengguna.password):
             return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
+        if not pengguna.is_verified:
+            return Response({'Error':'Akun anda belum melakukan verifikasi, harap verifikasi melalui link email yang diberikan'}, status=status.HTTP_403_FORBIDDEN)
         
+            
         payload = {
             'user_id': pengguna.user_id,
             'username': pengguna.username,
@@ -91,8 +99,21 @@ def verify_email(request, token):
             return Response({'message': 'Account already verified'}, status=status.HTTP_400_BAD_REQUEST)
         
         user.is_verified = True
+        user.verification_token = None
         user.save()
-        return Response({'message': 'Account verified successfully'}, status=status.HTTP_200_OK)
+        
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'message': 'Account verified successfully',
+            'access_token': str(refresh.access_token),
+            'refresh_token': str(refresh),
+            'user': {
+                'id': user.user_id,
+                'username': user.username,
+                'email': user.email,
+                'skintone': user.skintone_id if user.skintone else None
+            }
+        }, status=status.HTTP_200_OK)        
     except Pengguna.DoesNotExist:
         return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -104,11 +125,12 @@ def send_verification_email(user):
     user_email = user.email
 
     # Buat token verifikasi
-    token = default_token_generator.make_token(user)
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = user.verification_token
+    # uid = urlsafe_base64_encode(force_bytes(user.pk))
 
     # Buat URL untuk link verifikasi
-    verification_link = f"http://192.168.1.7:8000/api/verify-email/{uid}/{token}/"
+    # verification_link = f"http://192.168.1.7:8000/api/user/verify-email/{uid}/{token}/"
+    verification_link = f"http://192.168.56.217:8000/api/user/verify-email/{token}/"
 
     # Subjek dan isi email
     subject = 'Verifikasi Akun Skin-ID'

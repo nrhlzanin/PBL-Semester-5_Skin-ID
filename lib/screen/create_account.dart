@@ -44,7 +44,9 @@ class _CreateAccountState extends State<CreateAccount> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.7:8000/api/user/register/'),
+        Uri.parse(
+            // 'http://192.168.1.7:8000/api/user/register/'
+            'http://192.168.56.217:8000/api/user/register/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
