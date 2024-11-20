@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 
@@ -116,12 +115,6 @@ class AccountScreen extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: 2, // Sesuaikan dengan halaman aktif
-        onTap: (index) {
-          // Implementasi navigasi ke halaman lain jika diperlukan
-        },
-      ),
     );
   }
 }
@@ -133,32 +126,29 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _displayNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _profilePicController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Mengisi controller dengan data awal (misalnya dari API)
-    _nameController.text = 'John Doe';
-    _emailController.text = 'johndoe@example.com';
-    _profilePicController.text = 'https://www.example.com/profile-pic.jpg';
+    // Mengisi controller dengan data awal
+    _usernameController.text = 'Kangaroo0_';
+    _displayNameController.text = 'Vanika Sandra Cantika';
+    _emailController.text = 'mykangaroo@gmail.com';
   }
 
   void _saveChanges() {
-    // Simulasi proses penyimpanan perubahan
-    final name = _nameController.text;
+    final username = _usernameController.text;
+    final displayName = _displayNameController.text;
     final email = _emailController.text;
-    final profilePicUrl = _profilePicController.text;
 
-    // Misalnya, Anda bisa melakukan validasi dan mengirim data ke server atau API
-
-    print('Name: $name');
+    print('Username: $username');
+    print('Display Name: $displayName');
     print('Email: $email');
-    print('Profile Pic URL: $profilePicUrl');
 
-    // Navigasi kembali ke AccountScreen setelah menyimpan perubahan
+    // Navigasi kembali setelah penyimpanan
     Navigator.pop(context);
   }
 
@@ -166,49 +156,64 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profile'),
-        backgroundColor: Color(0xFFD6843C),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          'Edit Profile',
+          style: TextStyle(color: Colors.black),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Form untuk mengedit profil
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                ),
+        child: Column(
+          children: [
+            // Foto profil
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: NetworkImage(
+                  'https://www.example.com/profile-pic.jpg'), // Ganti dengan URL profil
+            ),
+            SizedBox(height: 16),
+            // Form edit username
+            TextField(
+              controller: _usernameController,
+              decoration: InputDecoration(
+                labelText: 'Username',
+                border: OutlineInputBorder(),
               ),
-              SizedBox(height: 16),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
+            ),
+            SizedBox(height: 16),
+            // Form edit display name
+            TextField(
+              controller: _displayNameController,
+              decoration: InputDecoration(
+                labelText: 'Display Name',
+                border: OutlineInputBorder(),
               ),
-              SizedBox(height: 16),
-              TextField(
-                controller: _profilePicController,
-                decoration: InputDecoration(
-                  labelText: 'Profile Picture URL',
-                  border: OutlineInputBorder(),
-                ),
+            ),
+            SizedBox(height: 16),
+            // Form edit email
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
               ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _saveChanges,
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                  backgroundColor: Color(0xFFD6843C), // Button color
-                ),
-                child: Text('Save Changes'),
+            ),
+            SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _saveChanges,
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                backgroundColor: Colors.black, // Warna tombol
               ),
-            ],
-          ),
+              child: Text('Apply'),
+            ),
+          ],
         ),
       ),
     );
