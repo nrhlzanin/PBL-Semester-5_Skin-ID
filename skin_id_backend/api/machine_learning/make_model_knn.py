@@ -162,6 +162,7 @@ print(f"Final Test Accuracy with Best Parameters from Randomized Search: {final_
 cm = confusion_matrix(y_test, y_pred)
 
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_encoder.classes_)
+
 disp.plot(cmap='Blues')
 plt.title('Confusion Matrix for KNN Skin Tone Model')
 plt.show()

@@ -145,7 +145,7 @@ class _CameraPageState extends State<CameraPage> {
           gradient: LinearGradient(
             begin: Alignment(0.20, -0.98),
             end: Alignment(-0.2, 0.98),
-            colors: [Color.fromARGB(255, 255, 255, 255)],
+            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C)],
           ),
         ),
         child: Stack(
