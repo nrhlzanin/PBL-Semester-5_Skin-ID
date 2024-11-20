@@ -1,36 +1,32 @@
-// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last
-
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http; // Import http package
+import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
-import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
-import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
+import 'package:skin_id/screen/notification_screen.dart';
 
 void main() {
-  runApp(HomeScreen());
+  runApp(ListProduct());
 }
 
-class HomeScreen extends StatefulWidget {
+class ListProduct extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _ListProductState createState() => _ListProductState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _ListProductState extends State<ListProduct> {
   int _currentIndex = 0;
   List<dynamic> _makeupProducts = [];
 
   Future<List<dynamic>> fetchMakeupProducts() async {
-    final url =
-        'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+    final url = 'http://192.168.1.7:8000/api/user/makeup-products/';
     try {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        // Parsing JSON dari response API
         final List<dynamic> data = json.decode(response.body);
         return data;
       } else {
@@ -90,57 +86,39 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Check Your Skin Tone',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 30,
-                fontFamily: 'Playfair Display',
-                fontWeight: FontWeight.w700,
-                height: 0,
-                letterSpacing: 0.03,
+            Padding(
+              padding: const EdgeInsets.only(left: 16, bottom: 0.2),
+              child: Text(
+                'Search for Beauty',
+                style: TextStyle(
+                  color: const Color.fromARGB(255, 0, 0, 0),
+                  fontSize: 30,
+                  fontFamily: 'Playfair Display',
+                  fontWeight: FontWeight.w700,
+                  height: 2,
+                ),
               ),
             ),
             Row(
               children: [
-                CameraButton(),
-                SizedBox(width: 20),
-                Text(
-                  'Use me!',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                SizedBox(
+                  width: 16.0,
                 ),
-              ],
-            ),
-            Row(
-              children: [
-                SizedBox(width: 8.0),
                 Expanded(
-                  child: Text(
-                    'Identify your skin tone using our AI for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 17), // Set color of the text
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        top: 0, bottom: 5), // Mengurangi jarak atas dan bawah
+                    child: Text(
+                      'Find the make up that suits you from many brands across the world with many categories.',
+                      style: TextStyle(
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                        fontSize: 12,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 32.0),
-            Row(
-              children: [
-                AvatarImage(imageUrl: "assets/image/avatar1.jpeg"),
-                SizedBox(width: 16.0),
-                AvatarImage(imageUrl: "assets/image/avatar2.jpeg"),
-              ],
-            ),
-            SizedBox(height: 16.0),
-            Row(
-              children: [
-                SkinToneColor(color: Color(0xFFF4C2C2)),
-                SkinToneColor(color: Color(0xFFE6A57E)),
-                SkinToneColor(color: Color(0xFFD2B48C)),
-                SkinToneColor(color: Color(0xFFC19A6B)),
-                SkinToneColor(color: Color(0xFF8D5524)),
-                SkinToneColor(color: Color(0xFF7D4B3E)),
               ],
             ),
             // Updated makeup section with proper styling
@@ -153,23 +131,6 @@ class HomePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 7.0),
-                  Text(
-                    'Makeup',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontFamily: 'Playfair Display',
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                    ),
-                  ),
-                  SizedBox(height: 15.0),
-                  Text(
-                    'Find makeup that suits you with choices from many brands around the world.',
-                    style: TextStyle(
-                        color: Colors.white), // Pastikan teks berwarna putih
-                  ),
                   SizedBox(height: 15.0),
                   // Filter Buttons Section
                   SingleChildScrollView(
@@ -204,7 +165,7 @@ class HomePage extends StatelessWidget {
                       mainAxisSpacing: 16.0,
                     ),
                     itemCount:
-                        4, // Menyesuaikan dengan jumlah produk yang Anda punya
+                        16, // Menyesuaikan dengan jumlah produk yang Anda punya
                     itemBuilder: (context, index) {
                       return ProductCard(
                         imageUrl: 'assets/image/makeup.jpg',
@@ -213,69 +174,11 @@ class HomePage extends StatelessWidget {
                       );
                     },
                   ),
-                  SizedBox(height: 16.0),
-                  // Browse Button
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ListProduct()), // Ganti `[]` dengan daftar kamera jika diperlukan
-                        );
-                      },
-                      child: Text('Browse for more'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 255, 255, 255),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24.0),
-                        ),
-                      ),
-                    ),
-                  ),
+
                   SizedBox(height: 10.0),
                 ],
               ),
             ),
-            // Text(
-            //   'Inspirations from the community',
-            //   style: TextStyle(
-            //     color: Colors.black,
-            //     fontSize: 25,
-            //     fontFamily: 'Playfair Display',
-            //     fontWeight: FontWeight.w700,
-            //     height: 4,
-            //   ),
-            // ),
-            // GridView.count(
-            //   crossAxisCount: 2,
-            //   shrinkWrap: true,
-            //   physics: NeverScrollableScrollPhysics(),
-            //   crossAxisSpacing: 16.0,
-            //   mainAxisSpacing: 16.0,
-            //   children: [
-            //     CommunityCard(
-            //       imageUrl:
-            //           'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
-            //       title: 'Tutorial make up shade',
-            //       subtitle: 'Tutorial make up',
-            //       author: 'Beauty',
-            //       likes: 2017,
-            //       comments: 333,
-            //     ),
-            //     CommunityCard(
-            //       imageUrl:
-            //           'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
-            //       title: 'Lumme brand new products',
-            //       subtitle: 'Lumme',
-            //       author: 'Women',
-            //       likes: 1115,
-            //       comments: 555,
-            //     ),
-            //   ],
-            // ),
           ],
         ),
       ),
@@ -447,96 +350,3 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
-
-
-// class CommunityCard extends StatelessWidget {
-//   final String imageUrl;
-//   final String title;
-//   final String subtitle;
-//   final String author;
-//   final int likes;
-//   final int comments;
-
-//   const CommunityCard({
-//     required this.imageUrl,
-//     required this.title,
-//     required this.subtitle,
-//     required this.author,
-//     required this.likes,
-//     required this.comments,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       elevation: 8.0,
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(12.0),
-//       ),
-//       child: Column(
-//         children: [
-//           // Set a fixed height for the image
-//           Container(
-//             height: 150, // Fixed height for the image
-//             decoration: BoxDecoration(
-//               borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
-//               image: DecorationImage(
-//                 image: NetworkImage(imageUrl),
-//                 fit: BoxFit.cover,
-//               ),
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.all(8.0),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 // Title with overflow handling
-//                 Text(
-//                   maxLines: 1,
-//                   overflow: TextOverflow.ellipsis,
-//                   title,
-//                   style: TextStyle(fontWeight: FontWeight.bold),
-//                 ),
-//                 SizedBox(height: 4.0),
-//                 // Subtitle with overflow handling
-//                 Text(
-//                   subtitle,
-//                   maxLines: 1,
-//                   overflow: TextOverflow.ellipsis,
-//                 ),
-//                 SizedBox(height: 4.0),
-//                 // Author text
-//                 Text(
-//                   'By $author',
-//                   style: TextStyle(fontSize: 12),
-//                 ),
-//                 SizedBox(height: 8.0),
-//                 // Likes and comments section
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     Row(
-//                       children: [
-//                         Icon(Icons.thumb_up, size: 16),
-//                         SizedBox(width: 4.0),
-//                         Text('$likes'),
-//                       ],
-//                     ),
-//                     Row(
-//                       children: [
-//                         Icon(Icons.comment, size: 16),
-//                         SizedBox(width: 4.0),
-//                         Text('$comments'),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

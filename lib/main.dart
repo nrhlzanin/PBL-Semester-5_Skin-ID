@@ -6,6 +6,7 @@ import 'package:skin_id/screen/home.dart';
 // import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/home_screen.dart';
+import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/login.dart';
 import 'package:skin_id/screen/makeup_Section.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
       // home: NotificationScreen(), // Start with the CreateLogin screen
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
-      home: CreateLogin(), // Start with the CreateLogin screen
+      home: HomeScreen(), // Start with the CreateLogin screen
       routes: {
         '/login': (context) => Login(), // Define the /login route
         '/homescreen': (context) => HomeScreen(), // Define the /home route
