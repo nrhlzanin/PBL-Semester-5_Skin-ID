@@ -22,7 +22,7 @@ class Navbar extends StatelessWidget {
               children: [
                 // Profile Photo
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.only(left:10 ,top: 30, bottom: 2),
                   child: CircleAvatar(
                     radius: 30, // Avatar size
                     backgroundImage: AssetImage(
@@ -31,16 +31,19 @@ class Navbar extends StatelessWidget {
                 ),
                 // Username
                 Expanded(
-                  child: Text(
-                    'Aku_cantiks', // Username
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14, // Font size
-                      fontWeight: FontWeight.bold,
-                      overflow: TextOverflow.ellipsis, // Truncate if too long
+                  child: Padding(
+                    padding: const EdgeInsets.only(top:30,left:10),
+                    child: Text(
+                      'Aku_cantiks', // Username
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14, // Font size
+                        fontWeight: FontWeight.bold,
+                        overflow: TextOverflow.ellipsis, // Truncate if too long
+                      ),
+                      softWrap: false, // Prevent wrapping to the next line
+                      maxLines: 1, // Limit to 1 line
                     ),
-                    softWrap: false, // Prevent wrapping to the next line
-                    maxLines: 1, // Limit to 1 line
                   ),
                 ),
               ],
@@ -78,7 +81,8 @@ class Navbar extends StatelessWidget {
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => SkinIdentificationPage()),
+                      MaterialPageRoute(
+                          builder: (context) => SkinIdentificationPage()),
                     );
                   },
                 ),

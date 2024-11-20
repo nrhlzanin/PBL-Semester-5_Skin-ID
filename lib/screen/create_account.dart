@@ -28,7 +28,6 @@ class _CreateAccountState extends State<CreateAccount> {
     final confirmPassword = _confirmPasswordController.text.trim();
 
     if (username.isEmpty || email.isEmpty || password.isEmpty) {
-      print('Error: Semua field harus diisi!');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('All fields are required')),
       );
@@ -44,27 +43,23 @@ class _CreateAccountState extends State<CreateAccount> {
 
     try {
       final response = await http.post(
-        Uri.parse(
-            // 'http://192.168.1.7:8000/api/user/register/'
-            'http://192.168.56.217:8000/api/user/register/'),
+        Uri.parse('http://192.168.56.217:8000/api/user/register/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
           'email': email,
           'password': password,
+          // Assuming 'skintone_id' can be null or an optional parameter in registration
+          'skintone_id': null,
         }),
       );
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 201) {
-        // Success: Account Created
         setState(() {
           _isAccountCreated = true;
         });
       } else {
         final data = jsonDecode(response.body);
-        print('Error: ${data['error']}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['error'] ?? 'Registration failed')),
         );
@@ -79,14 +74,13 @@ class _CreateAccountState extends State<CreateAccount> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Hides the debug banner
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         extendBody: true,
         extendBodyBehindAppBar: true,
         body: Stack(
           fit: StackFit.expand,
           children: [
-            // Background image
             Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
@@ -95,7 +89,6 @@ class _CreateAccountState extends State<CreateAccount> {
                 ),
               ),
             ),
-            // Gradient overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -109,7 +102,6 @@ class _CreateAccountState extends State<CreateAccount> {
                 ),
               ),
             ),
-            // Check if account is created
             if (!_isAccountCreated)
               Center(
                 child: Container(
@@ -240,7 +232,6 @@ class _CreateAccountState extends State<CreateAccount> {
                 ),
               )
             else
-              // If account is created, show confirmation message
               Center(
                 child: Container(
                   padding: EdgeInsets.all(20),
