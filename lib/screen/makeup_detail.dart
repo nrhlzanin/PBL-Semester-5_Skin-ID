@@ -44,9 +44,9 @@ class _MakeUpDetailState extends State<MakeupDetail> {
   void initState() {
     super.initState();
     // Fetch makeup products when the widget is initialized
-    fetchMakeupProducts().then((products) {
+    fetchMakeupProducts().then((product) {
       setState(() {
-        _makeupProducts = products;
+        _makeupProducts = product;
       });
     });
   }
@@ -95,7 +95,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                     Center(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16.0),
-                        child: Image.network(
+                        child: Image.asset(
                           'assets/image/makeup.jpg',
                           height: 300,
                           width: double.infinity,
@@ -167,7 +167,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                         TextButton.icon(
                           onPressed: () {
                             // Pindah ke halaman CameraPage ketika button di-tap
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>

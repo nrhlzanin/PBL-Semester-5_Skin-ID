@@ -1,6 +1,9 @@
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:skin_id/screen/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -35,6 +38,26 @@ class _LoginAccountState extends State<Login> {
       return 'Password must be at least 6 characters';
     }
     return null;
+  }
+
+  Future<void> loginUser(String username, String password) async {
+    final response = await http.post(
+      Uri.parse('http://192.168.56.217/api/user/login/'),
+      body: {'username': username, 'password': password},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'];
+
+      // Simpan token
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+
+      print('Login successful. Token saved.');
+    } else {
+      print('Login failed: ${response.body}');
+    }
   }
 
   @override

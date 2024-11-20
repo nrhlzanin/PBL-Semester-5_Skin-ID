@@ -8,6 +8,7 @@ from PIL import Image
 import os
 from django.conf import settings
 from django.views.decorators.http import require_POST
+import mediapipe as mp
 
 # Mendapatkan path file model dan scaler
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/knn_skin_tone_model_hsv_optimized_smote.pkl')
@@ -27,7 +28,7 @@ fitzpatrick_map_reverse = {
     5: "Brown",
     6: "Dark"
 }
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier(HAARCASCADE)
 
 # Fungsi untuk prediksi skin tone
 def predict_skin_tone(image):
