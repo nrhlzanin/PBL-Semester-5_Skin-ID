@@ -1,7 +1,12 @@
+// ignore_for_file: avoid_unnecessary_containers
+
+import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
+import 'package:skin_id/button/top_widget.dart';
 
 class SkinIdentificationPage extends StatefulWidget {
   @override
@@ -24,18 +29,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Navbar(),
-      appBar: AppBar(
-        title: Text(
-          'YourSkin-ID',
-          style: GoogleFonts.caveat(
-            color: Colors.black,
-            fontSize: 28,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        backgroundColor: Colors.orange[200],
-        iconTheme: IconThemeData(color: Colors.black),
-      ),
+      appBar: TopWidget(),
       body: SingleChildScrollView(
         child: Container(
           color: Colors.grey[900],
@@ -121,7 +115,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 ),
               ),
               SizedBox(height: 10),
-              Container(
+              SizedBox(
                 height: 40,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
