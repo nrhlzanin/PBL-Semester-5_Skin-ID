@@ -27,33 +27,46 @@ def register_user(request):
 
     if not username or not password or not email:
         return Response({"error": "Username, email, dan password diperlukan"}, status=status.HTTP_400_BAD_REQUEST)
+    try:    
+        if Pengguna.objects.filter(username=username).exists():
+            return Response({"error": "Username sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if Pengguna.objects.filter(username=username).exists():
-        return Response({"error": "Username sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
+        if Pengguna.objects.filter(email=email).exists():
+            return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if Pengguna.objects.filter(email=email).exists():
-        return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
+        role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
 
-    role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
+        pengguna = Pengguna.objects.create(
+            username=username,
+            password=make_password(password),
+            email=email,
+            role_id=role,
+        )
 
-    pengguna = Pengguna.objects.create(
-        username=username,
-        password=make_password(password),
-        email=email,
-        role_id=role,
-        verification_token=uuid.uuid4()
-    )
+        # Buat token JWT
+        payload = {
+            'user_id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+        }
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
-    send_verification_email(pengguna)
-
-    return Response({"message": "Registrasi berhasil. Silakan verifikasi email Anda."}, status=status.HTTP_201_CREATED)
-
+        return Response({
+                'message': 'Pendaftaran berhasil',
+                'token': token,
+                'user': {
+                    'id': pengguna.user_id,
+                    'username': pengguna.username,
+                    'email': pengguna.email
+                }
+            }, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 def login_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    is_verified = request.data.get('is_verified')
 
     if not username or not password:
         raise ValidationError("Username dan password diperlukan")
@@ -66,9 +79,6 @@ def login_user(request):
         # verifikasi password
         if not check_password(password, pengguna.password):
             return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
-        if not pengguna.is_verified:
-            return Response({'Error':'Akun anda belum melakukan verifikasi, harap verifikasi melalui link email yang diberikan'}, status=status.HTTP_403_FORBIDDEN)
-        
             
         payload = {
             'user_id': pengguna.user_id,
@@ -136,8 +146,7 @@ def send_verification_email(user):
     subject = 'Verifikasi Akun Skin-ID'
     message = f'''
     Halo {user.username},
-    Terima kasih telah mendaftar di aplikasi kami.
-    Silakan klik link berikut untuk memverifikasi akun Anda:
+    Berikut adalah kode verifikasi untuk mengubah password akun Anda:
     {verification_link}
 
     Jika Anda tidak merasa mendaftar di aplikasi ini, abaikan pesan ini.
