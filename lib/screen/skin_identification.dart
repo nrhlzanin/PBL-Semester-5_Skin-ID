@@ -7,6 +7,7 @@ import 'package:skin_id/button/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/button/top_widget.dart';
+import 'package:skin_id/screen/notification_screen.dart';
 
 class SkinIdentificationPage extends StatefulWidget {
   @override
@@ -29,7 +30,31 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Navbar(),
-      appBar: TopWidget(),
+      appBar: AppBar(
+        title: Text(
+          'YourSkin-ID',
+          style: GoogleFonts.caveat(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w400,
+            height: 0.06,
+          ),
+        ),
+        actions: [
+          Container(
+            child: IconButton(
+              icon: Icon(Icons.notifications),
+              color: Colors.black,
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => NotificationScreen()),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Container(
           color: Colors.grey[900],

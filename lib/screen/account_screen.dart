@@ -1,103 +1,120 @@
 // ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
+import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/notification_screen.dart';
 
 class AccountScreen extends StatelessWidget {
-  // Simulasi data pengguna, ini bisa diganti dengan data yang didapat dari API
-  final String name = 'John Doe';
-  final String email = 'johndoe@example.com';
-  final String joinDate = 'January 1, 2020';
-  final String profilePicUrl =
-      'https://www.example.com/profile-pic.jpg'; // Ganti dengan URL foto profil Anda
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Navbar(),
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Account',
-            style: TextStyle(
-                fontSize: 30,
-                fontWeight:
-                    FontWeight.bold), // Anda bisa menyesuaikan ukuran font
+        title: Text(
+          'YourSkin-ID',
+          style: GoogleFonts.caveat(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w400,
+            height: 0.06,
           ),
         ),
-        backgroundColor: Color(0xFFD6843C), // Customize the app bar color
-        automaticallyImplyLeading: false, // Menghapus ikon back
+        actions: [
+          Container(
+            child: IconButton(
+              icon: Icon(Icons.notifications),
+              color: Colors.black,
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => NotificationScreen()),
+                );
+              },
+            ),
+          ),
+        ],
       ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(0.20, -0.98),
-            end: Alignment(-0.2, 0.98),
-            colors: [Color(0xFFFEE1CC), Color(0xFFD6843C), Color(0xFFFEE1CC)],
+      body: Column(
+        children: [
+          SizedBox(height: 20),
+          ListTile(
+            leading: CircleAvatar(
+              radius: 50, // Meningkatkan ukuran avatar
+              backgroundImage: NetworkImage('https://www.example.com/profile-pic.jpg'), // URL profil gambar
+            ),
+            title: Text('John Doe', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            subtitle: Text('@johndoe', style: TextStyle(fontSize: 18)),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(
-              top: 24.0, left: 16.0, right: 16.0), // Added top padding
-          child: SingleChildScrollView(
-            // To make sure content scrolls if there's overflow
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                // Menampilkan foto profil
-                Center(
-                  child: CircleAvatar(
-                    radius: 50, // Ukuran avatar
-                    backgroundImage:
-                        NetworkImage(profilePicUrl), // Gambar profil dari URL
-                  ),
+                Column(
+                  children: [
+                    Text('162', style: TextStyle(fontSize: 18)),
+                    Text('Following', style: TextStyle(fontSize: 16)),
+                  ],
                 ),
-                SizedBox(height: 16),
-                Text(
-                  'Welcome, $name',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center, // Teks di tengah
+                Column(
+                  children: [
+                    Text('734', style: TextStyle(fontSize: 18)),
+                    Text('Followers', style: TextStyle(fontSize: 16)),
+                  ],
                 ),
-                SizedBox(height: 16),
-                Card(
-                  elevation: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Email: $email',
-                          style: TextStyle(fontSize: 16),
-                          textAlign: TextAlign.center, // Teks di tengah
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Joined on: $joinDate',
-                          style: TextStyle(fontSize: 16),
-                          textAlign: TextAlign.center, // Teks di tengah
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigasi ke halaman EditProfile
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => EditProfileScreen()),
-                    );
-                  },
-                  child: Text('Edit Profile'),
+                Column(
+                  children: [
+                    Text('34', style: TextStyle(fontSize: 18)),
+                    Text('Posts', style: TextStyle(fontSize: 16)),
+                  ],
                 ),
               ],
             ),
           ),
-        ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => EditProfileScreen()),
+                  );
+                },
+                child: Text('Edit Profile'),
+              ),
+              OutlinedButton(
+                onPressed: () {},
+                child: Text('Share Profile'),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {},
+            child: Text('Upload Content'),
+          ),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(10),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: 8,
+              itemBuilder: (context, index) {
+                return Container(
+                  color: Colors.grey[300],
+                  child: Center(child: Text('Beautiful sunset')),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigation(
         currentIndex: 2, // Sesuaikan dengan halaman aktif
@@ -109,6 +126,7 @@ class AccountScreen extends StatelessWidget {
   }
 }
 
+// Halaman untuk mengedit profil
 class EditProfileScreen extends StatefulWidget {
   @override
   _EditProfileScreenState createState() => _EditProfileScreenState();
