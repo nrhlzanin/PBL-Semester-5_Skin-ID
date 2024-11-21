@@ -46,6 +46,8 @@ class SkinTone(models.Model):
     skintone_id = models.AutoField(primary_key=True)
     skintone_name = models.CharField(max_length=20, null=True, blank=True)
     skintone_description = models.CharField(max_length=255, null=True, blank=True)
+    hex_range_start = models.CharField(max_length=7, null=True, blank=True)  # HEX mulai
+    hex_range_end = models.CharField(max_length=7, null=True, blank=True)  # HEX akhir
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -72,7 +74,7 @@ class Pengguna(models.Model):
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
     role_id = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
     # is_verified = models.BooleanField(default=False)
-    verification_token = models.UUIDField(default=None, null=True)
+    # token = models.UUIDField(default=None, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(null=True, blank=True)

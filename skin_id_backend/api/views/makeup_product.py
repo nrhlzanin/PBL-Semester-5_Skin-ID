@@ -12,6 +12,8 @@ from rest_framework.exceptions import ValidationError
 def fetch_filtered_makeup_products(request):
     api_url = "http://makeup-api.herokuapp.com/api/v1/products.json"
     product_type = request.GET.get("product_type")
+    product_name = request.GET.get("name")
+    product_id = request.GET.get("product_id")
     try:
         response = requests.get(api_url)
         response.raise_for_status()
@@ -23,6 +25,19 @@ def fetch_filtered_makeup_products(request):
             makeup_data = [
                 product for product in makeup_data
                 if product.get("product_type") == product_type
+            ]
+        
+        if product_name:
+            product_name = product_name.lower()
+            makeup_data = [
+                product for product in makeup_data
+                if product.get("name") and product_name in product.get("name").lower()
+            ]
+        
+        if product_id:
+            makeup_data = [
+                product for product in makeup_data
+                if str(product.get("id")) == product_id  # Cocokkan ID sebagai string
             ]
 
         filtered_data = []
