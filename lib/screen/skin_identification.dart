@@ -1,62 +1,31 @@
-// ignore_for_file: avoid_unnecessary_containers
+// ignore_for_file: avoid_unnecessary_containers, unused_field
 
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http; // Import http package
+import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
-import 'package:skin_id/screen/face-scan_screen.dart';
-import 'package:skin_id/screen/list_product.dart';
-import 'package:skin_id/screen/makeup_detail.dart';
-import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
+import 'package:flutter/material.dart';
+import 'package:skin_id/button/bottom_navigation.dart';
+import 'package:skin_id/button/top_widget.dart';
+import 'package:skin_id/screen/notification_screen.dart';
 
-void main() {
-  runApp(SkinIdentification());
-}
-
-class SkinIdentification extends StatefulWidget {
+class SkinIdentificationPage extends StatefulWidget {
   @override
-  _SkinIdentificationState createState() => _SkinIdentificationState();
+  _SkinIdentificationPageState createState() => _SkinIdentificationPageState();
 }
 
-class _SkinIdentificationState extends State<SkinIdentification> {
-  final int _currentIndex = 0;
-  final List<dynamic> _makeupProducts = [];
+class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
+  String skinTone = "Light"; // Contoh data, bisa diatur dari hasil prediksi
+  String skinDescription =
+      "Your skin has higher skin moisture, low skin elasticity, good sebum, low moisture, and uneven texture. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.";
+  int _currentIndex = 0;
 
-  Future<List<dynamic>> fetchMakeupProducts() async {
-    const url =
-        'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        // Parsing JSON dari response API
-        final List<dynamic> data = json.decode(response.body);
-        return data;
-      } else {
-        throw Exception('Failed to load makeup products');
-      }
-    } catch (e) {
-      print('Error fetching data: $e');
-      return [];
-    }
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'YourSkin-ID',
-      theme: ThemeData(
-        canvasColor: Color(0xFFFFE8D4),
-        fontFamily: 'caveat',
-      ),
-      debugShowCheckedModeBanner: false, // Remove debug banner
-      SkinIdentification: SkinIdentification(),
-    );
-  }
-}
-
-class SkinIdentification extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,195 +56,176 @@ class SkinIdentification extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Check Your Skin Tone',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 30,
-                fontFamily: 'Playfair Display',
-                fontWeight: FontWeight.w700,
-                height: 0,
-                letterSpacing: 0.03,
-              ),
-            ),
-            Row(
-              children: [
-                CameraButton(),
-                SizedBox(width: 20),
-                Text(
-                  'Use me!',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Section: Skin Identification
+              Text(
+                'Skin Identification',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
-              ],
-            ),
-            Row(
-              children: [
-                SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(
-                    'Identify your skin tone using our AI for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 17), // Set color of the text
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 32.0),
-            Row(
-              children: [
-                AvatarImage(imageUrl: "assets/image/avatar1.jpeg"),
-                SizedBox(width: 16.0),
-                AvatarImage(imageUrl: "assets/image/avatar2.jpeg"),
-              ],
-            ),
-            SizedBox(height: 16.0),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SkinIdentificationCard(),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
-              width: double.infinity, // Mengisi lebar penuh layar
-              decoration: BoxDecoration(
-                color: Color(0xFF242424),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 7.0),
-                  Text(
-                    'Makeup',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontFamily: 'Playfair Display',
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
+              SizedBox(height: 16),
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'Your Skin Tone Is',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 18,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 15.0),
-                  Text(
-                    'Find makeup that suits you with choices from many brands around the world.',
-                    style: TextStyle(
-                        color: Colors.white), // Pastikan teks berwarna putih
-                  ),
-                  SizedBox(height: 15.0),
-                  // Filter Buttons Section
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        FilterButton(
-                            label: 'All',
-                            isSelected: true,
-                            textColor: Colors.white),
-                        SizedBox(width: 8.0),
-                        FilterButton(
-                            label: 'Lipstick', textColor: Colors.white),
-                        SizedBox(width: 8.0),
-                        FilterButton(
-                            label: 'Eyeliner', textColor: Colors.white),
-                        SizedBox(width: 8.0),
-                        FilterButton(label: 'Mascara', textColor: Colors.white),
-                      ],
+                    SizedBox(height: 16),
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.orange[200],
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16.0),
-                  // Responsive GridView Section
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width > 600
-                          ? 3
-                          : 2, // 3 kolom untuk layar lebar, 2 kolom untuk layar kecil
-                      crossAxisSpacing: 16.0,
-                      mainAxisSpacing: 16.0,
+                    SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.grey[300],
+                      ),
+                      child: Row(
+                        children: [
+                          for (var color in [
+                            Colors.orange[100],
+                            Colors.orange[300],
+                            Colors.orange[400],
+                            Colors.orange[600],
+                            Colors.orange[800],
+                          ])
+                            Expanded(
+                              child: Container(color: color),
+                            ),
+                        ],
+                      ),
                     ),
-                    itemCount:
-                        4, // Menyesuaikan dengan jumlah produk yang Anda punya
-                    itemBuilder: (context, index) {
-                      return ProductCard(
-                        imageUrl: 'assets/image/makeup.jpg',
-                        title: 'Nama Produk Tidak Ditemukan',
-                        brand: 'Brand Tidak Ditemukan',
-                      );
-                    },
+                    SizedBox(height: 16),
+                    Text(
+                      skinTone,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange[800],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      skinDescription,
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 32),
+
+              // Section: Makeup Recommendation
+              Text(
+                'Makeup Recommendation',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: ['All', 'Lipstick', 'EyeLiner', 'Mascara']
+                    .map((label) => OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.orange),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          onPressed: () {},
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              color: Colors.orange[800],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ))
+                    .toList(),
+              ),
+              SizedBox(height: 16),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.8,
+                ),
+                itemCount: 4,
+                itemBuilder: (context, index) => Card(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  SizedBox(height: 16.0),
-                  // Browse Button
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ListProduct()), // Ganti `[]` dengan daftar kamera jika diperlukan
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 255, 255, 255),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(15),
+                        ),
+                        child: Image.asset(
+                          'assets/lipstick.jpg', // Sesuaikan path gambar
+                          height: 120,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      child: Text('Browse for more'),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'L’Absolu Rouge Drama',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'LANCOME',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 10.0),
-                ],
-              ),
-            ),
-            Text(
-              'Inspirations from the community',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 30,
-                fontFamily: 'Playfair Display',
-                fontWeight: FontWeight.w700,
-                height: 4,
-              ),
-            ),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 16.0,
-              mainAxisSpacing: 16.0,
-              children: [
-                CommunityCard(
-                  imageUrl:
-                      'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
-                  title: 'Tutorial make up shade',
-                  subtitle: 'Tutorial make up',
-                  author: 'Beauty',
-                  likes: 2017,
-                  comments: 333,
                 ),
-                CommunityCard(
-                  imageUrl:
-                      'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
-                  title: 'Lumme brand new products',
-                  subtitle: 'Lumme',
-                  author: 'Women',
-                  likes: 1115,
-                  comments: 555,
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
