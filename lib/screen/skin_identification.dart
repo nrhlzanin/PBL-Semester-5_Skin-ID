@@ -11,15 +11,15 @@ import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
 
 void main() {
-  runApp(Home());
+  runApp(SkinIdentification());
 }
 
-class Home extends StatefulWidget {
+class SkinIdentification extends StatefulWidget {
   @override
-  _HomeState createState() => _HomeState();
+  _SkinIdentificationState createState() => _SkinIdentificationState();
 }
 
-class _HomeState extends State<Home> {
+class _SkinIdentificationState extends State<SkinIdentification> {
   final int _currentIndex = 0;
   final List<dynamic> _makeupProducts = [];
 
@@ -51,12 +51,12 @@ class _HomeState extends State<Home> {
         fontFamily: 'caveat',
       ),
       debugShowCheckedModeBanner: false, // Remove debug banner
-      home: HomePage(),
+      SkinIdentification: SkinIdentification(),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
+class SkinIdentification extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
