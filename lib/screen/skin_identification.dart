@@ -1,10 +1,8 @@
-// ignore_for_file: avoid_unnecessary_containers, unused_field
+// ignore_for_file: unused_field, unused_element
 
-import 'dart:convert';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'package:skin_id/button/navbar.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/button/top_widget.dart';
 import 'package:skin_id/screen/notification_screen.dart';
@@ -37,21 +35,17 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
             color: Colors.black,
             fontSize: 28,
             fontWeight: FontWeight.w400,
-            height: 0.06,
           ),
         ),
         actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
-              },
-            ),
+          IconButton(
+            icon: Icon(Icons.notifications, color: Colors.black),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -91,27 +85,16 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.grey[300],
-                      ),
-                      child: Row(
-                        children: [
-                          for (var color in [
-                            Colors.orange[100],
-                            Colors.orange[300],
-                            Colors.orange[400],
-                            Colors.orange[600],
-                            Colors.orange[800],
-                          ])
-                            Expanded(
-                              child: Container(color: color),
-                            ),
-                        ],
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        SkinToneColor(color: Color(0xFFF4C2C2)),
+                        SkinToneColor(color: Color(0xFFE6A57E)),
+                        SkinToneColor(color: Color(0xFFD2B48C)),
+                        SkinToneColor(color: Color(0xFFC19A6B)),
+                        SkinToneColor(color: Color(0xFF8D5524)),
+                        SkinToneColor(color: Color(0xFF7D4B3E)),
+                      ],
                     ),
                     SizedBox(height: 16),
                     Text(
@@ -191,7 +174,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                           top: Radius.circular(15),
                         ),
                         child: Image.asset(
-                          'assets/lipstick.jpg', // Sesuaikan path gambar
+                          'assets/rekomendasi.jpg', // Sesuaikan dengan path gambar yang diupload
                           height: 120,
                           fit: BoxFit.cover,
                         ),
@@ -202,14 +185,14 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'L’Absolu Rouge Drama',
+                              'M·A·Cximal Sleek Satin',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              'LANCOME',
+                              'MAC Cosmetics',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[700],
@@ -225,6 +208,27 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Widget untuk SkinToneColor
+class SkinToneColor extends StatelessWidget {
+  final Color color;
+
+  const SkinToneColor({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 30,
+      height: 30,
+      margin: EdgeInsets.symmetric(horizontal: 4.0),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        border: Border.all(color: Colors.black26, width: 0.5),
       ),
     );
   }
