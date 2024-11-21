@@ -71,7 +71,7 @@ class Pengguna(models.Model):
     email = models.EmailField(max_length=100, unique=True)
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
     role_id = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
-    is_verified = models.BooleanField(default=False)
+    # is_verified = models.BooleanField(default=False)
     verification_token = models.UUIDField(default=None, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

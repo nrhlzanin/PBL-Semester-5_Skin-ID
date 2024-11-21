@@ -11,13 +11,20 @@ from rest_framework.exceptions import ValidationError
 @require_http_methods(["GET"])
 def fetch_filtered_makeup_products(request):
     api_url = "http://makeup-api.herokuapp.com/api/v1/products.json"
-    
+    product_type = request.GET.get("product_type")
     try:
         response = requests.get(api_url)
         response.raise_for_status()
         
         makeup_data = response.json()
         
+        # Untuk filter tiap kategori
+        if product_type:
+            makeup_data = [
+                product for product in makeup_data
+                if product.get("product_type") == product_type
+            ]
+
         filtered_data = []
         for product in makeup_data:
             filtered_product = {
@@ -49,7 +56,6 @@ def fetch_makeup_products(request):
         
         # Mendapatkan data produk dari response API
         data = response.json()
-        data = []
         
         # Mengembalikan data dalam bentuk JSON response
         return JsonResponse(data, safe=False)
