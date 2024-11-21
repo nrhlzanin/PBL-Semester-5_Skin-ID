@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<List<dynamic>> fetchMakeupProducts() async {
     final url =
         // 'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
-        'http://192.168.56.217:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+        'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -226,10 +226,11 @@ class HomePage extends StatelessWidget {
                         4, // Menyesuaikan dengan jumlah produk yang Anda punya
                     itemBuilder: (context, index) {
                       return ProductCard(
-                        imageUrl: 'assets/image/makeup.jpg',
-                        title: 'Nama Produk Tidak Ditemukan',
-                        brand: 'Brand Tidak Ditemukan',
+                        imageUrl: 'https://d3t32hsnjxo7q6.cloudfront.net/i/812b5ae27df9be983052063d52d7ab7a_ra,w158,h184_pa,w158,h184.jpeg',
+                        title: 'Product $index',
+                        brand: 'Brand $index',
                       );
+                 
                     },
                   ),
                   SizedBox(height: 16.0),
@@ -425,7 +426,7 @@ class ProductCard extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(
+                child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover,
                 ),
