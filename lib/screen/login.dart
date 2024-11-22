@@ -16,17 +16,13 @@ class _LoginAccountState extends State<Login> {
   final _formKey = GlobalKey<FormState>(); // Key to track the form state
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _verificationCodeController =
-      TextEditingController();
-  final bool _isVerificationStep =
-      false; // Flag to toggle between form and verification step
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your email';
     } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
         .hasMatch(value)) {
-      return 'Please enter a valid email address';
+      return 'Please enter your valid email address';
     }
     return null;
   }
@@ -34,16 +30,16 @@ class _LoginAccountState extends State<Login> {
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your password';
-    } else if (value.length < 6) {
-      return 'Password must be at least 6 characters';
+    } else if (value.length < 5) {
+      return 'Password must be at least 5 characters';
     }
     return null;
   }
 
-  Future<void> loginUser(String username, String password) async {
+  Future<void> loginUser(String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://192.168.56.217/api/user/login/'),
-      body: {'username': username, 'password': password},
+      Uri.parse('http://192.168.1.7:8000/api/user/login/'), //alamat IP ganti ke IP lokal kalian (cmd ipconfig) runserver 0.0.0.0:8000
+      body: {'email': email, 'password': password},
     );
 
     if (response.statusCode == 200) {
@@ -55,8 +51,16 @@ class _LoginAccountState extends State<Login> {
       await prefs.setString('auth_token', token);
 
       print('Login successful. Token saved.');
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
     } else {
       print('Login failed: ${response.body}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: ${response.body}')),
+      );
     }
   }
 
@@ -139,15 +143,13 @@ class _LoginAccountState extends State<Login> {
                       SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
+                          print('pressed');
                           // Check if the form is valid before proceeding
                           if (_formKey.currentState!.validate()) {
-                            // If the form is valid, proceed with the login logic
-                            print("Logging in...");
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => HomeScreen()),
-                            );
+                            print('checked');
+                            final email = _emailController.text.trim();
+                            final password = _passwordController.text.trim();
+                            loginUser(email, password);
                           }
                         },
                         style: ElevatedButton.styleFrom(

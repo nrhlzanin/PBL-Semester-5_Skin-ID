@@ -19,7 +19,6 @@ import random
 import string
 
 @api_view(['POST'])
-@csrf_exempt
 def register_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
@@ -43,17 +42,8 @@ def register_user(request):
             role_id=role,
         )
 
-        # Buat token JWT
-        payload = {
-            'user_id': pengguna.user_id,
-            'username': pengguna.username,
-            'email': pengguna.email,
-        }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-
         return Response({
                 'message': 'Pendaftaran berhasil',
-                'token': token,
                 'user': {
                     'id': pengguna.user_id,
                     'username': pengguna.username,
@@ -65,17 +55,19 @@ def register_user(request):
 
 @api_view(['POST'])
 def login_user(request):
-    username = request.data.get('username')
+    # username_or_email = request.data.get('email_or_username')
+    email = request.data.get('email')
     password = request.data.get('password')
 
-    if not username or not password:
+    if not email or not password:
         raise ValidationError("Username dan password diperlukan")
     
     try:
-        pengguna = Pengguna.objects.filter(username=username).first()
+        # pengguna = Pengguna.objects.filter(email=username_or_email).first() or Pengguna.objects.filter(username=username_or_email).first()
+        pengguna = Pengguna.objects.filter(email=email).first()
         # cek pengguna apakah sudah ada di database
         if pengguna is None:
-            return Response({'Error':'Username dengan nama tersebut tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'Error':'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
         # verifikasi password
         if not check_password(password, pengguna.password):
             return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
