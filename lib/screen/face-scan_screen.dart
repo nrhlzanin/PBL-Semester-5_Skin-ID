@@ -177,7 +177,7 @@ class _CameraPageState extends State<CameraPage> {
             if (_isCameraInitialized)
               Positioned(
                 left: 30,
-                top: 80,
+                top: 30,
                 right: 30,
                 bottom: 120,
                 child: ClipRRect(
