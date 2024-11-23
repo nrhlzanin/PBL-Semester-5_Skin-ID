@@ -6,7 +6,8 @@ import 'package:skin_id/button/bottom_navigation.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home_screen.dart';
-import 'package:skin_id/screen/makeup_detail.dart'; // Import CameraPage
+import 'package:skin_id/screen/makeup_detail.dart';
+import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
 // Import BottomNavigation
 
 void main() {
@@ -62,17 +63,31 @@ class _MakeUpDetailState extends State<MakeupDetail> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         drawer: Navbar(),
-        appBar: AppBar(
-          title: Text(
-            'YourSkin-ID',
-            style: GoogleFonts.caveat(
-              color: Colors.black,
-              fontSize: 28,
-              fontWeight: FontWeight.w400,
-              height: 0.06,
-            ),
+      appBar: AppBar(
+        title: Text(
+          'YourSkin-ID',
+          style: GoogleFonts.caveat(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w400,
+            height: 0.06,
           ),
         ),
+        actions: [
+          Container(
+            child: IconButton(
+              icon: Icon(Icons.notifications),
+              color: Colors.black,
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => NotificationScreen()),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
         body: Stack(
           // Stack digunakan untuk menumpuk widget
           children: [
@@ -189,15 +204,6 @@ class _MakeUpDetailState extends State<MakeupDetail> {
             ),
           ],
         ),
-        bottomNavigationBar: BottomNavigation(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-            // You can use Navigator to navigate between different screens as needed.
-          },
-        ), // Add the BottomNavigation widget
       ),
     );
   }
