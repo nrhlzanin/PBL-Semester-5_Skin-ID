@@ -57,9 +57,64 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // Daftar kategori untuk filter
+  List<String> categories = [
+    'All',
+    'Lipstick',
+    'Eyeliner',
+    'Mascara',
+    'Cushion',
+    'Fondation'
+  ];
+  List<Map<String, dynamic>> products = [
+    {
+      'category': 'Lipstick',
+      'name': 'Lipstick A',
+      'brand': 'Brand A',
+      'imageUrl': 'https://d3t32hsnjxo7q6.cloudfront.net/i/afefede002b8d94f6e53ea07dd4070f9_ra,w158,h184_pa,w158,h184.jpg'
+    },
+    {
+      'category': 'Eyeliner',
+      'name': 'Eyeliner B',
+      'brand': 'Brand B',
+      'imageUrl':
+          'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
+    },
+    {
+      'category': 'Mascara',
+      'name': 'Mascara C',
+      'brand': 'Brand C',
+      'imageUrl':
+          'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
+    },
+    {
+      'category': 'Cushion',
+      'name': 'Cushion D',
+      'brand': 'Brand D',
+      'imageUrl':
+          'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
+    },
+    {
+      'category': 'Foundation',
+      'name': 'Foundation E',
+      'brand': 'Brand E',
+      'imageUrl':
+          'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
+    },
+  ];
   @override
   Widget build(BuildContext context) {
+    var filteredProducts = selectedCategory == 'All'
+        ? products
+        : products
+            .where((product) => product['category'] == selectedCategory)
+            .toList();
     return Scaffold(
       drawer: Navbar(),
       appBar: AppBar(
@@ -163,102 +218,117 @@ class HomePage extends StatelessWidget {
               ),
             ),
             // Updated makeup section with proper styling
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
-              width: double.infinity, // Mengisi lebar penuh layar
-              decoration: BoxDecoration(
-                color: Color(0xFF242424),
+        Container(
+  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+  width: double.infinity, // Mengisi lebar penuh layar
+  decoration: BoxDecoration(
+    color: Color(0xFF242424),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(height: 7.0),
+      Text(
+        'Makeup',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 30,
+          fontFamily: 'Playfair Display',
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+        ),
+      ),
+      SizedBox(height: 15.0),
+      Text(
+        'Find makeup that suits you with choices from many brands around the world.',
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
+      SizedBox(height: 15.0),
+      // Filter Buttons Section
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: categories.map((category) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: FilterButton(
+                label: category,
+                isSelected: selectedCategory == category,
+                onTap: () => setState(() {
+                  selectedCategory = category; // Set kategori yang dipilih
+                  // Filter produk berdasarkan kategori yang dipilih
+                  filteredProducts = products
+                      .where((product) =>
+                          product['category'] == selectedCategory)
+                      .toList();
+                }),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 7.0),
-                  Text(
-                    'Makeup',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontFamily: 'Playfair Display',
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                    ),
-                  ),
-                  SizedBox(height: 15.0),
-                  Text(
-                    'Find makeup that suits you with choices from many brands around the world.',
-                    style: TextStyle(
-                        color: Colors.white), // Pastikan teks berwarna putih
-                  ),
-                  SizedBox(height: 15.0),
-                  // Filter Buttons Section
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        FilterButton(
-                            label: 'All',
-                            isSelected: true,
-                            textColor: Colors.white),
-                        SizedBox(width: 8.0),
-                        FilterButton(
-                            label: 'Lipstick', textColor: Colors.white),
-                        SizedBox(width: 8.0),
-                        FilterButton(
-                            label: 'Eyeliner', textColor: Colors.white),
-                        SizedBox(width: 8.0),
-                        FilterButton(label: 'Mascara', textColor: Colors.white),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 16.0),
-                  // Responsive GridView Section
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width > 600
-                          ? 3
-                          : 2, // 3 kolom untuk layar lebar, 2 kolom untuk layar kecil
-                      crossAxisSpacing: 16.0,
-                      mainAxisSpacing: 16.0,
-                    ),
-                    itemCount:
-                        4, // Menyesuaikan dengan jumlah produk yang Anda punya
-                    itemBuilder: (context, index) {
-                      return ProductCard(
-                        imageUrl: 'https://d3t32hsnjxo7q6.cloudfront.net/i/812b5ae27df9be983052063d52d7ab7a_ra,w158,h184_pa,w158,h184.jpeg',
-                        title: 'Product $index',
-                        brand: 'Brand $index',
-                      );
-                 
-                    },
-                  ),
-                  SizedBox(height: 16.0),
-                  // Browse Button
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ListProduct()), // Ganti `[]` dengan daftar kamera jika diperlukan
-                        );
-                      },
-                      child: Text('Browse for more'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 255, 255, 255),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24.0),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10.0),
-                ],
+            );
+          }).toList(),
+        ),
+      ),
+      SizedBox(height: 20),
+      // Display selected category products in GridView
+      filteredProducts.isEmpty
+          ? Center(
+              child: Text(
+                'Not Found',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+            )
+          : GridView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.of(context).size.width > 600
+                    ? 3
+                    : 2, // 3 kolom untuk layar lebar, 2 kolom untuk layar kecil
+                crossAxisSpacing: 16.0,
+                mainAxisSpacing: 16.0,
+              ),
+              itemCount: filteredProducts.length, // Menggunakan filteredProducts
+              itemBuilder: (context, index) {
+                final product = filteredProducts[index]; // Ambil produk berdasarkan index
+                final brand = product['brand']!;
+                final name = product['name']!;
+                final imageUrl = product['imageUrl']!; // Ambil imageUrl dari produk
+
+                return ProductCard(
+                  imageUrl: imageUrl, // Gambar dari URL yang ada pada produk
+                  title: name,
+                  brand: brand,
+                  additionalImages: [], // Jika ada gambar tambahan, bisa ditambahkan di sini
+                );
+              },
             ),
+      SizedBox(height: 16.0),
+      // Browse Button
+      Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Aksi untuk Browse more
+          },
+          child: Text('Browse for more'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+          ),
+        ),
+      ),
+      SizedBox(height: 10.0),
+    ],
+  ),
+),
+
+
             // Text(
             //   'Inspirations from the community',
             //   style: TextStyle(
@@ -367,34 +437,33 @@ class SkinToneColor extends StatelessWidget {
   }
 }
 
+// FilterButton widget
 class FilterButton extends StatelessWidget {
   final String label;
   final bool isSelected;
-  const FilterButton({
-    required this.label,
-    this.isSelected = false,
-    required Color textColor,
-  });
+  final VoidCallback onTap;
+
+  FilterButton(
+      {required this.label, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
-      child: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected
-            ? const Color.fromARGB(255, 186, 190, 199)
-            : const Color.fromARGB(255, 255, 255, 255),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        backgroundColor: isSelected ? Colors.grey : Colors.white,
       ),
+      onPressed: onTap,
+      child: Text(label),
     );
   }
 }
 
+// Assuming you have a list of products with 'brand' and 'name'
+String selectedCategory = 'All';
+
 class ProductCard extends StatelessWidget {
   final String imageUrl;
+  final List<String> additionalImages;
   final String title;
   final String brand;
 
@@ -402,6 +471,7 @@ class ProductCard extends StatelessWidget {
     required this.imageUrl,
     required this.title,
     required this.brand,
+    required this.additionalImages,
   });
 
   @override
