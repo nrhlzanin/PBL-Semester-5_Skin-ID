@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 from django.views.decorators.http import require_http_methods
 import requests
 from ..services.makeup_api import fetch_products_by_category
@@ -14,12 +15,13 @@ def fetch_filtered_makeup_products(request):
     product_type = request.GET.get("product_type")
     product_name = request.GET.get("name")
     product_id = request.GET.get("product_id")
+    # page = int(request.GET.get("page",1))
     try:
         response = requests.get(api_url)
         response.raise_for_status()
         
         makeup_data = response.json()
-        
+        # makeup_data = makeup_data[:5]
         # Untuk filter tiap kategori
         if product_type:
             makeup_data = [
@@ -40,6 +42,9 @@ def fetch_filtered_makeup_products(request):
                 if str(product.get("id")) == product_id  # Cocokkan ID sebagai string
             ]
 
+        # paginator = Paginator(makeup_data, 10)  # 50 produk per halaman
+        # current_page = paginator.get_page(page)
+        
         filtered_data = []
         for product in makeup_data:
             filtered_product = {
@@ -52,11 +57,11 @@ def fetch_filtered_makeup_products(request):
                 "image_link": product.get("image_link"),
                 "description": product.get("description"),
                 "product_type": product.get("product_type"),
-                "product_colors": product.get("product_colors")
+                # "product_colors": product.get("product_colors")
             }
             filtered_data.append(filtered_product)
         
-        # filtered_data = filtered_data[:1]
+        filtered_data = filtered_data[:1]
         return JsonResponse(filtered_data, safe=False, status=200)        
     except requests.exceptions.RequestException as e:
         return JsonResponse({"error": str(e)}, status = 500)
