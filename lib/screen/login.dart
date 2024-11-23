@@ -1,13 +1,11 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
-  const Login({super.key});
-
   @override
   _LoginAccountState createState() => _LoginAccountState();
 }
@@ -16,6 +14,9 @@ class _LoginAccountState extends State<Login> {
   final _formKey = GlobalKey<FormState>(); // Key to track the form state
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _errorMessage;
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -37,30 +38,52 @@ class _LoginAccountState extends State<Login> {
   }
 
   Future<void> loginUser(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.1.7:8000/api/user/login/'), //alamat IP ganti ke IP lokal kalian (cmd ipconfig) runserver 0.0.0.0:8000
-      body: {'email': email, 'password': password},
-    );
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final token = data['token'];
+    final url = Uri.parse('http://192.168.1.7:8000/api/login/');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({
+      'email': _emailController.text,
+      'password': _passwordController.text,
+    });
 
-      // Simpan token
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token', token);
+    try {
+      final response = await http.post(url, headers: headers, body: body);
 
-      print('Login successful. Token saved.');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    } else {
-      print('Login failed: ${response.body}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: ${response.body}')),
-      );
+        // Simpan token ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', data['token']);
+        await prefs.setString('username', data['username']);
+        await prefs.setString('email', data['email']);
+
+        // Navigasi ke halaman Home
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else if (response.statusCode == 401) {
+        setState(() {
+          _errorMessage = 'Invalid email or password';
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Unexpected error occurred';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to connect to server';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -141,6 +164,13 @@ class _LoginAccountState extends State<Login> {
                         validator: _validatePassword, // Validator for password
                       ),
                       SizedBox(height: 10),
+                      if (_errorMessage != null) ...[
+                        Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        SizedBox(height: 16.0),
+                      ],
                       ElevatedButton(
                         onPressed: () {
                           print('pressed');

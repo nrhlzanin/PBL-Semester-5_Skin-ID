@@ -72,13 +72,12 @@ class Pengguna(models.Model):
     password = models.CharField(max_length=255, validators=[MinLengthValidator(6)])
     email = models.EmailField(max_length=100, unique=True)
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
-    role_id = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
-    # is_verified = models.BooleanField(default=False)
-    # token = models.UUIDField(default=None, null=True)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    token = models.CharField(max_length=255, null=True, blank=True)
     
     def get_email_field_name(self):
         return "email"

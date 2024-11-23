@@ -12,6 +12,8 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from api.models import Pengguna
 from api.models import Role
+from django.utils import timezone
+from django.http import JsonResponse
 import uuid
 import jwt
 import requests
@@ -65,10 +67,8 @@ def login_user(request):
     try:
         # pengguna = Pengguna.objects.filter(email=username_or_email).first() or Pengguna.objects.filter(username=username_or_email).first()
         pengguna = Pengguna.objects.filter(email=email).first()
-        # cek pengguna apakah sudah ada di database
         if pengguna is None:
             return Response({'Error':'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
-        # verifikasi password
         if not check_password(password, pengguna.password):
             return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -80,6 +80,9 @@ def login_user(request):
         
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         
+        pengguna.token = token
+        pengguna.last_login = timezone.now()
+        pengguna.save()
         return Response({
             'message': 'Login berhasil',
             'token': token,
@@ -92,6 +95,42 @@ def login_user(request):
     
     except Exception as e:
         return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def get_user_profile(request):
+    token = request.headers.get('Authorization')
+
+    if token is None:
+        return Response({"error": "Token tidak ditemukan."}, status=status.HTTP_400_BAD_REQUEST)
+
+    token = token.replace("Bearer ", "")
+    
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user_id = payload.get('user_id')
+        if not user_id:
+            return Response({"error": "User ID tidak ditemukan dalam token."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        pengguna = Pengguna.objects.filter(user_id=user_id).first()
+        if pengguna is None:
+            return Response({'error': 'Pengguna tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response({
+            'id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+            'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
+            'role': pengguna.role_id if pengguna.role_id else "Not Set",
+            'last_login': pengguna.last_login,
+        }, status=status.HTTP_200_OK)
+        
+    except jwt.ExpiredSignatureError:
+        return Response({"error": "Token sudah kedaluwarsa."}, status=status.HTTP_401_UNAUTHORIZED)
+    except jwt.InvalidTokenError:
+        return Response({"error": "Token tidak valid."}, status=status.HTTP_401_UNAUTHORIZED)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 @api_view(['GET'])
 def verify_email(request, token):
     try:
