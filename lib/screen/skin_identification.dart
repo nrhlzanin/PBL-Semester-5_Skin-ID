@@ -43,6 +43,13 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
     });
   }
 
+  void updateSkinDetails(String tone, String description) {
+    setState(() {
+      skinTone = tone;
+      skinDescription = description;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +82,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSkinIdentificationSection(),
+              _buildSkinIdentificationSection(skinTone, skinDescription),
               SizedBox(height: 32),
               _buildMakeupRecommendationSection(context),
               SizedBox(height: 32),
@@ -87,74 +94,86 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
     );
   }
 
-  Widget _buildSkinIdentificationSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Skin Identification',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+Widget _buildSkinIdentificationSection(String skinTone, String skinDescription) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Title
+      Text(
+        'Skin Identification',
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
         ),
-        SizedBox(height: 16),
-        Center(
-          child: Column(
-            children: [
-              Text(
-                'Your Skin Tone Is',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 18,
-                ),
+      ),
+      SizedBox(height: 16),
+
+      // Centered content
+      Center(
+        child: Column(
+          children: [
+            // Subtitle
+            Text(
+              'Your Skin Tone Is',
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 18,
               ),
-              SizedBox(height: 16),
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.orange[200],
-                  shape: BoxShape.circle,
-                ),
+            ),
+            SizedBox(height: 16),
+
+            // Circle representing the skin tone
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Color(0xFFF4C2C2),
+                shape: BoxShape.circle,
               ),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  SkinToneColor(color: Color(0xFFF4C2C2)),
-                  SkinToneColor(color: Color(0xFFE6A57E)),
-                  SkinToneColor(color: Color(0xFFD2B48C)),
-                  SkinToneColor(color: Color(0xFFC19A6B)),
-                  SkinToneColor(color: Color(0xFF8D5524)),
-                  SkinToneColor(color: Color(0xFF7D4B3E)),
-                ],
+            ),
+            SizedBox(height: 16),
+
+            // Skin tone color palette
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SkinToneColor(color: Color(0xFFF4C2C2)),
+                SkinToneColor(color: Color(0xFFE6A57E)),
+                SkinToneColor(color: Color(0xFFD2B48C)),
+                SkinToneColor(color: Color(0xFFC19A6B)),
+                SkinToneColor(color: Color(0xFF8D5524)),
+                SkinToneColor(color: Color(0xFF7D4B3E)),
+              ],
+            ),
+            SizedBox(height: 16),
+
+            // Skin tone label
+            Text(
+              skinTone,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.orange[800],
               ),
-              SizedBox(height: 16),
-              Text(
-                skinTone,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange[800],
-                ),
+            ),
+            SizedBox(height: 16),
+
+            // Skin description
+            Text(
+              skinDescription,
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 14,
               ),
-              SizedBox(height: 16),
-              Text(
-                skinDescription,
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   Widget _buildMakeupRecommendationSection(BuildContext context) {
     return Column(
@@ -266,116 +285,6 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       ],
     );
   }
-}
-
-// Widget untuk SkinToneColor
-class SkinToneColor extends StatelessWidget {
-  final Color color;
-
-  const SkinToneColor({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 30,
-      height: 30,
-      margin: EdgeInsets.symmetric(horizontal: 4.0),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        border: Border.all(color: Colors.black26, width: 0.5),
-      ),
-    );
-  }
-}
-
-class SkinIdentificationCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFE8D4),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      width: 800,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Start of added content (from the second code)
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Color(0xFF2B2B2B),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Your Skin Tone Is',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Colors.white,
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildSkinToneColor(Color(0xFFF5E4D7)),
-                    _buildSkinToneColor(Color(0xFFE0C4A8)),
-                    _buildSkinToneColor(Color(0xFFC49A6C)),
-                    _buildSkinToneColor(Color(0xFFA66B3F)),
-                    _buildSkinToneColor(Color(0xFF7B3F1B)),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'White',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'This skin has higher skin moisture, low skin elasticity, good gloss, low melanin and erythema levels. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.',
-            style: TextStyle(
-              color: Color(0xFF2B2B2B),
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-Widget _buildSkinToneColor(Color color) {
-  return Container(
-    width: 32,
-    height: 32,
-    decoration: BoxDecoration(
-      color: color,
-      border: Border.all(color: Colors.white),
-    ),
-  );
 }
 
 class FilterButton extends StatelessWidget {
