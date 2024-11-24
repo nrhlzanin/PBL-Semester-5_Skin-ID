@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
-import 'package:skin_id/screen/filter.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/home_screen.dart';
