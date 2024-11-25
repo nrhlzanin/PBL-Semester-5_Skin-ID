@@ -12,14 +12,33 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from api.models import Pengguna
 from api.models import Role
+from django.utils import timezone
+from django.http import JsonResponse
+from functools import wraps
 import uuid
 import jwt
 import requests
 import random
 import string
 
+# Pembuatan untuk verifikasi token pengguna/user
+def token_required(f):
+    @wraps(f)
+    def decorated_function(request, *args, **kwargs):
+        token = request.headers.get('Authorization')
+        if token:
+            token = token.replace('Bearer ','', 1)
+        if not token:
+            return Response({"error":"Token is required"},status=status.HTTP_401_UNAUTHORIZED)
+        user = Pengguna.objects.filter(token=token).first()
+        if not user:
+            return Response({"error":"Token invalid atau kadaluarsa"},status=status.HTTP_401_UNAUTHORIZED)
+        
+        request.user = user
+        return f(request, *args, **kwargs)
+    return decorated_function
+    
 @api_view(['POST'])
-@csrf_exempt
 def register_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
@@ -34,26 +53,17 @@ def register_user(request):
         if Pengguna.objects.filter(email=email).exists():
             return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
 
-        role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
+        # role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
 
         pengguna = Pengguna.objects.create(
             username=username,
             password=make_password(password),
             email=email,
-            role_id=role,
+            role_id=1,
         )
-
-        # Buat token JWT
-        payload = {
-            'user_id': pengguna.user_id,
-            'username': pengguna.username,
-            'email': pengguna.email,
-        }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
         return Response({
                 'message': 'Pendaftaran berhasil',
-                'token': token,
                 'user': {
                     'id': pengguna.user_id,
                     'username': pengguna.username,
@@ -65,18 +75,18 @@ def register_user(request):
 
 @api_view(['POST'])
 def login_user(request):
-    username = request.data.get('username')
+    # username_or_email = request.data.get('email_or_username')
+    email = request.data.get('email')
     password = request.data.get('password')
 
-    if not username or not password:
+    if not email or not password:
         raise ValidationError("Username dan password diperlukan")
     
     try:
-        pengguna = Pengguna.objects.filter(username=username).first()
-        # cek pengguna apakah sudah ada di database
+        # pengguna = Pengguna.objects.filter(email=username_or_email).first() or Pengguna.objects.filter(username=username_or_email).first()
+        pengguna = Pengguna.objects.filter(email=email).first()
         if pengguna is None:
-            return Response({'Error':'Username dengan nama tersebut tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
-        # verifikasi password
+            return Response({'Error':'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
         if not check_password(password, pengguna.password):
             return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -88,6 +98,9 @@ def login_user(request):
         
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         
+        pengguna.token = token
+        pengguna.last_login = timezone.now()
+        pengguna.save()
         return Response({
             'message': 'Login berhasil',
             'token': token,
@@ -100,6 +113,80 @@ def login_user(request):
     
     except Exception as e:
         return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PUT'])
+@token_required
+def edit_profile(request):
+    user_id = request.data.get('user_id')
+    username = request.data.get('username')
+    email = request.data.get('email')
+    jenis_kelamin = request.data.get('jenis_kelamin')
+    try:
+        pengguna = Pengguna.objects.get(user_id=user_id)
+        
+        if email and Pengguna.objects.filter(email=email).exclude(id=user_id).exists():
+            return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
+        # Pembaruan data yg dikirim
+        if username:
+            pengguna.username = username
+        if email:
+            pengguna.email = email
+        if jenis_kelamin:
+            pengguna.jenis_kelamin = jenis_kelamin
+        
+        pengguna.save()
+        return Response({
+            'message':'Data pengguna berhasil diubah',
+            'data': {
+                'username' : pengguna.username,
+                'email' : pengguna.email,
+                'jenis_kelamin' : pengguna.jenis_kelamin
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Pengguna.DoesNotExist:
+        print('An exception occurred')
+        return Response({"error":"Pengguna tidak ditemukan"}, status=status.HTTP_404_NOT_FOUND)
+    
+    except Exception as e:
+        return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@token_required
+def user_logout(request):
+    try:
+        token = request.data.get('token')
+        if not token:
+            return Response({"message": "Token dibutuhan"}, status=status.HTTP_400_BAD_REQUEST)
+    
+        pengguna = Pengguna.objects.filter(token=token).first()
+        if not pengguna:
+            return Response({"error":"Token is required"},status=status.HTTP_400_BAD_REQUEST)
+        
+        pengguna.token = None
+        pengguna.save()
+        
+        return Response({"message":"Logout berhasil!"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@token_required
+def get_user_profile(request):
+    try:
+        pengguna = request.user
+        return Response({
+            'id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+            'jenis kelamin': pengguna.jenis_kelamin,
+            'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
+            'role': pengguna.role_id if pengguna.role_id else "Not Set",
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 @api_view(['GET'])
 def verify_email(request, token):
     try:
