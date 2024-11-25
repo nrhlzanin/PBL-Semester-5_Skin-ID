@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home.dart';
-// import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/list_product.dart';
@@ -29,7 +28,7 @@ class MyApp extends StatelessWidget {
       // home: NotificationScreen(), // Start with the CreateLogin screen
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
-      home: CreateLogin(), // Start with the CreateLogin screen
+      home: HomeScreen(), // Start with the CreateLogin screen
       routes: {
         '/login': (context) => Login(), // Define the /login route
         '/homescreen': (context) => HomeScreen(), // Define the /home route

@@ -1,18 +1,13 @@
-// ignore_for_file: avoid_unnecessary_containers
-
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http; // Import http package
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
-
-void main() {
-  runApp(Home());
-}
+import 'dart:convert';
+import 'package:http/http.dart' as http; // Import http package
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -20,26 +15,38 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final int _currentIndex = 0;
-  final List<dynamic> _makeupProducts = [];
+  int _currentIndex = 0;
+  List<dynamic> _makeupProducts = [];
+  // bool _isLoading = true;
+  // bool _isError = false;
 
   Future<List<dynamic>> fetchMakeupProducts() async {
     const url =
-        'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+        'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
     try {
       final response = await http.get(Uri.parse(url));
-
       if (response.statusCode == 200) {
-        // Parsing JSON dari response API
+        // _makeupProducts = json.decode(response.body);
         final List<dynamic> data = json.decode(response.body);
         return data;
       } else {
+        print('Failed to load data: ${response.statusCode}');
         throw Exception('Failed to load makeup products');
       }
     } catch (e) {
       print('Error fetching data: $e');
       return [];
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMakeupProducts().then((data) {
+      setState(() {
+        _makeupProducts = data;
+      });
+    });
   }
 
   @override
@@ -51,7 +58,77 @@ class _HomeState extends State<Home> {
         fontFamily: 'caveat',
       ),
       debugShowCheckedModeBanner: false, // Remove debug banner
-      home: HomePage(),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'YourSkin-ID',
+            style: GoogleFonts.caveat(
+              color: Colors.black,
+              fontSize: 28,
+              fontWeight: FontWeight.w400,
+              height: 0.06,
+            ),
+          ),
+        ),
+        body: GridView.builder(
+          padding: EdgeInsets.all(16.0),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount:
+                MediaQuery.of(context).size.width > 600 ? 3 : 2, // Responsif
+            crossAxisSpacing: 16.0,
+            mainAxisSpacing: 16.0,
+          ),
+          itemBuilder: (context, index) {
+            return Card(
+              elevation: 4.0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: _makeupProducts.isNotEmpty
+                    ? List.generate(
+                        _makeupProducts.length >= 6
+                            ? 6
+                            : _makeupProducts.length,
+                        (index) {
+                          final product = _makeupProducts[index];
+                          return GestureDetector(
+                            onTap: () {
+                              // Tambahkan fungsi jika Anda ingin melakukan sesuatu ketika gambar di-klik
+                              print('Clicked on ${product['name']}');
+                            },
+                            child: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                    product['image_link'] ??
+                                        'https://via.placeholder.com/50', // Gambar default jika image_link kosong
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                                borderRadius: BorderRadius.circular(5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : [
+                        Text('No makeup products available')
+                      ], // Pesan saat data kosong
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -197,29 +274,6 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: 16.0),
-                  // Responsive GridView Section
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width > 600
-                          ? 3
-                          : 2, // 3 kolom untuk layar lebar, 2 kolom untuk layar kecil
-                      crossAxisSpacing: 16.0,
-                      mainAxisSpacing: 16.0,
-                    ),
-                    itemCount:
-                        4, // Menyesuaikan dengan jumlah produk yang Anda punya
-                    itemBuilder: (context, index) {
-                      return ProductCard(
-                        imageUrl: 'assets/image/makeup.jpg',
-                        title: 'Nama Produk Tidak Ditemukan',
-                        brand: 'Brand Tidak Ditemukan',
-                      );
-                    },
-                  ),
-                  SizedBox(height: 16.0),
                   // Browse Button
                   Center(
                     child: ElevatedButton(
@@ -469,24 +523,37 @@ class FilterButton extends StatelessWidget {
 }
 
 class ProductCard extends StatelessWidget {
-  final String imageUrl;
+  // final String imageUrl;
   final String title;
   final String brand;
+  final String description;
+  final List<dynamic> productColors;
+  final int id;
 
   const ProductCard({
-    required this.imageUrl,
+    required this.id,
+    // required this.imageUrl,
     required this.title,
     required this.brand,
+    required this.description,
+    required this.productColors,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MakeupDetail(),
+            builder: (context) => ProductDetailPage(
+              id: id,
+              title: title,
+              brand: brand,
+              // imageUrl: imageUrl,
+              description: description,
+              productColors: productColors,
+            ),
           ),
         );
       },
@@ -496,17 +563,17 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+            // Expanded(
+            //   child: ClipRRect(
+            //     borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+            //     child: Image.network(
+            //       imageUrl,
+            //       fit: BoxFit.cover,
+            //     ),
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -538,6 +605,105 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class ProductDetailPage extends StatelessWidget {
+  final int id;
+  final String title;
+  final String brand;
+  // final String imageUrl;
+  final String description;
+  final List<dynamic> productColors;
+
+  const ProductDetailPage({
+    required this.id,
+    required this.title,
+    required this.brand,
+    // required this.imageUrl,
+    required this.description,
+    required this.productColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image.network(
+            //   imageUrl,
+            //   fit: BoxFit.cover,
+            //   errorBuilder: (context, error, stackTrace) {
+            //     return Image.asset('assets/image/makeup.jpg'); // Placeholder
+            //   },
+            //   width: double.infinity,
+            // ),
+            SizedBox(height: 16.0),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              "Brand: $brand",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              description.isNotEmpty
+                  ? description
+                  : "No description available.",
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              "Available Colors:",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Wrap(
+              spacing: 8.0,
+              children: productColors.map((color) {
+                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ColorBox extends StatelessWidget {
+  final String color;
+
+  const ColorBox({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 30,
+      height: 30,
+      decoration: BoxDecoration(
+        color: Color(int.parse("0xFF${color.substring(1)}")),
+        borderRadius: BorderRadius.circular(4.0),
       ),
     );
   }
