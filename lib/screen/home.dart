@@ -22,7 +22,7 @@ class _HomeState extends State<Home> {
 
   Future<List<dynamic>> fetchMakeupProducts() async {
     const url =
-        'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+        'http://0.0.0.0:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -51,6 +51,11 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    // Filter produk yang memiliki gambar valid
+    final validProducts = _makeupProducts.where((product) {
+      return product['image_link'] != null && product['image_link'].isNotEmpty;
+    }).toList();
+
     return MaterialApp(
       title: 'YourSkin-ID',
       theme: ThemeData(
@@ -78,52 +83,76 @@ class _HomeState extends State<Home> {
             crossAxisSpacing: 16.0,
             mainAxisSpacing: 16.0,
           ),
+          itemCount: validProducts.length, // Hanya produk valid yang dihitung
           itemBuilder: (context, index) {
-            return Card(
-              elevation: 4.0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _makeupProducts.isNotEmpty
-                    ? List.generate(
-                        _makeupProducts.length >= 6
-                            ? 6
-                            : _makeupProducts.length,
-                        (index) {
-                          final product = _makeupProducts[index];
-                          return GestureDetector(
-                            onTap: () {
-                              // Tambahkan fungsi jika Anda ingin melakukan sesuatu ketika gambar di-klik
-                              print('Clicked on ${product['name']}');
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                    product['image_link'] ??
-                                        'https://via.placeholder.com/50', // Gambar default jika image_link kosong
-                                  ),
-                                  fit: BoxFit.cover,
-                                ),
-                                borderRadius: BorderRadius.circular(5),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
+            final product = validProducts[index];
+
+            return GestureDetector(
+              onTap: () {
+                print('Clicked on ${product['name']}');
+              },
+              child: Card(
+                elevation: 4.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Gunakan Image.network dengan pengecekan error
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 6,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Image.network(
+                        product['image_link'], // URL gambar
+                        fit: BoxFit.cover,
+                        loadingBuilder: (BuildContext context, Widget child,
+                            ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          } else {
+                            return Center(child: CircularProgressIndicator());
+                          }
                         },
-                      )
-                    : [
-                        Text('No makeup products available')
-                      ], // Pesan saat data kosong
+                        errorBuilder: (BuildContext context, Object error,
+                            StackTrace? stackTrace) {
+                          // Jika gambar gagal dimuat, sembunyikan gambar dan card
+                          return Container(); // Gagal dimuat, tidak tampilkan gambar
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 8), // Memberi jarak antara gambar dan teks
+                    // Nama produk
+                    Text(
+                      product['name'] ?? 'Nama Produk',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 4), // Memberi jarak antara nama dan merek
+                    // Merek produk
+                    Text(
+                      product['brand'] ?? 'Merek Produk',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             );
           },
