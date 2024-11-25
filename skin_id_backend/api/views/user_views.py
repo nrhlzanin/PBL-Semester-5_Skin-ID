@@ -14,12 +14,30 @@ from api.models import Pengguna
 from api.models import Role
 from django.utils import timezone
 from django.http import JsonResponse
+from functools import wraps
 import uuid
 import jwt
 import requests
 import random
 import string
 
+# Pembuatan untuk verifikasi token pengguna/user
+def token_required(f):
+    @wraps(f)
+    def decorated_function(request, *args, **kwargs):
+        token = request.headers.get('Authorization')
+        if token:
+            token = token.replace('Bearer ','', 1)
+        if not token:
+            return Response({"error":"Token is required"},status=status.HTTP_401_UNAUTHORIZED)
+        user = Pengguna.objects.filter(token=token).first()
+        if not user:
+            return Response({"error":"Token invalid atau kadaluarsa"},status=status.HTTP_401_UNAUTHORIZED)
+        
+        request.user = user
+        return f(request, *args, **kwargs)
+    return decorated_function
+    
 @api_view(['POST'])
 def register_user(request):
     username = request.data.get('username')
@@ -35,13 +53,13 @@ def register_user(request):
         if Pengguna.objects.filter(email=email).exists():
             return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
 
-        role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
+        # role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
 
         pengguna = Pengguna.objects.create(
             username=username,
             password=make_password(password),
             email=email,
-            role_id=role,
+            role_id=1,
         )
 
         return Response({
@@ -95,39 +113,77 @@ def login_user(request):
     
     except Exception as e:
         return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-@api_view(['GET'])
-def get_user_profile(request):
-    token = request.headers.get('Authorization')
 
-    if token is None:
-        return Response({"error": "Token tidak ditemukan."}, status=status.HTTP_400_BAD_REQUEST)
-
-    token = token.replace("Bearer ", "")
-    
+@api_view(['PUT'])
+@token_required
+def edit_profile(request):
+    user_id = request.data.get('user_id')
+    username = request.data.get('username')
+    email = request.data.get('email')
+    jenis_kelamin = request.data.get('jenis_kelamin')
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        user_id = payload.get('user_id')
-        if not user_id:
-            return Response({"error": "User ID tidak ditemukan dalam token."}, status=status.HTTP_400_BAD_REQUEST)
+        pengguna = Pengguna.objects.get(user_id=user_id)
         
-        pengguna = Pengguna.objects.filter(user_id=user_id).first()
-        if pengguna is None:
-            return Response({'error': 'Pengguna tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
+        if email and Pengguna.objects.filter(email=email).exclude(id=user_id).exists():
+            return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
+        # Pembaruan data yg dikirim
+        if username:
+            pengguna.username = username
+        if email:
+            pengguna.email = email
+        if jenis_kelamin:
+            pengguna.jenis_kelamin = jenis_kelamin
         
+        pengguna.save()
+        return Response({
+            'message':'Data pengguna berhasil diubah',
+            'data': {
+                'username' : pengguna.username,
+                'email' : pengguna.email,
+                'jenis_kelamin' : pengguna.jenis_kelamin
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Pengguna.DoesNotExist:
+        print('An exception occurred')
+        return Response({"error":"Pengguna tidak ditemukan"}, status=status.HTTP_404_NOT_FOUND)
+    
+    except Exception as e:
+        return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@token_required
+def user_logout(request):
+    try:
+        token = request.data.get('token')
+        if not token:
+            return Response({"message": "Token dibutuhan"}, status=status.HTTP_400_BAD_REQUEST)
+    
+        pengguna = Pengguna.objects.filter(token=token).first()
+        if not pengguna:
+            return Response({"error":"Token is required"},status=status.HTTP_400_BAD_REQUEST)
+        
+        pengguna.token = None
+        pengguna.save()
+        
+        return Response({"message":"Logout berhasil!"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@token_required
+def get_user_profile(request):
+    try:
+        pengguna = request.user
         return Response({
             'id': pengguna.user_id,
             'username': pengguna.username,
             'email': pengguna.email,
+            'jenis kelamin': pengguna.jenis_kelamin,
             'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
             'role': pengguna.role_id if pengguna.role_id else "Not Set",
-            'last_login': pengguna.last_login,
         }, status=status.HTTP_200_OK)
         
-    except jwt.ExpiredSignatureError:
-        return Response({"error": "Token sudah kedaluwarsa."}, status=status.HTTP_401_UNAUTHORIZED)
-    except jwt.InvalidTokenError:
-        return Response({"error": "Token tidak valid."}, status=status.HTTP_401_UNAUTHORIZED)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     

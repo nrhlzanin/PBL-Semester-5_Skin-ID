@@ -71,6 +71,7 @@ class Pengguna(models.Model):
     username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=255, validators=[MinLengthValidator(6)])
     email = models.EmailField(max_length=100, unique=True)
+    jenis_kelamin = models.CharField(max_length=100, null=True, blank=True, choices=[('pria','pria'),('wanita','wanita')])
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
     created_at = models.DateTimeField(auto_now_add=True)
