@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http; // Import http package
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
+import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
@@ -21,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  List<dynamic> _makeupProducts = [];
 
   Future<List<dynamic>> fetchMakeupProducts() async {
     final url =
@@ -44,6 +44,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchMakeupProducts().then((data) {
+      setState(() {
+        _makeupProducts = data;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'YourSkin-ID',
@@ -56,6 +66,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+List<dynamic> _makeupProducts = [];
 
 class HomePage extends StatefulWidget {
   @override
@@ -77,7 +89,8 @@ class _HomePageState extends State<HomePage> {
       'category': 'Lipstick',
       'name': 'Lipstick A',
       'brand': 'Brand A',
-      'imageUrl': 'https://d3t32hsnjxo7q6.cloudfront.net/i/afefede002b8d94f6e53ea07dd4070f9_ra,w158,h184_pa,w158,h184.jpg'
+      'imageUrl':
+          'https://d3t32hsnjxo7q6.cloudfront.net/i/afefede002b8d94f6e53ea07dd4070f9_ra,w158,h184_pa,w158,h184.jpg'
     },
     {
       'category': 'Eyeliner',
@@ -108,11 +121,20 @@ class _HomePageState extends State<HomePage> {
           'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
     },
   ];
+
   @override
   Widget build(BuildContext context) {
+    //    final List<Map<String, String>> _makeupProducts = [
+    //   {'name': 'Lipstick', 'image_link': 'https://via.placeholder.com/150'},
+    //   {'name': 'Eyeliner', 'image_link': 'https://via.placeholder.com/150'},
+    //   {'name': 'Mascara', 'image_link': 'https://via.placeholder.com/150'},
+    //   // Add more mock data as needed
+    // ];
+
+    // List<dynamic> _makeupProducts = [];
     var filteredProducts = selectedCategory == 'All'
-        ? products
-        : products
+        ? _makeupProducts
+        : _makeupProducts
             .where((product) => product['category'] == selectedCategory)
             .toList();
     return Scaffold(
@@ -218,116 +240,143 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             // Updated makeup section with proper styling
-        Container(
-  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
-  width: double.infinity, // Mengisi lebar penuh layar
-  decoration: BoxDecoration(
-    color: Color(0xFF242424),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SizedBox(height: 7.0),
-      Text(
-        'Makeup',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 30,
-          fontFamily: 'Playfair Display',
-          fontWeight: FontWeight.w700,
-          height: 1.2,
-        ),
-      ),
-      SizedBox(height: 15.0),
-      Text(
-        'Find makeup that suits you with choices from many brands around the world.',
-        style: TextStyle(
-          color: Colors.white,
-        ),
-      ),
-      SizedBox(height: 15.0),
-      // Filter Buttons Section
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: categories.map((category) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: FilterButton(
-                label: category,
-                isSelected: selectedCategory == category,
-                onTap: () => setState(() {
-                  selectedCategory = category; // Set kategori yang dipilih
-                  // Filter produk berdasarkan kategori yang dipilih
-                  filteredProducts = products
-                      .where((product) =>
-                          product['category'] == selectedCategory)
-                      .toList();
-                }),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+              width: double.infinity, // Mengisi lebar penuh layar
+              decoration: BoxDecoration(
+                color: Color(0xFF242424),
               ),
-            );
-          }).toList(),
-        ),
-      ),
-      SizedBox(height: 20),
-      // Display selected category products in GridView
-      filteredProducts.isEmpty
-          ? Center(
-              child: Text(
-                'Not Found',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 7.0),
+                  Text(
+                    'Makeup',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontFamily: 'Playfair Display',
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                  ),
+                  SizedBox(height: 15.0),
+                  Text(
+                    'Find makeup that suits you with choices from many brands around the world.',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 15.0),
+                  // Filter Buttons Section
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: categories.map((category) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: FilterButton(
+                            label: category,
+                            isSelected: selectedCategory == category,
+                            onTap: () => setState(() {
+                              selectedCategory =
+                                  category; // Set kategori yang dipilih
+                              // Filter produk berdasarkan kategori yang dipilih
+                              filteredProducts = _makeupProducts
+                                  .where((product) =>
+                                      product['category'] == selectedCategory)
+                                  .toList();
+                            }),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  // Display selected category products in GridView
+                  filteredProducts.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Not Found',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.all(16.0),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                          ),
+                          itemCount: _makeupProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = _makeupProducts[index];
+                            return Card(
+                              elevation: 4.0,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0)),
+                              child: GestureDetector(
+                                onTap: () {
+                                  print('Clicked on ${product['name']}');
+                                },
+                                child: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                          product['image_link'] ??
+                                              'https://via.placeholder.com/50'),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    borderRadius: BorderRadius.circular(5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                  SizedBox(height: 16.0),
+                  // Browse Button
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ListProduct(),
+                          ),
+                        );
+                      },
+                      child: Text('Browse for more'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 255, 255, 255),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.0),
+                ],
               ),
-            )
-          : GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: MediaQuery.of(context).size.width > 600
-                    ? 3
-                    : 2, // 3 kolom untuk layar lebar, 2 kolom untuk layar kecil
-                crossAxisSpacing: 16.0,
-                mainAxisSpacing: 16.0,
-              ),
-              itemCount: filteredProducts.length, // Menggunakan filteredProducts
-              itemBuilder: (context, index) {
-                final product = filteredProducts[index]; // Ambil produk berdasarkan index
-                final brand = product['brand']!;
-                final name = product['name']!;
-                final imageUrl = product['imageUrl']!; // Ambil imageUrl dari produk
-
-                return ProductCard(
-                  imageUrl: imageUrl, // Gambar dari URL yang ada pada produk
-                  title: name,
-                  brand: brand,
-                  additionalImages: [], // Jika ada gambar tambahan, bisa ditambahkan di sini
-                );
-              },
             ),
-      SizedBox(height: 16.0),
-      // Browse Button
-      Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Aksi untuk Browse more
-          },
-          child: Text('Browse for more'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24.0),
-            ),
-          ),
-        ),
-      ),
-      SizedBox(height: 10.0),
-    ],
-  ),
-),
-
 
             // Text(
             //   'Inspirations from the community',
@@ -462,16 +511,20 @@ class FilterButton extends StatelessWidget {
 String selectedCategory = 'All';
 
 class ProductCard extends StatelessWidget {
-  final String imageUrl;
-  final List<String> additionalImages;
+  // final String imageUrl;
   final String title;
   final String brand;
+  final String description;
+  final List<dynamic> productColors;
+  final int id;
 
   const ProductCard({
-    required this.imageUrl,
+    required this.id,
+    // required this.imageUrl,
     required this.title,
     required this.brand,
-    required this.additionalImages,
+    required this.description,
+    required this.productColors,
   });
 
   @override
@@ -481,7 +534,14 @@ class ProductCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MakeupDetail(), // Halaman yang dituju
+            builder: (context) => ProductDetailPage(
+              id: id,
+              title: title,
+              brand: brand,
+              // imageUrl: imageUrl,
+              description: description,
+              productColors: productColors,
+            ),
           ),
         );
       },
@@ -491,17 +551,17 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+            // Expanded(
+            //   child: ClipRRect(
+            //     borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+            //     child: Image.network(
+            //       imageUrl,
+            //       fit: BoxFit.cover,
+            //     ),
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -510,23 +570,23 @@ class ProductCard extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14, // Adjusted font size
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Montserrat',
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1, // Ensures the title does not overflow
+                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
                   ),
                   SizedBox(height: 4),
                   Text(
                     brand,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12, // Adjusted font size
                       color: Colors.grey[700],
                       fontFamily: 'Montserrat',
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1, // Ensures the brand does not overflow
+                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
                   ),
                 ],
               ),
@@ -538,6 +598,86 @@ class ProductCard extends StatelessWidget {
   }
 }
 
+class ProductDetailPage extends StatelessWidget {
+  final int id;
+  final String title;
+  final String brand;
+  // final String imageUrl;
+  final String description;
+  final List<dynamic> productColors;
+
+  const ProductDetailPage({
+    required this.id,
+    required this.title,
+    required this.brand,
+    // required this.imageUrl,
+    required this.description,
+    required this.productColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image.network(
+            //   imageUrl,
+            //   fit: BoxFit.cover,
+            //   errorBuilder: (context, error, stackTrace) {
+            //     return Image.asset('assets/image/makeup.jpg'); // Placeholder
+            //   },
+            //   width: double.infinity,
+            // ),
+            SizedBox(height: 16.0),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              "Brand: $brand",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              description.isNotEmpty
+                  ? description
+                  : "No description available.",
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              "Available Colors:",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Wrap(
+              spacing: 8.0,
+              children: productColors.map((color) {
+                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 // class CommunityCard extends StatelessWidget {
 //   final String imageUrl;
