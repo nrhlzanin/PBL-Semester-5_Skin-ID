@@ -197,7 +197,7 @@ def get_user_profile(request):
 @api_view(['POST'])
 @token_required
 def update_skin(request):
-    user_id = request.data.get('user_id')
+    pengguna=request.user
     skintone_id = request.data.get('skintone_id')
     
     try:
@@ -206,7 +206,6 @@ def update_skin(request):
         return Response({'Error':"Skintone tidak ditemukan"},status=status.HTTP_400_BAD_REQUEST)
       
     try:
-        pengguna = Pengguna.objects.get(user_id=user_id)
         pengguna.skintone = skintone
         
         pengguna.save()
@@ -226,15 +225,14 @@ def update_skin(request):
 @api_view(['GET'])
 @token_required
 def get_user_skintone(request):
-    user_id = request.data.get('user_id')
     try:
-        pengguna = Pengguna.objects.get(user_id=user_id)
+        pengguna = request.user
         
         if pengguna.skintone is None:
             return Response({
                 'message':'Pengguna belum memiliki skinone',
                 'data':None
-            },status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_404_NOT_FOUND)
             
         return Response({
             'message':'Skintone pengguna didapatkan',
@@ -245,8 +243,6 @@ def get_user_skintone(request):
             }
         }, status=status.HTTP_200_OK)
     
-    except Pengguna.DoesNotExist:
-        return Response({"error":"Pengguna tidak ditemukan"},status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
