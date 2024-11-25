@@ -269,14 +269,14 @@ class _CreateAccountState extends State<CreateAccount> {
                             backgroundColor: Colors.white,
                             side: BorderSide(color: Colors.grey),
                             padding: EdgeInsets.symmetric(
-                              vertical: 13,
-                              horizontal: 73,
+                            vertical: 15, horizontal: 50
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),
+                             
                         SizedBox(height: 20),
                         Text.rich(
                           TextSpan(
