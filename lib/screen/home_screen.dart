@@ -322,27 +322,65 @@ class _HomePageState extends State<HomePage> {
                             return Card(
                               elevation: 4.0,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0)),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
                               child: GestureDetector(
                                 onTap: () {
                                   print('Clicked on ${product['name']}');
                                 },
-                                child: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage(
-                                          product['image_link'] ??
-                                              'https://via.placeholder.com/50'),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    borderRadius: BorderRadius.circular(5),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 4,
-                                        offset: Offset(0, 4),
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      // Gambar produk
+                                      Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: NetworkImage(
+                                              product['image_link'] ??
+                                                  'https://via.placeholder.com/50',
+                                            ),
+                                            fit: BoxFit.cover,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black12,
+                                              blurRadius: 4,
+                                              offset: Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          height:
+                                              8), // Jarak antara gambar dan teks nama produk
+                                      // Nama produk
+                                      Text(
+                                        product['name'] ?? 'Nama Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(
+                                          height:
+                                              4), // Jarak antara nama produk dan merek
+                                      // Merek produk
+                                      Text(
+                                        product['brand'] ?? 'Merek Produk',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 12,
+                                        ),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ],
                                   ),
