@@ -8,17 +8,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         skintones = [
-            {"skintone_name": "very_light", "skintone_description": "Rentan terhadap sengatan matahari"},
-            {"skintone_name": "light", "skintone_description": "Mudah terbakar panas matahari"},
-            {"skintone_name": "medium", "skintone_description": "Cenderung menjadi cokelat secara bertahap"},
-            {"skintone_name": "olive", "skintone_description": "Kulit cenderung mudah menjadi coklat"},
-            {"skintone_name": "brown", "skintone_description": "Jarang terbakar panas matahari"},
-            {"skintone_name": "dark", "skintone_description": "Tidak akan terbakar panas matahari"},
+            {"skintone_id":"1","skintone_name": "very_light", "skintone_description": "Rentan terhadap sengatan matahari","hex_range_start":"#FFDFC4","hex_range_end":"#FFE3CB"},
+            {"skintone_id":"2","skintone_name": "light", "skintone_description": "Mudah terbakar panas matahari","hex_range_start":"#F0D5BE","hex_range_end":"#FFD7B5"},
+            {"skintone_id":"3","skintone_name": "medium", "skintone_description": "Cenderung menjadi cokelat secara bertahap","hex_range_start":"#D1A684","hex_range_end":"#E3AC90"},
+            {"skintone_id":"4","skintone_name": "olive", "skintone_description": "Kulit cenderung mudah menjadi coklat","hex_range_start":"#A67C52","hex_range_end":"#B97D56"},
+            {"skintone_id":"5","skintone_name": "brown", "skintone_description": "Jarang terbakar panas matahari","hex_range_start":"825C3A","hex_range_end":"#936B4F"},
+            {"skintone_id":"6","skintone_name": "dark", "skintone_description": "Tidak akan terbakar panas matahari","hex_range_start":"#4A312C","hex_range_end":"5D3A35"},
         ]
         for skintone in skintones:
-            SkinTone.objects.get_or_create(
+            SkinTone.objects.update_or_create(
                 skintone_name=skintone['skintone_name'],
-                skintone_description=skintone['skintone_description']
+                skintone_description=skintone['skintone_description'],
+                hex_range_start=skintone['hex_range_start'],
+                hex_range_end=skintone['hex_range_end'],
             )
         self.stdout.write(self.style.SUCCESS("Skintones berhasil ditambahkan"))
 
