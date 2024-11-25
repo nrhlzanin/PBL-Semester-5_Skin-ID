@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from api.models import Pengguna
+from api.models import SkinTone
 from api.models import Role
 from django.utils import timezone
 from django.http import JsonResponse
@@ -192,18 +193,27 @@ def get_user_profile(request):
 def update_skin(request):
     user_id = request.data.get('user_id')
     skintone_id = request.data.get('skintone_id')
+    
+    try:
+        skintone = SkinTone.objects.get(skintone_id=skintone_id)
+    except SkinTone.DoesNotExist:
+        return Response({'Error':"Skintone tidak ditemukan"},status=status.HTTP_400_BAD_REQUEST)
+      
     try:
         pengguna = Pengguna.objects.get(user_id=user_id)
-        pengguna.skintone_id = skintone_id
+        pengguna.skintone = skintone
         
         pengguna.save()
         return Response({
             'message':'skintone pengguna berhasil ditambahkan',
             'data':{
                 'username':pengguna.username,
-                'skintone_id':pengguna.skintone_id
+                'skintone_id':pengguna.skintone_id,
+                'skintone_name':pengguna.skintone.name
             }
-        })
+        },status=status.HTTP_200_OK)
+    except Pengguna.DoesNotExist:
+        return Response({"error":"Pengguna tidak ditemukan"},status=status.HTTP_400_BAD_REQUEST)    
     except Exception as e:
         return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
