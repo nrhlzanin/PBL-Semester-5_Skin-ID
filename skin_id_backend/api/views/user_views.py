@@ -209,7 +209,7 @@ def update_skin(request):
             'data':{
                 'username':pengguna.username,
                 'skintone_id':pengguna.skintone_id,
-                'skintone_name':pengguna.skintone.name
+                'skintone_name':pengguna.skintone.skintone_name
             }
         },status=status.HTTP_200_OK)
     except Pengguna.DoesNotExist:

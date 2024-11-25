@@ -1,5 +1,5 @@
 from django.urls import path
-from api.views.user_views import register_user, login_user, verify_email
+from api.views.user_views import register_user, login_user, verify_email, update_skin
 from api.machine_learning.ml_model import predict_skin_tone_view
 from api.views.recomendation_views import recommend_foundation_by_skin_tone
 from api.views.makeup_product import fetch_filtered_makeup_products, fetch_makeup_products
@@ -9,6 +9,7 @@ urlpatterns = [
     path('verify-email/<str:token>/', verify_email, name='verify_email'),
     path('makeup-products/', fetch_filtered_makeup_products, name='makeup-products'),
     path('all-makeup-products/', fetch_makeup_products, name='all-makeup-products'),
+    path('update-skin/', update_skin, name='update-skin'),
     path('predict/', predict_skin_tone_view, name='predict-skin-tone'),
     path('recomendations/', recommend_foundation_by_skin_tone, name='foundation-recommendation'),
 ]
