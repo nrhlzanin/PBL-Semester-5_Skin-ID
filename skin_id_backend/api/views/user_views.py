@@ -225,7 +225,7 @@ def update_skin(request):
 
 @api_view(['GET'])
 @token_required
-def user_skintone(request):
+def get_user_skintone(request):
     user_id = request.data.get('user_id')
     try:
         pengguna = Pengguna.objects.get(user_id=user_id)
@@ -237,8 +237,9 @@ def user_skintone(request):
             },status=status.HTTP_404_NOT_FOUND)
             
         return Response({
-            'message':'Skintone Pengguna adalah',
+            'message':'Skintone pengguna didapatkan',
             'data':{
+                'username':pengguna.username,
                 'skintone':pengguna.skintone.skintone_name,
                 'deskripsi':pengguna.skintone.skintone_description
             }
