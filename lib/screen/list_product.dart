@@ -1,11 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
-import 'package:skin_id/screen/face-scan_screen.dart';
-import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 
 void main() {
@@ -21,20 +18,35 @@ class _ListProductState extends State<ListProduct> {
   final int _currentIndex = 0;
   final List<dynamic> _makeupProducts = [];
 
+<<<<<<< HEAD
   Future<List<dynamic>> fetchMakeupProducts() async {
     const url = 'http://192.168.1.7:8000/api/user/makeup-products/';
+=======
+  @override
+  void initState() {
+    super.initState();
+    fetchMakeupProducts();
+  }
+
+  Future<void> fetchMakeupProducts() async {
+    const url = 'http://192.168.1.4:8000/api/user/makeup-products/';
+>>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
     try {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        return data;
+        setState(() {
+          _makeupProducts = data;
+        });
       } else {
         throw Exception('Failed to load makeup products');
       }
     } catch (e) {
       print('Error fetching data: $e');
-      return [];
+      setState(() {
+        _makeupProducts = [];
+      });
     }
   }
 
@@ -46,13 +58,16 @@ class _ListProductState extends State<ListProduct> {
         primarySwatch: Colors.grey,
         fontFamily: 'caveat',
       ),
-      debugShowCheckedModeBanner: false, // Remove debug banner
-      home: HomePage(),
+      debugShowCheckedModeBanner: false,
+      home: HomePage(makeupProducts: _makeupProducts),
     );
   }
 }
 
 class HomePage extends StatelessWidget {
+  final List<dynamic> makeupProducts;
+  const HomePage({required this.makeupProducts});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,15 +116,12 @@ class HomePage extends StatelessWidget {
             ),
             Row(
               children: [
-                SizedBox(
-                  width: 16.0,
-                ),
+                SizedBox(width: 16.0),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                        top: 0, bottom: 5), // Mengurangi jarak atas dan bawah
+                    padding: const EdgeInsets.only(top: 0, bottom: 5),
                     child: Text(
-                      'Find the make up that suits you from many brands across the world with many categories.',
+                      'Find the makeup that suits you from many brands across the world with many categories.',
                       style: TextStyle(
                         color: const Color.fromARGB(255, 0, 0, 0),
                         fontSize: 12,
@@ -121,61 +133,50 @@ class HomePage extends StatelessWidget {
                 ),
               ],
             ),
-            // Updated makeup section with proper styling
+            // Filter Buttons Section
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
-              width: double.infinity, // Mengisi lebar penuh layar
-              decoration: BoxDecoration(
-                color: Color(0xFF242424),
-              ),
+              decoration: BoxDecoration(color: Color(0xFF242424)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 15.0),
-                  // Filter Buttons Section
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        FilterButton(
-                            label: 'All',
-                            isSelected: true,
-                            textColor: Colors.white),
+                        FilterButton(label: 'All', isSelected: true, textColor: Colors.white, onTap: () {}),
                         SizedBox(width: 8.0),
-                        FilterButton(
-                            label: 'Lipstick', textColor: Colors.white),
+                        FilterButton(label: 'Lipstick', textColor: Colors.white, onTap: () {}),
                         SizedBox(width: 8.0),
-                        FilterButton(
-                            label: 'Eyeliner', textColor: Colors.white),
+                        FilterButton(label: 'Eyeliner', textColor: Colors.white, onTap: () {}),
                         SizedBox(width: 8.0),
-                        FilterButton(label: 'Mascara', textColor: Colors.white),
+                        FilterButton(label: 'Mascara', textColor: Colors.white, onTap: () {}),
                       ],
                     ),
                   ),
                   SizedBox(height: 16.0),
                   // Responsive GridView Section
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width > 600
-                          ? 3
-                          : 2, // 3 kolom untuk layar lebar, 2 kolom untuk layar kecil
-                      crossAxisSpacing: 16.0,
-                      mainAxisSpacing: 16.0,
-                    ),
-                    itemCount:
-                        16, // Menyesuaikan dengan jumlah produk yang Anda punya
-                    itemBuilder: (context, index) {
-                      return ProductCard(
-                        imageUrl: 'assets/image/makeup.jpg',
-                        title: 'Nama Produk Tidak Ditemukan',
-                        brand: 'Brand Tidak Ditemukan',
-                      );
-                    },
-                  ),
-
-                  SizedBox(height: 10.0),
+                  makeupProducts.isNotEmpty
+                      ? GridView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.all(16.0),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2, // Responsive
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                          ),
+                          itemCount: makeupProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = makeupProducts[index];
+                            return ProductCard(
+                              imageUrl: product['image_link'] ?? 'https://via.placeholder.com/50',
+                              title: product['name'] ?? 'No Name',
+                              brand: product['brand'] ?? 'Unknown',
+                            );
+                          },
+                        )
+                      : Center(child: CircularProgressIndicator()),
                 ],
               ),
             ),
@@ -186,66 +187,55 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class CameraButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 60,
-      height: 60,
-      padding: const EdgeInsets.all(1),
-      clipBehavior: Clip.antiAlias,
-      decoration: ShapeDecoration(
-        color: Color(0xFF242424),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-      child: IconButton(
-        icon: Icon(Icons.camera_alt),
-        color: Colors.white,
-        onPressed: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    CameraPage()), // Ganti `[]` dengan daftar kamera jika diperlukan
-          );
-        },
-      ),
-    );
-  }
-}
-
-class AvatarImage extends StatelessWidget {
+class ProductCard extends StatelessWidget {
   final String imageUrl;
-  const AvatarImage({required this.imageUrl});
+  final String title;
+  final String brand;
+  const ProductCard({
+    required this.imageUrl,
+    required this.title,
+    required this.brand,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 64.0,
-      height: 64.0,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage(imageUrl),
-          fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to Makeup Details page if needed
+        print('Tapped on product: $title');
+      },
+      child: Card(
+        elevation: 4.0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+        child: Column(
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                child: Image.network(imageUrl, fit: BoxFit.cover),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                brand,
+                style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
-    );
-  }
-}
-
-class SkinToneColor extends StatelessWidget {
-  final Color color;
-  const SkinToneColor({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 32,
-      color: color,
-      margin: EdgeInsets.all(4.0),
     );
   }
 }
@@ -256,7 +246,7 @@ class FilterButton extends StatelessWidget {
   const FilterButton({
     required this.label,
     this.isSelected = false,
-    required Color textColor,
+    required Color textColor, required Null Function() onTap,
   });
 
   @override
@@ -272,81 +262,6 @@ class FilterButton extends StatelessWidget {
         ),
       ),
       child: Text(label),
-    );
-  }
-}
-
-class ProductCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String brand;
-
-  const ProductCard({
-    required this.imageUrl,
-    required this.title,
-    required this.brand,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MakeupDetail(), // Halaman yang dituju
-          ),
-        );
-      },
-      child: Card(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    brand,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

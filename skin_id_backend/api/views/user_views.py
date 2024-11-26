@@ -22,7 +22,11 @@ import requests
 import random
 import string
 
+<<<<<<< HEAD
 # Pembuatan token check untuk verifikasi token pengguna/user
+=======
+# Pembuatan untuk verifikasi token pengguna/user
+>>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 def token_required(f):
     @wraps(f)
     def decorated_function(request, *args, **kwargs):
@@ -39,7 +43,10 @@ def token_required(f):
         return f(request, *args, **kwargs)
     return decorated_function
     
+<<<<<<< HEAD
 # REGISTER USER
+=======
+>>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['POST'])
 def register_user(request):
     username = request.data.get('username')
@@ -117,7 +124,10 @@ def login_user(request):
     except Exception as e:
         return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+<<<<<<< HEAD
 # EDIT DATA USER
+=======
+>>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['PUT'])
 @token_required
 def edit_profile(request):
@@ -155,7 +165,10 @@ def edit_profile(request):
     except Exception as e:
         return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+<<<<<<< HEAD
 # LOGOUT USER
+=======
+>>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['POST'])
 @token_required
 def user_logout(request):
@@ -175,7 +188,10 @@ def user_logout(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+<<<<<<< HEAD
 # USER PROFILE
+=======
+>>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['GET'])
 @token_required
 def get_user_profile(request):
@@ -192,6 +208,7 @@ def get_user_profile(request):
         
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+<<<<<<< HEAD
 
 # UPDATE SKINTONE UNTUK USER
 @api_view(['POST'])
@@ -248,6 +265,9 @@ def get_user_skintone(request):
 
 
 # VEIRFY EMAIL (blm terpakai)
+=======
+    
+>>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['GET'])
 def verify_email(request, token):
     try:

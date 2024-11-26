@@ -61,7 +61,7 @@ def fetch_filtered_makeup_products(request):
             }
             filtered_data.append(filtered_product)
         
-        filtered_data = filtered_data[:1]
+        # filtered_data = filtered_data[:1]
         return JsonResponse(filtered_data, safe=False, status=200)        
     except requests.exceptions.RequestException as e:
         return JsonResponse({"error": str(e)}, status = 500)
