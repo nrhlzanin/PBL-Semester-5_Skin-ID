@@ -287,10 +287,15 @@ class _HomePageState extends State<HomePage> {
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                               child: GestureDetector(
-                                onTap: () {
-                                  print('Clicked on ${product['name']}');
-                                },
-                                
+                                  onTap: () {
+                    // Navigasi ke MakeupDetail dengan data produk
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MakeupDetail(product: product),
+                      ),
+                    );
+                  },
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

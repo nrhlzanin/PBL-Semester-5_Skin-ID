@@ -332,7 +332,7 @@ class ProductCard extends StatelessWidget {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MakeupDetail(),
+            builder: (context) => MakeupDetail(product: {},),
           ),
         );
       },
