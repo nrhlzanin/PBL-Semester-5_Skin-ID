@@ -18,11 +18,11 @@ class ListProduct extends StatefulWidget {
 }
 
 class _ListProductState extends State<ListProduct> {
-  int _currentIndex = 0;
-  List<dynamic> _makeupProducts = [];
+  final int _currentIndex = 0;
+  final List<dynamic> _makeupProducts = [];
 
   Future<List<dynamic>> fetchMakeupProducts() async {
-    final url = 'http://192.168.1.7:8000/api/user/makeup-products/';
+    const url = 'http://192.168.1.7:8000/api/user/makeup-products/';
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -263,7 +263,6 @@ class FilterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () {},
-      child: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: isSelected
             ? const Color.fromARGB(255, 186, 190, 199)
@@ -272,6 +271,7 @@ class FilterButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
       ),
+      child: Text(label),
     );
   }
 }

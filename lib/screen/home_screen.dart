@@ -443,7 +443,7 @@ class FilterButton extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  FilterButton(
+  const FilterButton(
       {required this.label, required this.isSelected, required this.onTap});
 
   @override
