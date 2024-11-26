@@ -82,45 +82,10 @@ class _HomePageState extends State<HomePage> {
     'Eyeliner',
     'Mascara',
     'Cushion',
-    'Fondation'
+    'Foundation'
   ];
-  List<Map<String, dynamic>> products = [
-    {
-      'category': 'Lipstick',
-      'name': 'Lipstick A',
-      'brand': 'Brand A',
-      'imageUrl':
-          'https://d3t32hsnjxo7q6.cloudfront.net/i/afefede002b8d94f6e53ea07dd4070f9_ra,w158,h184_pa,w158,h184.jpg'
-    },
-    {
-      'category': 'Eyeliner',
-      'name': 'Eyeliner B',
-      'brand': 'Brand B',
-      'imageUrl':
-          'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
-    },
-    {
-      'category': 'Mascara',
-      'name': 'Mascara C',
-      'brand': 'Brand C',
-      'imageUrl':
-          'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
-    },
-    {
-      'category': 'Cushion',
-      'name': 'Cushion D',
-      'brand': 'Brand D',
-      'imageUrl':
-          'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
-    },
-    {
-      'category': 'Foundation',
-      'name': 'Foundation E',
-      'brand': 'Brand E',
-      'imageUrl':
-          'https://d3t32hsnjxo7q6.cloudfront.net/i/7a31b075cf9c0ae4e6eba9ca61c587a7_ra,w158,h184_pa,w158,h184.png'
-    },
-  ];
+  // Menyimpan kategori yang dipilih
+  String selectedCategory = 'All';
 
   @override
   Widget build(BuildContext context) {
@@ -132,11 +97,14 @@ class _HomePageState extends State<HomePage> {
     // ];
 
     // List<dynamic> _makeupProducts = [];
-    var filteredProducts = selectedCategory == 'All'
+    List<dynamic> filteredProducts = selectedCategory == 'All'
         ? _makeupProducts
         : _makeupProducts
-            .where((product) => product['category'] == selectedCategory)
+            .where((product) =>
+                product['product_type']?.toString().toLowerCase() ==
+                selectedCategory.toLowerCase())
             .toList();
+
     return Scaffold(
       drawer: Navbar(),
       appBar: AppBar(
@@ -271,26 +239,21 @@ class _HomePageState extends State<HomePage> {
                   // Filter Buttons Section
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: categories.map((category) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: FilterButton(
-                            label: category,
-                            isSelected: selectedCategory == category,
-                            onTap: () => setState(() {
-                              selectedCategory =
-                                  category; // Set kategori yang dipilih
-                              // Filter produk berdasarkan kategori yang dipilih
-                              filteredProducts = _makeupProducts
-                                  .where((product) =>
-                                      product['category'] == selectedCategory)
-                                  .toList();
-                            }),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                 child: Row(
+  children: categories.map((product_type) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: FilterButton(
+        label: product_type,
+        isSelected: selectedCategory == product_type, // Check if this category is selected
+        onTap: () => setState(() {
+          selectedCategory = product_type; // Set the selected category
+        }),
+      ),
+    );
+  }).toList(),
+),
+
                   ),
                   SizedBox(height: 20),
                   // Display selected category products in GridView
@@ -316,9 +279,10 @@ class _HomePageState extends State<HomePage> {
                             crossAxisSpacing: 16.0,
                             mainAxisSpacing: 16.0,
                           ),
-                          itemCount: _makeupProducts.length,
+                          itemCount: filteredProducts.length,
                           itemBuilder: (context, index) {
-                            final product = _makeupProducts[index];
+                            final product = filteredProducts[index];
+
                             return Card(
                               elevation: 4.0,
                               shape: RoundedRectangleBorder(
@@ -328,62 +292,69 @@ class _HomePageState extends State<HomePage> {
                                 onTap: () {
                                   print('Clicked on ${product['name']}');
                                 },
-                                child: Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      // Gambar produk
-                                      Container(
-                                        width: 100,
-                                        height: 100,
-                                        decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                            image: NetworkImage(
-                                              product['image_link'] ??
-                                                  'https://via.placeholder.com/50',
-                                            ),
-                                            fit: BoxFit.cover,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Gambar produk
+                                    Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                            product['image_link'] ??
+                                                'https://via.placeholder.com/50',
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black12,
-                                              blurRadius: 4,
-                                              offset: Offset(0, 4),
-                                            ),
-                                          ],
+                                          fit: BoxFit.cover,
                                         ),
+                                        borderRadius: BorderRadius.circular(5),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 4,
+                                            offset: Offset(0, 4),
+                                          ),
+                                        ],
                                       ),
-                                      SizedBox(
-                                          height:
-                                              8), // Jarak antara gambar dan teks nama produk
-                                      // Nama produk
-                                      Text(
-                                        product['name'] ?? 'Nama Produk',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                        textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            8), // Jarak antara gambar dan teks nama produk
+
+                                    // Nama produk
+                                    Text(
+                                      product['product_type'] ?? 'Tipe Produk',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
                                       ),
-                                      SizedBox(
-                                          height:
-                                              4), // Jarak antara nama produk dan merek
-                                      // Merek produk
-                                      Text(
-                                        product['brand'] ?? 'Merek Produk',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 12,
-                                        ),
-                                        textAlign: TextAlign.center,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            4), // Jarak antara nama produk dan merek
+                                    Text(
+                                      product['name'] ?? 'Nama Produk',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
                                       ),
-                                    ],
-                                  ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            4), // Jarak antara nama produk dan merek
+
+                                    // Merek produk
+                                    Text(
+                                      product['brand'] ?? 'Merek Produk',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 10,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
