@@ -78,25 +78,22 @@ class _HomePageState extends State<HomePage> {
   // Daftar kategori untuk filter
   List<String> categories = [
     'All',
+    'Foundation',
     'Lipstick',
     'Eyeliner',
     'Mascara',
     'Cushion',
-    'Foundation'
+    'bronzer',
+    'eyeshadow',
+    'blush',
+    'lip_liner',
+    'nail_polish',
   ];
   // Menyimpan kategori yang dipilih
   String selectedCategory = 'All';
 
   @override
   Widget build(BuildContext context) {
-    //    final List<Map<String, String>> _makeupProducts = [
-    //   {'name': 'Lipstick', 'image_link': 'https://via.placeholder.com/150'},
-    //   {'name': 'Eyeliner', 'image_link': 'https://via.placeholder.com/150'},
-    //   {'name': 'Mascara', 'image_link': 'https://via.placeholder.com/150'},
-    //   // Add more mock data as needed
-    // ];
-
-    // List<dynamic> _makeupProducts = [];
     List<dynamic> filteredProducts = selectedCategory == 'All'
         ? _makeupProducts
         : _makeupProducts
@@ -239,21 +236,22 @@ class _HomePageState extends State<HomePage> {
                   // Filter Buttons Section
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                 child: Row(
-  children: categories.map((product_type) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: FilterButton(
-        label: product_type,
-        isSelected: selectedCategory == product_type, // Check if this category is selected
-        onTap: () => setState(() {
-          selectedCategory = product_type; // Set the selected category
-        }),
-      ),
-    );
-  }).toList(),
-),
-
+                    child: Row(
+                      children: categories.map((product_type) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: FilterButton(
+                            label: product_type,
+                            isSelected: selectedCategory ==
+                                product_type, // Check if this category is selected
+                            onTap: () => setState(() {
+                              selectedCategory =
+                                  product_type; // Set the selected category
+                            }),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                   SizedBox(height: 20),
                   // Display selected category products in GridView
@@ -292,12 +290,16 @@ class _HomePageState extends State<HomePage> {
                                 onTap: () {
                                   print('Clicked on ${product['name']}');
                                 },
+                                
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     // Gambar produk
+                                         SizedBox(
+                                        height:
+                                            8),
                                     Container(
-                                      width: 50,
+                                      width: 70,
                                       height: 50,
                                       decoration: BoxDecoration(
                                         image: DecorationImage(
@@ -311,8 +313,8 @@ class _HomePageState extends State<HomePage> {
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.black12,
-                                            blurRadius: 4,
-                                            offset: Offset(0, 4),
+                                            blurRadius: 0,
+                                           
                                           ),
                                         ],
                                       ),
