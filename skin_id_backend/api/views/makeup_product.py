@@ -57,7 +57,7 @@ def fetch_filtered_makeup_products(request):
                 "image_link": product.get("image_link"),
                 "description": product.get("description"),
                 "product_type": product.get("product_type"),
-                # "product_colors": product.get("product_colors")
+                "product_colors": product.get("product_colors")
             }
             filtered_data.append(filtered_product)
         

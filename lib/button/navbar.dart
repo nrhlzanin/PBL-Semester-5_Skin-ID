@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:skin_id/screen/account_screen.dart';
+import 'package:skin_id/screen/recomendation.dart';
 import 'package:skin_id/screen/skin_identification.dart';
 
 class Navbar extends StatelessWidget {
