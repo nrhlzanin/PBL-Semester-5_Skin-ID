@@ -11,7 +11,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from api.models import Pengguna
-from api.models import SkinTone
 from api.models import Role
 from django.utils import timezone
 from django.http import JsonResponse
@@ -22,11 +21,7 @@ import requests
 import random
 import string
 
-<<<<<<< HEAD
-# Pembuatan token check untuk verifikasi token pengguna/user
-=======
 # Pembuatan untuk verifikasi token pengguna/user
->>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 def token_required(f):
     @wraps(f)
     def decorated_function(request, *args, **kwargs):
@@ -43,10 +38,6 @@ def token_required(f):
         return f(request, *args, **kwargs)
     return decorated_function
     
-<<<<<<< HEAD
-# REGISTER USER
-=======
->>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['POST'])
 def register_user(request):
     username = request.data.get('username')
@@ -82,7 +73,6 @@ def register_user(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# USER LOGIN
 @api_view(['POST'])
 def login_user(request):
     # username_or_email = request.data.get('email_or_username')
@@ -124,10 +114,6 @@ def login_user(request):
     except Exception as e:
         return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-<<<<<<< HEAD
-# EDIT DATA USER
-=======
->>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['PUT'])
 @token_required
 def edit_profile(request):
@@ -165,10 +151,6 @@ def edit_profile(request):
     except Exception as e:
         return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-<<<<<<< HEAD
-# LOGOUT USER
-=======
->>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['POST'])
 @token_required
 def user_logout(request):
@@ -188,10 +170,6 @@ def user_logout(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-<<<<<<< HEAD
-# USER PROFILE
-=======
->>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['GET'])
 @token_required
 def get_user_profile(request):
@@ -208,66 +186,7 @@ def get_user_profile(request):
         
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-<<<<<<< HEAD
-
-# UPDATE SKINTONE UNTUK USER
-@api_view(['POST'])
-@token_required
-def update_skin(request):
-    pengguna=request.user
-    skintone_id = request.data.get('skintone_id')
     
-    try:
-        skintone = SkinTone.objects.get(skintone_id=skintone_id)
-    except SkinTone.DoesNotExist:
-        return Response({'Error':"Skintone tidak ditemukan"},status=status.HTTP_400_BAD_REQUEST)
-      
-    try:
-        pengguna.skintone = skintone
-        
-        pengguna.save()
-        return Response({
-            'message':'skintone pengguna berhasil ditambahkan',
-            'data':{
-                'username':pengguna.username,
-                'skintone_id':pengguna.skintone_id,
-                'skintone_name':pengguna.skintone.skintone_name
-            }
-        },status=status.HTTP_200_OK)
-    except Pengguna.DoesNotExist:
-        return Response({"error":"Pengguna tidak ditemukan"},status=status.HTTP_400_BAD_REQUEST)    
-    except Exception as e:
-        return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['GET'])
-@token_required
-def get_user_skintone(request):
-    try:
-        pengguna = request.user
-        
-        if pengguna.skintone is None:
-            return Response({
-                'message':'Pengguna belum memiliki skinone',
-                'data':None
-            }, status=status.HTTP_404_NOT_FOUND)
-            
-        return Response({
-            'message':'Skintone pengguna didapatkan',
-            'data':{
-                'username':pengguna.username,
-                'skintone':pengguna.skintone.skintone_name,
-                'deskripsi':pengguna.skintone.skintone_description
-            }
-        }, status=status.HTTP_200_OK)
-    
-    except Exception as e:
-        return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-# VEIRFY EMAIL (blm terpakai)
-=======
-    
->>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
 @api_view(['GET'])
 def verify_email(request, token):
     try:
@@ -294,7 +213,6 @@ def verify_email(request, token):
     except Pengguna.DoesNotExist:
         return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
-#Send email (blm terpakai, rencana untuk forget password) 
 def send_verification_email(user):
     """
     Fungsi untuk mengirim email verifikasi ke pengguna

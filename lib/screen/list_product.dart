@@ -1,3 +1,5 @@
+// ignore_for_file: unused_field, avoid_print
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,21 +18,11 @@ class ListProduct extends StatefulWidget {
 
 class _ListProductState extends State<ListProduct> {
   final int _currentIndex = 0;
-  final List<dynamic> _makeupProducts = [];
-
-<<<<<<< HEAD
-  Future<List<dynamic>> fetchMakeupProducts() async {
-    const url = 'http://192.168.1.7:8000/api/user/makeup-products/';
-=======
-  @override
-  void initState() {
-    super.initState();
-    fetchMakeupProducts();
-  }
+  List<dynamic> _makeupProducts = [];
 
   Future<void> fetchMakeupProducts() async {
     const url = 'http://192.168.1.4:8000/api/user/makeup-products/';
->>>>>>> e2acc31009f302e9ad4096d45a3fdc52d6fc3e03
+
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -48,6 +40,12 @@ class _ListProductState extends State<ListProduct> {
         _makeupProducts = [];
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMakeupProducts();
   }
 
   @override
@@ -83,17 +81,15 @@ class HomePage extends StatelessWidget {
           ),
         ),
         actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
-              },
-            ),
+          IconButton(
+            icon: Icon(Icons.notifications),
+            color: Colors.black,
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -106,7 +102,7 @@ class HomePage extends StatelessWidget {
               child: Text(
                 'Search for Beauty',
                 style: TextStyle(
-                  color: const Color.fromARGB(255, 0, 0, 0),
+                  color: Colors.black,
                   fontSize: 30,
                   fontFamily: 'Playfair Display',
                   fontWeight: FontWeight.w700,
@@ -114,55 +110,46 @@ class HomePage extends StatelessWidget {
                 ),
               ),
             ),
-            Row(
-              children: [
-                SizedBox(width: 16.0),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 0, bottom: 5),
-                    child: Text(
-                      'Find the makeup that suits you from many brands across the world with many categories.',
-                      style: TextStyle(
-                        color: const Color.fromARGB(255, 0, 0, 0),
-                        fontSize: 12,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 0, bottom: 5),
+              child: Text(
+                'Find the makeup that suits you from many brands across the world with many categories.',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w400,
                 ),
-              ],
+              ),
             ),
-            // Filter Buttons Section
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
               decoration: BoxDecoration(color: Color(0xFF242424)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 15.0),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        FilterButton(label: 'All', isSelected: true, textColor: Colors.white, onTap: () {}),
+                        FilterButton(label: 'All', isSelected: true, onTap: () {}),
                         SizedBox(width: 8.0),
-                        FilterButton(label: 'Lipstick', textColor: Colors.white, onTap: () {}),
+                        FilterButton(label: 'Lipstick', onTap: () {}),
                         SizedBox(width: 8.0),
-                        FilterButton(label: 'Eyeliner', textColor: Colors.white, onTap: () {}),
+                        FilterButton(label: 'Eyeliner', onTap: () {}),
                         SizedBox(width: 8.0),
-                        FilterButton(label: 'Mascara', textColor: Colors.white, onTap: () {}),
+                        FilterButton(label: 'Mascara', onTap: () {}),
                       ],
                     ),
                   ),
                   SizedBox(height: 16.0),
-                  // Responsive GridView Section
                   makeupProducts.isNotEmpty
                       ? GridView.builder(
                           shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
                           padding: EdgeInsets.all(16.0),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2, // Responsive
+                            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
                             crossAxisSpacing: 16.0,
                             mainAxisSpacing: 16.0,
                           ),
@@ -170,7 +157,7 @@ class HomePage extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final product = makeupProducts[index];
                             return ProductCard(
-                              imageUrl: product['image_link'] ?? 'https://via.placeholder.com/50',
+                              imageUrl: product['image_link'] ?? 'https://via.placeholder.com/150',
                               title: product['name'] ?? 'No Name',
                               brand: product['brand'] ?? 'Unknown',
                             );
@@ -191,6 +178,7 @@ class ProductCard extends StatelessWidget {
   final String imageUrl;
   final String title;
   final String brand;
+
   const ProductCard({
     required this.imageUrl,
     required this.title,
@@ -201,7 +189,6 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Navigate to Makeup Details page if needed
         print('Tapped on product: $title');
       },
       child: Card(
@@ -243,25 +230,30 @@ class ProductCard extends StatelessWidget {
 class FilterButton extends StatelessWidget {
   final String label;
   final bool isSelected;
+  final VoidCallback onTap;
+
   const FilterButton({
     required this.label,
     this.isSelected = false,
-    required Color textColor, required Null Function() onTap,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected
-            ? const Color.fromARGB(255, 186, 190, 199)
-            : const Color.fromARGB(255, 255, 255, 255),
+        backgroundColor: isSelected ? Colors.grey[700] : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
       ),
-      child: Text(label),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.white : Colors.black,
+        ),
+      ),
     );
   }
 }
