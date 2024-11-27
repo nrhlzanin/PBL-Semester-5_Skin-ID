@@ -21,7 +21,10 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _currentIndex = 0;
+  final int _currentIndex = 0;
+  List<dynamic> _makeupProducts = [];
+  // bool _isLoading = true;
+  // bool _isError = false;
 
   Future<List<dynamic>> fetchMakeupProducts() async {
     final url =
