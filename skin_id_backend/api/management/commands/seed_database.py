@@ -12,8 +12,8 @@ class Command(BaseCommand):
             {"skintone_id":"2","skintone_name": "light", "skintone_description": "Mudah terbakar panas matahari","hex_range_start":"#F0D5BE","hex_range_end":"#FFD7B5"},
             {"skintone_id":"3","skintone_name": "medium", "skintone_description": "Cenderung menjadi cokelat secara bertahap","hex_range_start":"#D1A684","hex_range_end":"#E3AC90"},
             {"skintone_id":"4","skintone_name": "olive", "skintone_description": "Kulit cenderung mudah menjadi coklat","hex_range_start":"#A67C52","hex_range_end":"#B97D56"},
-            {"skintone_id":"5","skintone_name": "brown", "skintone_description": "Jarang terbakar panas matahari","hex_range_start":"825C3A","hex_range_end":"#936B4F"},
-            {"skintone_id":"6","skintone_name": "dark", "skintone_description": "Tidak akan terbakar panas matahari","hex_range_start":"#4A312C","hex_range_end":"5D3A35"},
+            {"skintone_id":"5","skintone_name": "brown", "skintone_description": "Jarang terbakar panas matahari","hex_range_start":"#825C3A","hex_range_end":"#936B4F"},
+            {"skintone_id":"6","skintone_name": "dark", "skintone_description": "Tidak akan terbakar panas matahari","hex_range_start":"#4A312C","hex_range_end":"#5D3A35"},
         ]
         for skintone in skintones:
             SkinTone.objects.update_or_create(
