@@ -397,43 +397,43 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // Text(
-            //   'Inspirations from the community',
-            //   style: TextStyle(
-            //     color: Colors.black,
-            //     fontSize: 25,
-            //     fontFamily: 'Playfair Display',
-            //     fontWeight: FontWeight.w700,
-            //     height: 4,
-            //   ),
-            // ),
-            // GridView.count(
-            //   crossAxisCount: 2,
-            //   shrinkWrap: true,
-            //   physics: NeverScrollableScrollPhysics(),
-            //   crossAxisSpacing: 16.0,
-            //   mainAxisSpacing: 16.0,
-            //   children: [
-            //     CommunityCard(
-            //       imageUrl:
-            //           'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
-            //       title: 'Tutorial make up shade',
-            //       subtitle: 'Tutorial make up',
-            //       author: 'Beauty',
-            //       likes: 2017,
-            //       comments: 333,
-            //     ),
-            //     CommunityCard(
-            //       imageUrl:
-            //           'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
-            //       title: 'Lumme brand new products',
-            //       subtitle: 'Lumme',
-            //       author: 'Women',
-            //       likes: 1115,
-            //       comments: 555,
-            //     ),
-            //   ],
-            // ),
+            Text(
+              'Inspirations from the community',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 25,
+                fontFamily: 'Playfair Display',
+                fontWeight: FontWeight.w700,
+                height: 4,
+              ),
+            ),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              children: [
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
+                  title: 'Tutorial make up shade',
+                  subtitle: 'Tutorial make up',
+                  author: 'Beauty',
+                  likes: 2017,
+                  comments: 333,
+                ),
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
+                  title: 'Lumme brand new products',
+                  subtitle: 'Lumme',
+                  author: 'Women',
+                  likes: 1115,
+                  comments: 555,
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -698,98 +698,102 @@ class ProductDetailPage extends StatelessWidget {
   }
 }
 
-// class CommunityCard extends StatelessWidget {
-//   final String imageUrl;
-//   final String title;
-//   final String subtitle;
-//   final String author;
-//   final int likes;
-//   final int comments;
+class CommunityCard extends StatelessWidget {
+  final String imageUrl;
+  final String title;
+  final String subtitle;
+  final String author;
+  final int likes;
+  final int comments;
 
-//   const CommunityCard({
-//     required this.imageUrl,
-//     required this.title,
-//     required this.subtitle,
-//     required this.author,
-//     required this.likes,
-//     required this.comments,
-//   });
+  const CommunityCard({
+    required this.imageUrl,
+    required this.title,
+    required this.subtitle,
+    required this.author,
+    required this.likes,
+    required this.comments,
+  });
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       elevation: 8.0,
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(12.0),
-//       ),
-//       child: Column(
-//         children: [
-//           // Set a fixed height for the image
-//           Container(
-//             height: 150, // Fixed height for the image
-//             decoration: BoxDecoration(
-//               borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
-//               image: DecorationImage(
-//                 image: NetworkImage(imageUrl),
-//                 fit: BoxFit.cover,
-//               ),
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.all(8.0),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 // Title with overflow handling
-//                 Text(
-//                   maxLines: 1,
-//                   overflow: TextOverflow.ellipsis,
-//                   title,
-//                   style: TextStyle(fontWeight: FontWeight.bold),
-//                 ),
-//                 SizedBox(height: 4.0),
-//                 // Subtitle with overflow handling
-//                 Text(
-//                   subtitle,
-//                   maxLines: 1,
-//                   overflow: TextOverflow.ellipsis,
-//                 ),
-//                 SizedBox(height: 4.0),
-//                 // Author text
-//                 Text(
-//                   'By $author',
-//                   style: TextStyle(fontSize: 12),
-//                 ),
-//                 SizedBox(height: 8.0),
-//                 // Likes and comments section
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     Row(
-//                       children: [
-//                         Icon(Icons.thumb_up, size: 16),
-//                         SizedBox(width: 4.0),
-//                         Text('$likes'),
-//                       ],
-//                     ),
-//                     Row(
-//                       children: [
-//                         Icon(Icons.comment, size: 16),
-//                         SizedBox(width: 4.0),
-//                         Text('$comments'),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 8.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Column(
+        children: [
+          // Gambar dengan tinggi tetap
+          Container(
+            height: 150, // Tinggi tetap untuk gambar
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
+              image: DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // Konten Card dengan Scroll jika terlalu panjang
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Judul dengan overflow handling
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 4.0),
+                    // Subtitle dengan overflow handling
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.0),
+                    // Penulis
+                    Text(
+                      'By $author',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    SizedBox(height: 8.0),
+                    // Likes dan Comments
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.thumb_up, size: 16),
+                            SizedBox(width: 4.0),
+                            Text('$likes'),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(Icons.comment, size: 16),
+                            SizedBox(width: 4.0),
+                            Text('$comments'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 class ColorBox extends StatelessWidget {
   final String color;
 

@@ -30,7 +30,8 @@ class MyApp extends StatelessWidget {
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
       // home: CreateLogin(), // Start with the CreateLogin screen
-      home: Home(), // Start with the CreateLogin screen
+      home: HomeScreen(), // Start with the CreateLogin screen
+      // home: MakeupDetail(product: {},), // Start with the CreateLogin screen
       routes: {
         '/login': (context) => Login(), // Define the /login route
         '/homescreen': (context) => HomeScreen(), // Define the /home route
