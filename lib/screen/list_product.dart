@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field, avoid_print
+
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -24,7 +24,6 @@ class _ListProductState extends State<ListProduct> {
     final url =
         // 'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
         'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
-
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -49,12 +48,6 @@ class _ListProductState extends State<ListProduct> {
         _makeupProducts = data;
       });
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchMakeupProducts();
   }
 
   @override
@@ -118,15 +111,17 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            color: Colors.black,
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => NotificationScreen()),
-              );
-            },
+          Container(
+            child: IconButton(
+              icon: Icon(Icons.notifications),
+              color: Colors.black,
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => NotificationScreen()),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -139,7 +134,7 @@ class _HomePageState extends State<HomePage> {
               child: Text(
                 'Search for Beauty',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: const Color.fromARGB(255, 0, 0, 0),
                   fontSize: 30,
                   fontFamily: 'Playfair Display',
                   fontWeight: FontWeight.w700,
@@ -147,57 +142,32 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16, top: 0, bottom: 5),
-              child: Text(
-                'Find the makeup that suits you from many brands across the world with many categories.',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
+            Row(
+              children: [
+                SizedBox(width: 16.0),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 0, bottom: 5),
+                    child: Text(
+                      'Find the makeup that suits you from many brands across the world with many categories.',
+                      style: TextStyle(
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                        fontSize: 12,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
+            // Filter Buttons Section
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
               decoration: BoxDecoration(color: Color(0xFF242424)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        FilterButton(label: 'All', isSelected: true, onTap: () {}),
-                        SizedBox(width: 8.0),
-                        FilterButton(label: 'Lipstick', onTap: () {}),
-                        SizedBox(width: 8.0),
-                        FilterButton(label: 'Eyeliner', onTap: () {}),
-                        SizedBox(width: 8.0),
-                        FilterButton(label: 'Mascara', onTap: () {}),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 16.0),
-                  makeupProducts.isNotEmpty
-                      ? GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          padding: EdgeInsets.all(16.0),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
-                          ),
-                          itemCount: makeupProducts.length,
-                          itemBuilder: (context, index) {
-                            final product = makeupProducts[index];
-                            return ProductCard(
-                              imageUrl: product['image_link'] ?? 'https://via.placeholder.com/150',
-                              title: product['name'] ?? 'No Name',
-                              brand: product['brand'] ?? 'Unknown',
-                            );
                   SizedBox(height: 15.0),
                   // Filter Buttons Section
                   SingleChildScrollView(
@@ -355,7 +325,6 @@ class ProductCard extends StatelessWidget {
   final List<dynamic> productColors;
   final int id;
 
-
   const ProductCard({
     required this.id,
     // required this.imageUrl,
@@ -369,7 +338,6 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print('Tapped on product: $title');
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -437,16 +405,6 @@ class ProductCard extends StatelessWidget {
   }
 }
 
-class FilterButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const FilterButton({
-    required this.label,
-    this.isSelected = false,
-    required this.onTap,
-
 class ProductDetailPage extends StatelessWidget {
   final int id;
   final String title;
@@ -466,12 +424,6 @@ class ProductDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.grey[700] : Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
@@ -528,12 +480,6 @@ class ProductDetailPage extends StatelessWidget {
               }).toList(),
             ),
           ],
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.black,
         ),
       ),
     );
