@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from api.models import Pengguna, SkinTone, Product, ProductColor, MakeupRecommendation
+from api.models import Pengguna, SkinTone, Product, ProductColor, Recommendation
 from api.views.user_views import token_required 
 from math import sqrt
 
@@ -150,7 +150,7 @@ def recommend_product(request):
                                 defaults={'color_name':color.get('colour_name','')}
                             )
                             
-                            MakeupRecommendation.objects.create(
+                            Recommendation.objects.create(
                                 user=user,
                                 skintone=skintone,
                                 product=db_product,
@@ -182,7 +182,7 @@ def recommend_product(request):
 @token_required
 def get_recommendations(request):
     user = request.user
-    recommendations = MakeupRecommendation.objects.filter(user=user).select_related('product', 'color', 'skintone')
+    recommendations = Recommendation.objects.filter(user=user).select_related('product', 'color', 'skintone')
     
     if not recommendations.exists():
         return Response(

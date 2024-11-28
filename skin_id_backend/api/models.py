@@ -125,7 +125,7 @@ class ProductColor(models.Model):
     class Meta:
         db_table = 'ProductColor'
         
-class MakeupRecommendation(models.Model):
+class Recommendation(models.Model):
     recommendation_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(Pengguna, on_delete=models.CASCADE, related_name='makeup_recommendations')
     skintone = models.ForeignKey(SkinTone, on_delete=models.CASCADE, related_name='makeup_recommendations')
@@ -133,18 +133,6 @@ class MakeupRecommendation(models.Model):
     color = models.ForeignKey(ProductColor, on_delete=models.CASCADE, related_name='makeup_recommendations', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
-    def __str__(self):
-        return f"Recommendation for {self.user.username} - {self.product.product_name}"
-    class Meta:
-        db_table = 'MakeupRecommendation'
-        
-# Model Recommendations
-class Recommendation(models.Model):
-    recommendation_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recommendations')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='recommendations')
-    created_at = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         return f"Recommendation for {self.user.username} - {self.product.product_name}"
     class Meta:

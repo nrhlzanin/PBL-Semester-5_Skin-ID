@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from api.models import SkinTone, Pengguna
+from api.models import SkinTone, Pengguna, Role
 from django.utils.crypto import get_random_string
 from django.contrib.auth.hashers import make_password
 
@@ -7,6 +7,17 @@ class Command(BaseCommand):
     help = 'Seeder untuk menambah data skintone dan pengguna'
 
     def handle(self, *args, **kwargs):
+        role_data = [
+            {'role_id':'1','role_name':'pengguna'},
+            {'role_id':'2','role_name':'admin'},
+        ]
+        for role in role_data:
+            Role.objects.update_or_create(
+                role_id=role['role_id'],
+                role_name=role['role_name'],
+            )
+        self.stdout.write(self.style.SUCCESS("Role berhasil ditambahkan"))
+        
         skintones = [
             {"skintone_id":"1","skintone_name": "very_light", "skintone_description": "Rentan terhadap sengatan matahari","hex_range_start":"#FFDFC4","hex_range_end":"#FFE3CB"},
             {"skintone_id":"2","skintone_name": "light", "skintone_description": "Mudah terbakar panas matahari","hex_range_start":"#F0D5BE","hex_range_end":"#FFD7B5"},
@@ -26,19 +37,21 @@ class Command(BaseCommand):
 
         # Menambahkan data pengguna (contoh: admin atau pengguna pertama)
         pengguna_data = {
-            'username': 'adminuser',
-            'email': 'admin@example.com',
-            'password': 'admin1234',  # Pastikan untuk hash password sebelum digunakan
+            'username': 'user',
+            'email': 'user@example.com',
+            'password': '123456',  # Pastikan untuk hash password sebelum digunakan
             'jenis_kelamin': 'pria',  # Contoh jenis kelamin
+            'role_id':'1',
+            'skintone_id':'3',
         }
         pengguna_data['password'] = make_password(pengguna_data['password'])
-        skintone_instance = SkinTone.objects.first()  # Mengambil skintone pertama sebagai contoh
 
         pengguna = Pengguna.objects.create(
             username=pengguna_data['username'],
             email=pengguna_data['email'],
             password=pengguna_data['password'],
             jenis_kelamin=pengguna_data['jenis_kelamin'],
-            skintone=skintone_instance
+            skintone_id=pengguna_data['skintone_id'],
+            role_id=pengguna_data['role_id']
         )
         self.stdout.write(self.style.SUCCESS(f"Pengguna {pengguna.username} berhasil ditambahkan"))
