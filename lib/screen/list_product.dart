@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 
 void main() {
@@ -212,9 +213,16 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         child: GestureDetector(
-                          onTap: () {
-                            print('Clicked on ${product['name']}');
-                          },
+                            onTap: () {
+                                  // Navigasi ke MakeupDetail dengan data produk
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          MakeupDetail(product: product),
+                                    ),
+                                  );
+                                },
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
