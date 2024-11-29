@@ -18,12 +18,31 @@ class _LoginAccountState extends State<Login> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token != null) {
+      // Jika token tersedia, langsung navigasi ke HomePage
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    }
+  }
+
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your email';
     } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
         .hasMatch(value)) {
-      return 'Please enter your valid email address';
+      return 'Please enter a valid email address';
     }
     return null;
   }
@@ -43,7 +62,7 @@ class _LoginAccountState extends State<Login> {
       _errorMessage = null;
     });
 
-    final url = Uri.parse('http://192.168.1.7:8000/api/login/');
+    final url = Uri.parse('http://127.0.0.1:8000/api/user/login/');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({
       'email': _emailController.text,
@@ -174,7 +193,6 @@ class _LoginAccountState extends State<Login> {
                       ElevatedButton(
                         onPressed: () {
                           print('pressed');
-                          // Check if the form is valid before proceeding
                           if (_formKey.currentState!.validate()) {
                             print('checked');
                             final email = _emailController.text.trim();
