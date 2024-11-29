@@ -102,7 +102,7 @@ class _CreateAccountState extends State<CreateAccount> {
       final response = await http.post(
         // ===========================================================
         // Uri.parse(APIConfig.getRegisterURL()),
-        Uri.parse('http://192.168.1.7:8000/api/user/register/'), //alamat IP diubah ke alamat IP kalian (cek cmd ipconfig)
+        Uri.parse('http://192.168.1.4:8000/api/user/register/'), //alamat IP diubah ke alamat IP kalian (cek cmd ipconfig)
         body: {
           'username': username,
           'email': email,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:skin_id/screen/account_screen.dart';
@@ -99,13 +101,24 @@ class Navbar extends StatelessWidget {
                     );
                   },
                 ),
-                ListTile(
-                  leading: Icon(Icons.logout, color: Colors.white),
-                  title: Text('Logout', style: TextStyle(color: Colors.white)),
-                  onTap: () {
-                    // Action when Logout item is tapped
-                  },
-                ),
+            ListTile(
+  leading: Icon(Icons.logout, color: Colors.white),
+  title: Text('Logout', style: TextStyle(color: Colors.white)),
+  onTap: () async {
+    // Directly remove the token and navigate to the login screen
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token'); // Remove the stored token
+
+    print('Logged out successfully.');
+
+    // Navigate to the login screen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => CreateLogin()), // Ensure CreateLogin is the correct login screen
+    );
+  },
+),
+
               ],
             ),
           ),
