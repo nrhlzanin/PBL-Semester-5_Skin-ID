@@ -1,29 +1,27 @@
-import 'dart:convert';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
+  const Login({super.key});
+
   @override
   _LoginAccountState createState() => _LoginAccountState();
 }
 
 class _LoginAccountState extends State<Login> {
-  final _formKey = GlobalKey<FormState>(); // Key to track the form state
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  bool _isLoading = false;
-  String? _errorMessage;
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your email';
     } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
         .hasMatch(value)) {
-      return 'Please enter your valid email address';
+      return 'Please enter a valid email address';
     }
     return null;
   }
@@ -38,53 +36,52 @@ class _LoginAccountState extends State<Login> {
   }
 
   Future<void> loginUser(String email, String password) async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    final response = await http.post(
+      Uri.parse('http://192.168.1.4:8000/api/user/login/'),
+      body: {'email': email, 'password': password},
+    );
 
-    final url = Uri.parse('http://192.168.1.7:8000/api/login/');
-    final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode({
-      'email': _emailController.text,
-      'password': _passwordController.text,
-    });
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'];
 
-    try {
-      final response = await http.post(url, headers: headers, body: body);
+      // Save token to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      print('Login successful. Token saved.');
 
-        // Simpan token ke SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', data['token']);
-        await prefs.setString('username', data['username']);
-        await prefs.setString('email', data['email']);
-
-        // Navigasi ke halaman Home
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      } else if (response.statusCode == 401) {
-        setState(() {
-          _errorMessage = 'Invalid email or password';
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Unexpected error occurred';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to connect to server';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      // Navigate to HomeScreen after successful login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      print('Login failed: ${response.body}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: ${response.body}')),
+      );
     }
+  }
+
+  // Check if token already exists in SharedPreferences when app starts
+  Future<void> checkToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token != null) {
+      // If token exists, navigate directly to HomeScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkToken(); // Check token when the app starts
   }
 
   @override
@@ -129,7 +126,7 @@ class _LoginAccountState extends State<Login> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Form(
-                  key: _formKey, // Assigning the form key here
+                  key: _formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -149,7 +146,7 @@ class _LoginAccountState extends State<Login> {
                           hintText: 'Type your email',
                           border: OutlineInputBorder(),
                         ),
-                        validator: _validateEmail, // Validator for email
+                        validator: _validateEmail,
                       ),
                       SizedBox(height: 20),
                       // Password TextFormField with validation
@@ -161,22 +158,12 @@ class _LoginAccountState extends State<Login> {
                           hintText: 'Enter your password',
                           border: OutlineInputBorder(),
                         ),
-                        validator: _validatePassword, // Validator for password
+                        validator: _validatePassword,
                       ),
                       SizedBox(height: 10),
-                      if (_errorMessage != null) ...[
-                        Text(
-                          _errorMessage!,
-                          style: TextStyle(color: Colors.red),
-                        ),
-                        SizedBox(height: 16.0),
-                      ],
                       ElevatedButton(
                         onPressed: () {
-                          print('pressed');
-                          // Check if the form is valid before proceeding
                           if (_formKey.currentState!.validate()) {
-                            print('checked');
                             final email = _emailController.text.trim();
                             final password = _passwordController.text.trim();
                             loginUser(email, password);
@@ -200,7 +187,6 @@ class _LoginAccountState extends State<Login> {
                       SizedBox(height: 10),
                       ElevatedButton.icon(
                         onPressed: () {
-                          // Add Google login logic here
                           print("Continue with Google");
                         },
                         icon: Image.asset(
@@ -227,7 +213,6 @@ class _LoginAccountState extends State<Login> {
                       SizedBox(height: 10),
                       GestureDetector(
                         onTap: () {
-                          // Logic for navigating to the sign-up screen
                           print("Navigating to Create Account");
                         },
                         child: RichText(
@@ -239,7 +224,7 @@ class _LoginAccountState extends State<Login> {
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 10,
-                                  fontWeight: FontWeight.bold, // Bold text
+                                  fontWeight: FontWeight.bold,
                                   fontFamily: 'Montserrat',
                                   decoration: TextDecoration.underline,
                                 ),

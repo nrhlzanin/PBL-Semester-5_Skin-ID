@@ -2,10 +2,35 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
+  @override
+  _AccountScreenState createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  String username = '';
+  String displayName = '';
+  String email = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString('username') ?? 'John Doe';
+      displayName = prefs.getString('displayName') ?? 'John Doe';
+      email = prefs.getString('email') ?? 'johndoe@example.com';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,17 +46,14 @@ class AccountScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
-              },
-            ),
+          IconButton(
+            icon: Icon(Icons.notifications, color: Colors.black),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -40,11 +62,12 @@ class AccountScreen extends StatelessWidget {
           SizedBox(height: 20),
           ListTile(
             leading: CircleAvatar(
-              radius: 50, // Meningkatkan ukuran avatar
-              backgroundImage: NetworkImage('https://www.example.com/profile-pic.jpg'), // URL profil gambar
+              radius: 50,
+              backgroundImage: NetworkImage(
+                  'https://www.example.com/profile-pic.jpg'), // URL profil gambar
             ),
-            title: Text('John Doe', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            subtitle: Text('@johndoe', style: TextStyle(fontSize: 18)),
+            title: Text(displayName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            subtitle: Text('@$username', style: TextStyle(fontSize: 18)),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -81,7 +104,7 @@ class AccountScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => EditProfileScreen()),
-                  );
+                  ).then((_) => _loadUserData());
                 },
                 child: Text('Edit Profile'),
               ),
@@ -119,7 +142,6 @@ class AccountScreen extends StatelessWidget {
   }
 }
 
-// Halaman untuk mengedit profil
 class EditProfileScreen extends StatefulWidget {
   @override
   _EditProfileScreenState createState() => _EditProfileScreenState();
@@ -133,22 +155,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Mengisi controller dengan data awal
-    _usernameController.text = 'Kangaroo0_';
-    _displayNameController.text = 'Vanika Sandra Cantika';
-    _emailController.text = 'mykangaroo@gmail.com';
+    _loadInitialData();
   }
 
-  void _saveChanges() {
-    final username = _usernameController.text;
-    final displayName = _displayNameController.text;
-    final email = _emailController.text;
+  Future<void> _loadInitialData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _usernameController.text = prefs.getString('username') ?? 'John Doe';
+    _displayNameController.text = prefs.getString('displayName') ?? 'John Doe';
+    _emailController.text = prefs.getString('email') ?? 'johndoe@example.com';
+  }
 
-    print('Username: $username');
-    print('Display Name: $displayName');
-    print('Email: $email');
+  Future<void> _saveChanges() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', _usernameController.text);
+    await prefs.setString('displayName', _displayNameController.text);
+    await prefs.setString('email', _emailController.text);
 
-    // Navigasi kembali setelah penyimpanan
+    // Navigasi kembali setelah menyimpan
     Navigator.pop(context);
   }
 
@@ -158,10 +181,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          'Edit Profile',
-          style: TextStyle(color: Colors.black),
-        ),
+        title: Text('Edit Profile', style: TextStyle(color: Colors.black)),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
@@ -171,14 +191,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Foto profil
             CircleAvatar(
               radius: 50,
-              backgroundImage: NetworkImage(
-                  'https://www.example.com/profile-pic.jpg'), // Ganti dengan URL profil
+              backgroundImage: NetworkImage('https://www.example.com/profile-pic.jpg'),
             ),
             SizedBox(height: 16),
-            // Form edit username
             TextField(
               controller: _usernameController,
               decoration: InputDecoration(
@@ -187,7 +204,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             SizedBox(height: 16),
-            // Form edit display name
             TextField(
               controller: _displayNameController,
               decoration: InputDecoration(
@@ -196,7 +212,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             SizedBox(height: 16),
-            // Form edit email
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -209,7 +224,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onPressed: _saveChanges,
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                backgroundColor: Colors.black, // Warna tombol
+                backgroundColor: Colors.black,
               ),
               child: Text('Apply'),
             ),
