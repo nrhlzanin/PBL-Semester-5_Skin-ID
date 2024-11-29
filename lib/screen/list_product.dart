@@ -213,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         child: GestureDetector(
-                            onTap: () {
+                           onTap: () {
                                   // Navigasi ke MakeupDetail dengan data produk
                                   Navigator.push(
                                     context,
