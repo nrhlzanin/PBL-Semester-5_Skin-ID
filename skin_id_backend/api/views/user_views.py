@@ -1,7 +1,6 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import authenticate
-from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -117,26 +116,28 @@ def login_user(request):
 @api_view(['PUT'])
 @token_required
 def edit_profile(request):
-    user_id = request.data.get('user_id')
-    username = request.data.get('username')
-    email = request.data.get('email')
-    jenis_kelamin = request.data.get('jenis_kelamin')
+    pengguna = request.user
+    data = request.data
     try:
-        pengguna = Pengguna.objects.get(user_id=user_id)
-        
-        if email and Pengguna.objects.filter(email=email).exclude(id=user_id).exists():
-            return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
         # Pembaruan data yg dikirim
-        if username:
-            pengguna.username = username
-        if email:
+        if 'username' in data:
+            pengguna.username = data['username']
+        if 'email' in data:
+            
+            email = data['email']
+            if Pengguna.objects.filter(email=email).exclude(pk=pengguna.pk).exists():
+                return Response (
+                    {
+                    "error":"Email sudah digunakan oleh pengguna lain."
+                },status=status.HTTP_400_BAD_REQUEST
+                                 )
             pengguna.email = email
-        if jenis_kelamin:
-            pengguna.jenis_kelamin = jenis_kelamin
+        if 'jenis_kelamin' in data:
+            pengguna.jenis_kelamin = data['jenis_kelamin']
         
         pengguna.save()
         return Response({
-            'message':'Data pengguna berhasil diubah',
+            'message':'Data pengguna berhasil diperbarui',
             'data': {
                 'username' : pengguna.username,
                 'email' : pengguna.email,

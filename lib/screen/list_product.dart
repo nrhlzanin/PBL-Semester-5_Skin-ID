@@ -1,8 +1,12 @@
+
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 
 void main() {
@@ -15,34 +19,33 @@ class ListProduct extends StatefulWidget {
 }
 
 class _ListProductState extends State<ListProduct> {
-  int _currentIndex = 0;
   List<dynamic> _makeupProducts = [];
 
-  @override
-  void initState() {
-    super.initState();
-    fetchMakeupProducts();
-  }
-
   Future<void> fetchMakeupProducts() async {
-    final url = 'http://192.168.1.4:8000/api/user/makeup-products/';
+    final url = 'http://127.0.0.1:8000/api/user/makeup-products/';
     try {
       final response = await http.get(Uri.parse(url));
-
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
         setState(() {
-          _makeupProducts = data;
+          _makeupProducts = json.decode(response.body);
         });
       } else {
         throw Exception('Failed to load makeup products');
       }
     } catch (e) {
       print('Error fetching data: $e');
-      setState(() {
-        _makeupProducts = [];
-      });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchMakeupProducts().then((data) {
+      setState(() {
+        _makeupProducts = data;
+      });
+    });
   }
 
   @override
@@ -59,12 +62,42 @@ class _ListProductState extends State<ListProduct> {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final List<dynamic> makeupProducts;
-  const HomePage({required this.makeupProducts});
+
+  HomePage({required this.makeupProducts});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final List<String> categories = [
+    'All',
+    'Foundation',
+    'Lipstick',
+    'Eyeliner',
+    'Mascara',
+    'Cushion',
+    'Bronzer',
+    'Eyeshadow',
+    'Blush',
+    'Lip Liner',
+    'Nail Polish',
+  ];
+
+  String selectedCategory = 'All';
 
   @override
   Widget build(BuildContext context) {
+    final List<dynamic> filteredProducts = selectedCategory == 'All'
+        ? widget.makeupProducts
+        : widget.makeupProducts
+            .where((product) =>
+                product['product_type']?.toLowerCase() ==
+                selectedCategory.toLowerCase())
+            .toList();
+
     return Scaffold(
       drawer: Navbar(),
       appBar: AppBar(
@@ -73,8 +106,6 @@ class HomePage extends StatelessWidget {
           style: GoogleFonts.caveat(
             color: Colors.black,
             fontSize: 28,
-            fontWeight: FontWeight.w400,
-            height: 0.06,
           ),
         ),
         actions: [
@@ -97,15 +128,13 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 0.2),
+              padding: const EdgeInsets.all(16.0),
               child: Text(
                 'Search for Beauty',
                 style: TextStyle(
                   color: const Color.fromARGB(255, 0, 0, 0),
                   fontSize: 30,
-                  fontFamily: 'Playfair Display',
                   fontWeight: FontWeight.w700,
-                  height: 2,
                 ),
               ),
             ),
@@ -128,6 +157,35 @@ class HomePage extends StatelessWidget {
                 ),
               ],
             ),
+//             SizedBox(height: 16.0),
+//             SingleChildScrollView(
+//               scrollDirection: Axis.horizontal,
+//               child: Row(
+//                 children: categories.map((category) {
+//                   return Padding(
+//                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
+//                     child: FilterButton(
+//                       label: category,
+//                       isSelected: selectedCategory == category,
+//                       onTap: () {
+//                         setState(() {
+//                           selectedCategory = category;
+//                         });
+//                       },
+//                     ),
+//                   );
+//                 }).toList(),
+//               ),
+//             ),
+//             SizedBox(height: 16.0),
+//             GridView.builder(
+//               shrinkWrap: true,
+//               physics: NeverScrollableScrollPhysics(),
+//               padding: EdgeInsets.all(16.0),
+//               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//                 crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+//                 crossAxisSpacing: 16.0,
+//                 mainAxisSpacing: 16.0,
             // Filter Buttons Section
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
@@ -136,97 +194,142 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 15.0),
+                  // Filter Buttons Section
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: [
-                        FilterButton(label: 'All', isSelected: true, textColor: Colors.white, onTap: () {}),
-                        SizedBox(width: 8.0),
-                        FilterButton(label: 'Lipstick', textColor: Colors.white, onTap: () {}),
-                        SizedBox(width: 8.0),
-                        FilterButton(label: 'Eyeliner', textColor: Colors.white, onTap: () {}),
-                        SizedBox(width: 8.0),
-                        FilterButton(label: 'Mascara', textColor: Colors.white, onTap: () {}),
-                      ],
+                      children: categories.map((product_type) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: FilterButton(
+                            label: product_type,
+                            isSelected: selectedCategory ==
+                                product_type, // Check if this category is selected
+                            onTap: () => setState(() {
+                              selectedCategory =
+                                  product_type; // Set the selected category
+                            }),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                   SizedBox(height: 16.0),
                   // Responsive GridView Section
-                  makeupProducts.isNotEmpty
-                      ? GridView.builder(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.all(16.0),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2, // Responsive
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
+
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(16.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                    ),
+                    itemCount: filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = filteredProducts[index];
+
+                      return Card(
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: GestureDetector(
+                            onTap: () {
+                                  // Navigasi ke MakeupDetail dengan data produk
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          MakeupDetail(product: product),
+                                    ),
+                                  );
+                                },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Gambar produk
+                              SizedBox(height: 8),
+                              Container(
+                                width: 70,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      product['image_link'] ??
+                                          'https://via.placeholder.com/50',
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  borderRadius: BorderRadius.circular(5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 0,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                  height:
+                                      8), // Jarak antara gambar dan teks nama produk
+
+                              // Nama produk
+                              Text(
+                                product['product_type'] ?? 'Tipe Produk',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(
+                                  height:
+                                      4), // Jarak antara nama produk dan merek
+                              Text(
+                                product['name'] ?? 'Nama Produk',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(
+                                  height:
+                                      4), // Jarak antara nama produk dan merek
+
+                              // Merek produk
+                              Text(
+                                product['brand'] ?? 'Merek Produk',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 10,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                          itemCount: makeupProducts.length,
-                          itemBuilder: (context, index) {
-                            final product = makeupProducts[index];
-                            return ProductCard(
-                              imageUrl: product['image_link'] ?? 'https://via.placeholder.com/50',
-                              title: product['name'] ?? 'No Name',
-                              brand: product['brand'] ?? 'Unknown',
-                            );
-                          },
-                        )
-                      : Center(child: CircularProgressIndicator()),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProductCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String brand;
-  const ProductCard({
-    required this.imageUrl,
-    required this.title,
-    required this.brand,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to Makeup Details page if needed
-        print('Tapped on product: $title');
-      },
-      child: Card(
-        elevation: 4.0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-        child: Column(
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-                child: Image.network(imageUrl, fit: BoxFit.cover),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                title,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                brand,
-                style: TextStyle(color: Colors.grey[700], fontSize: 12),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              itemCount: filteredProducts.length,
+              itemBuilder: (context, index) {
+                final product = filteredProducts[index];
+                return ProductCard(
+                  id: product['product_id'] ?? 0,
+                  imageUrl: product['image_link'] ??
+                      'https://via.placeholder.com/150',
+                  title: product['name'] ?? 'No Name',
+                  brand: product['brand'] ?? 'Unknown',
+                  description: product['description'] ?? 'No description',
+                  productColors: product['product_colors'] ?? [],
+                );
+              },
             ),
           ],
         ),
@@ -238,23 +341,197 @@ class ProductCard extends StatelessWidget {
 class FilterButton extends StatelessWidget {
   final String label;
   final bool isSelected;
+  final VoidCallback onTap;
+
   const FilterButton({
     required this.label,
-    this.isSelected = false,
-    required Color textColor, required Null Function() onTap,
+    required this.isSelected,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
-      child: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected
-            ? const Color.fromARGB(255, 186, 190, 199)
-            : const Color.fromARGB(255, 255, 255, 255),
+        backgroundColor: isSelected ? Colors.grey[700] : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      onPressed: onTap,
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.white : Colors.black,
+        ),
+      ),
+    );
+  }
+}
+
+class ProductCard extends StatelessWidget {
+  final int id;
+  final String imageUrl;
+  final String title;
+  final String brand;
+  final String description;
+  final List<dynamic> productColors;
+
+  const ProductCard({
+    required this.id,
+    required this.imageUrl,
+    required this.title,
+    required this.brand,
+    required this.description,
+    required this.productColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailPage(
+              id: id,
+              title: title,
+              brand: brand,
+              description: description,
+              productColors: productColors,
+            ),
+          ),
+        );
+      },
+      child: Card(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Expanded(
+            //   child: ClipRRect(
+            //     borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+            //     child: Image.network(
+            //       imageUrl,
+            //       fit: BoxFit.cover,
+            //       errorBuilder: (context, error, stackTrace) =>
+            //           Image.asset('assets/image/makeup.jpg'),
+            //     ),
+            //   ),
+            // ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        fontFamily: 'Montserrat'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    brand,
+                    style: TextStyle(
+                      fontSize: 12, // Adjusted font size
+                      color: Colors.grey[700],
+                      fontFamily: 'Montserrat',
+                    ),
+                    maxLines: 1, // Ensures the brand does not overflow
+                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProductDetailPage extends StatelessWidget {
+  final int id;
+  final String title;
+  final String brand;
+  // final String imageUrl;
+  final String description;
+  final List<dynamic> productColors;
+
+  const ProductDetailPage({
+    required this.id,
+    required this.title,
+    required this.brand,
+    // required this.imageUrl,
+    required this.description,
+    required this.productColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image.network(
+            //   imageUrl,
+            //   fit: BoxFit.cover,
+            //   errorBuilder: (context, error, stackTrace) {
+            //     return Image.asset('assets/image/makeup.jpg'); // Placeholder
+            //   },
+            //   width: double.infinity,
+            // ),
+            SizedBox(height: 16.0),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              "Brand: $brand",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              description.isNotEmpty
+                  ? description
+                  : "No description available.",
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              "Available Colors:",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Wrap(
+              spacing: 8.0,
+              children: productColors.map((color) {
+                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
+              }).toList(),
+            ),
+          ],
         ),
       ),
     );

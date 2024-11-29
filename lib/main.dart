@@ -11,6 +11,7 @@ import 'package:skin_id/screen/makeup_Section.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/new_account_screen.dart';
 import 'package:skin_id/screen/notification_screen.dart';
+import 'package:skin_id/screen/recomendation.dart';
 import 'package:skin_id/screen/skin_identification.dart';
 
 void main() {
@@ -28,8 +29,9 @@ class MyApp extends StatelessWidget {
       // home: NotificationScreen(), // Start with the CreateLogin screen
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
       // home: SkinIdentificationPage(), // Start with the CreateLogin screen
-      home: CreateLogin(), // Start with the CreateLogin screen
-      // home: Home(), // Start with the CreateLogin screen
+      // home: CreateLogin(), // Start with the CreateLogin screen
+      home: HomeScreen(), // Start with the CreateLogin screen
+      // home: MakeupDetail(product: {},), // Start with the CreateLogin screen
       routes: {
         '/login': (context) => Login(), // Define the /login route
         '/homescreen': (context) => HomeScreen(), // Define the /home route
@@ -38,8 +40,8 @@ class MyApp extends StatelessWidget {
             SkinIdentificationPage(), // Define the skin identification
         '/notifications': (context) =>
             NotificationScreen(), // Define the Notification route
-        '/skin-identification': (context) =>
-            SkinIdentificationPage(), // Define the skin identification
+        '/recomendation': (context) =>
+            Recomendation(), // Define the skin identification
         // Add other routes if needed
       },
     );
