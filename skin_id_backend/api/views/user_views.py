@@ -1,7 +1,6 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import authenticate
-from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -12,14 +11,37 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from api.models import Pengguna
 from api.models import Role
+from django.utils import timezone
+from django.http import JsonResponse
+from functools import wraps
+from datetime import datetime, timedelta
 import uuid
 import jwt
 import requests
 import random
-import string
+import secrets
 
+# Pembuatan untuk verifikasi token pengguna/user
+def token_required(f):
+    @wraps(f)
+    def decorated_function(request, *args, **kwargs):
+        token = request.headers.get('Authorization')
+        if token:
+            token = token.replace('Bearer ','', 1)
+        if not token:
+            return Response({"error":"Token is required"},status=status.HTTP_401_UNAUTHORIZED)
+        user = Pengguna.objects.filter(token=token).first()
+        if not user:
+            return Response({"error":"Token invalid atau kadaluarsa"},status=status.HTTP_401_UNAUTHORIZED)
+        
+        print(f"Received token: {token}")
+        print(f"Database token: {user.token}")
+
+        request.user = user
+        return f(request, *args, **kwargs)
+    return decorated_function
+    
 @api_view(['POST'])
-@csrf_exempt
 def register_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
@@ -34,26 +56,17 @@ def register_user(request):
         if Pengguna.objects.filter(email=email).exists():
             return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
 
-        role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
+        # role = Role.objects.get(role_id = 1)  # Pastikan role_name sudah benar
 
         pengguna = Pengguna.objects.create(
             username=username,
             password=make_password(password),
             email=email,
-            role_id=role,
+            role_id=1,
         )
-
-        # Buat token JWT
-        payload = {
-            'user_id': pengguna.user_id,
-            'username': pengguna.username,
-            'email': pengguna.email,
-        }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
         return Response({
                 'message': 'Pendaftaran berhasil',
-                'token': token,
                 'user': {
                     'id': pengguna.user_id,
                     'username': pengguna.username,
@@ -65,34 +78,44 @@ def register_user(request):
 
 @api_view(['POST'])
 def login_user(request):
-    username = request.data.get('username')
+    email = request.data.get('email')
     password = request.data.get('password')
 
-    if not username or not password:
-        raise ValidationError("Username dan password diperlukan")
+    if not email or not password:
+        return Response({"error":"Username dan password diperlukan"},status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        pengguna = Pengguna.objects.filter(username=username).first()
-        # cek pengguna apakah sudah ada di database
+        # pengguna = Pengguna.objects.filter(email=username_or_email).first() or Pengguna.objects.filter(username=username_or_email).first()
+        pengguna = Pengguna.objects.filter(email=email).first()
         if pengguna is None:
-            return Response({'Error':'Username dengan nama tersebut tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
-        # verifikasi password
+            return Response({'Error':'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
         if not check_password(password, pengguna.password):
             return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        payload = {
-            'user_id': pengguna.user_id,
-            'username': pengguna.username,
-            'email': pengguna.email,
+        
+        header = {
+        "alg": "HS256",  # Algoritma untuk tanda tangan
+        "typ": "JWT"     # Jenis token
         }
         
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        payload = {
+            'id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+            'exp': datetime.utcnow() + timedelta(hours=1),
+        }
         
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256', headers=header)
+        # decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        # print(decoded_token)
+        
+        pengguna.token = token
+        pengguna.last_login = timezone.now()
+        pengguna.save()
         return Response({
             'message': 'Login berhasil',
             'token': token,
             'user': {
-                'id': pengguna.user_id,
+                'id pengguna': pengguna.user_id,
                 'username': pengguna.username,
                 'email': pengguna.email
             }
@@ -100,27 +123,104 @@ def login_user(request):
     
     except Exception as e:
         return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PUT'])
+@token_required
+def edit_profile(request):
+    pengguna = request.user
+    data = request.data
+    try:
+        # Pembaruan data yg dikirim
+        if 'username' in data:
+            pengguna.username = data['username']
+        if 'email' in data:
+            
+            email = data['email']
+            if Pengguna.objects.filter(email=email).exclude(pk=pengguna.pk).exists():
+                return Response (
+                    {
+                    "error":"Email sudah digunakan oleh pengguna lain."
+                },status=status.HTTP_400_BAD_REQUEST
+                                 )
+            pengguna.email = email
+        if 'jenis_kelamin' in data:
+            pengguna.jenis_kelamin = data['jenis_kelamin']
+        
+        pengguna.save()
+        return Response({
+            'message':'Data pengguna berhasil diperbarui',
+            'data': {
+                'username' : pengguna.username,
+                'email' : pengguna.email,
+                'jenis_kelamin' : pengguna.jenis_kelamin
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Pengguna.DoesNotExist:
+        print('An exception occurred')
+        return Response({"error":"Pengguna tidak ditemukan"}, status=status.HTTP_404_NOT_FOUND)
+    
+    except Exception as e:
+        return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@token_required
+def user_logout(request):
+    try:
+        token = request.data.get('token')
+        if not token:
+            return Response({"message": "Token dibutuhan"}, status=status.HTTP_400_BAD_REQUEST)
+    
+        pengguna = Pengguna.objects.filter(token=token).first()
+        if not pengguna:
+            return Response({"error":"Token is required"},status=status.HTTP_400_BAD_REQUEST)
+        
+        pengguna.token = None
+        pengguna.save()
+        
+        return Response({"message":"Logout berhasil!"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['GET'])
+@token_required
+def get_user_profile(request):
+    try:
+        pengguna = request.user
+        return Response({
+            'id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+            'jenis kelamin': pengguna.jenis_kelamin,
+            'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
+            'role': pengguna.role_id if pengguna.role_id else "Not Set",
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@token_required
 def verify_email(request, token):
     try:
-        user = Pengguna.objects.get(verification_token=token)
-        if user.is_verified:
+        pengguna = request.user
+        if pengguna.is_verified:
             return Response({'message': 'Account already verified'}, status=status.HTTP_400_BAD_REQUEST)
         
-        user.is_verified = True
-        user.verification_token = None
-        user.save()
+        pengguna.is_verified = True
+        pengguna.verification_token = None
+        pengguna.save()
         
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(pengguna)
         return Response({
             'message': 'Account verified successfully',
             'access_token': str(refresh.access_token),
             'refresh_token': str(refresh),
             'user': {
-                'id': user.user_id,
-                'username': user.username,
-                'email': user.email,
-                'skintone': user.skintone_id if user.skintone else None
+                'id': pengguna.user_id,
+                'username': pengguna.username,
+                'email': pengguna.email,
+                'skintone': pengguna.skintone_id if pengguna.skintone else None
             }
         }, status=status.HTTP_200_OK)        
     except Pengguna.DoesNotExist:
@@ -130,18 +230,10 @@ def send_verification_email(user):
     """
     Fungsi untuk mengirim email verifikasi ke pengguna
     """
-    # Ambil email pengguna
     user_email = user.email
-
-    # Buat token verifikasi
     token = user.verification_token
-    # uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-    # Buat URL untuk link verifikasi
-    # verification_link = f"http://192.168.1.7:8000/api/user/verify-email/{uid}/{token}/"
     verification_link = f"http://192.168.56.217:8000/api/user/verify-email/{token}/"
 
-    # Subjek dan isi email
     subject = 'Verifikasi Akun Skin-ID'
     message = f'''
     Halo {user.username},
@@ -151,7 +243,6 @@ def send_verification_email(user):
     Jika Anda tidak merasa mendaftar di aplikasi ini, abaikan pesan ini.
     '''
 
-    # Kirim email
     send_mail(
         subject,
         message,
