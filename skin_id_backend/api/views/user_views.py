@@ -165,6 +165,27 @@ def edit_profile(request):
 
 @api_view(['POST'])
 @token_required
+def change_password(request):
+    try:
+        pengguna = request.user
+        data = request.data
+        old_password = data.get('old_password')
+        new_password = data.get('new_password')
+
+        if not pengguna.check_password(old_password):
+            return Response({'error': 'Password lama salah'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Perbarui password
+        pengguna.set_password(new_password)
+        pengguna.save()
+        return Response({'message': 'Password berhasil diubah'}, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@token_required
 def user_logout(request):
     try:
         token = request.data.get('token')
