@@ -21,7 +21,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
   // Fetch makeup products from the API
   Future<List<dynamic>> fetchMakeupProducts() async {
     const url =
-        'http://127.0.0.1:8000/api/makeup-products/'; // Ganti dengan URL API Anda
+        'http://912.168.1.7:8000/api/makeup-products/'; // Ganti dengan URL API Anda
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -70,6 +70,13 @@ class _MakeUpDetailState extends State<MakeupDetail> {
       home: Scaffold(
         backgroundColor: Colors.black, // Set Scaffold background to black
         appBar: AppBar(
+       
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white), // Tombol kembali
+            onPressed: () {
+              Navigator.pop(context); // Menutup halaman dan kembali ke halaman sebelumnya
+            },
+          ),
           title: Text(
             product['name'] ?? 'Product Detail',
             style: GoogleFonts.caveat(
@@ -192,15 +199,15 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                 ),
               const SizedBox(height: 16.0),
 
-              // Back Button
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(context); // Kembali ke halaman sebelumnya
-                },
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                label:
-                    const Text('Back', style: TextStyle(color: Colors.white)),
-              ),
+              // // Back Button
+              // TextButton.icon(
+              //   onPressed: () {
+              //     Navigator.pop(context); // Kembali ke halaman sebelumnya
+              //   },
+              //   icon: const Icon(Icons.arrow_back, color: Colors.white),
+              //   label:
+              //       const Text('Back', style: TextStyle(color: Colors.white)),
+              // ),
             ],
           ),
         ),
@@ -223,6 +230,6 @@ class ColorCircle extends StatelessWidget {
         shape: BoxShape.circle,
         color: color,
       ),
-    );
+    ); 
   }
 }
