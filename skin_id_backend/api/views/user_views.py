@@ -14,11 +14,12 @@ from api.models import Role
 from django.utils import timezone
 from django.http import JsonResponse
 from functools import wraps
+from datetime import datetime, timedelta
 import uuid
 import jwt
 import requests
 import random
-import string
+import secrets
 
 # Pembuatan untuk verifikasi token pengguna/user
 def token_required(f):
@@ -33,6 +34,9 @@ def token_required(f):
         if not user:
             return Response({"error":"Token invalid atau kadaluarsa"},status=status.HTTP_401_UNAUTHORIZED)
         
+        print(f"Received token: {token}")
+        print(f"Database token: {user.token}")
+
         request.user = user
         return f(request, *args, **kwargs)
     return decorated_function
@@ -74,12 +78,11 @@ def register_user(request):
 
 @api_view(['POST'])
 def login_user(request):
-    # username_or_email = request.data.get('email_or_username')
     email = request.data.get('email')
     password = request.data.get('password')
 
     if not email or not password:
-        raise ValidationError("Username dan password diperlukan")
+        return Response({"error":"Username dan password diperlukan"},status=status.HTTP_400_BAD_REQUEST)
     
     try:
         # pengguna = Pengguna.objects.filter(email=username_or_email).first() or Pengguna.objects.filter(username=username_or_email).first()
@@ -88,14 +91,22 @@ def login_user(request):
             return Response({'Error':'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
         if not check_password(password, pengguna.password):
             return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        payload = {
-            'user_id': pengguna.user_id,
-            'username': pengguna.username,
-            'email': pengguna.email,
+        
+        header = {
+        "alg": "HS256",  # Algoritma untuk tanda tangan
+        "typ": "JWT"     # Jenis token
         }
         
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        payload = {
+            'id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+            'exp': datetime.utcnow() + timedelta(hours=1),
+        }
+        
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256', headers=header)
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        print(decoded_token)
         
         pengguna.token = token
         pengguna.last_login = timezone.now()
@@ -104,7 +115,7 @@ def login_user(request):
             'message': 'Login berhasil',
             'token': token,
             'user': {
-                'id': pengguna.user_id,
+                'id pengguna': pengguna.user_id,
                 'username': pengguna.username,
                 'email': pengguna.email
             }

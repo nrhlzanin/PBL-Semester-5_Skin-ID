@@ -8,6 +8,7 @@ import 'package:skin_id/screen/home.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/notification_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -66,30 +67,72 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Future<http.Response> _sendImageToServer(Uint8List imageBytes) async {
-    final url = Uri.parse('http://127.0.0.1:8000/api/user/update-skintone/'); // API local
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    print("Token sent to server: $token");
+
+    if (token == null) {
+      print('No token found. User is not logged in.');
+      throw Exception('User is not logged in');
+    }
+
+    final url = Uri.parse('http://192.168.1.7:8000/api/user/update-skintone/');
     final request = http.MultipartRequest('POST', url);
+
+    // Tambahkan file gambar
     request.files.add(
       http.MultipartFile.fromBytes('image', imageBytes, filename: 'skin.jpg'),
     );
-    final response = await http.Response.fromStream(await request.send());
+
+    // Tambahkan header Authorization
+    request.headers.addAll({
+      'Authorization': '$token', // Kirim token ke backend
+      // 'Content-Type': 'multipart/form-data', // Perhatikan tipe konten
+    });
+
+    // Kirim request ke server
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      print('Image sent successfully.');
+    } else {
+      print('Failed to send image: ${response.body}');
+    }
+
     return response;
   }
 
   Future<void> _getRecommendations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) {
+      print('No token found. User is not logged in.');
+      throw Exception('User is not logged in');
+    }
+
     try {
-      final url = Uri.parse('http://127.0.0.1:8000/api/user/recommendations/'); // Endpoint rekomendasi
-      final response = await http.get(url);
+      final url =
+          Uri.parse('http://192.168.1.7:8000/api/user/recommendations/');
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': '$token', // Sertakan token
+        },
+      );
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         setState(() {
           recommendedProducts = responseData['recommended_products'];
         });
+        print('Recommendations fetched successfully.');
       } else {
         setState(() {
           recommendedProducts = [];
         });
-        print("Failed to get recommendations.");
+        print("Failed to get recommendations: ${response.body}");
       }
     } catch (e) {
       print("Error getting recommendations: $e");
@@ -114,8 +157,8 @@ class _CameraPageState extends State<CameraPage> {
               ...recommendedProducts!.map((product) => ListTile(
                     leading: Image.network(product['image_url']),
                     title: Text(product['name']),
-                    subtitle: Text(
-                        '${product['brand']} - ${product['price']} USD'),
+                    subtitle:
+                        Text('${product['brand']} - ${product['price']} USD'),
                   )),
           ],
         ),
