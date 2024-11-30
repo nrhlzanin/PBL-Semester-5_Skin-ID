@@ -3,12 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:skin_id/screen/account_screen.dart';
 import 'package:skin_id/screen/recomendation.dart';
 import 'package:skin_id/screen/skin_identification.dart';
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Navbar extends StatefulWidget {
   @override
@@ -36,7 +36,7 @@ class _NavbarState extends State<Navbar> {
 
       final url = Uri.parse('http://192.168.185.15:8000/api/user/profile/');
       final response = await http.get(url, headers: {
-        'Authorization': '$token',
+        'Authorization': 'Bearer $token',
       });
 
       if (response.statusCode == 200) {
@@ -93,8 +93,7 @@ class _NavbarState extends State<Navbar> {
                               overflow:
                                   TextOverflow.ellipsis, // Truncate if too long
                             ),
-                            softWrap:
-                                false, // Prevent wrapping to the next line
+                            softWrap: false, // Prevent wrapping to the next line
                             maxLines: 1, // Limit to 1 line
                           ),
                           Text(
@@ -103,7 +102,7 @@ class _NavbarState extends State<Navbar> {
                               color: Colors.grey[400],
                               fontSize: 12,
                             ),
-                          )
+                          ),
                         ],
                       )),
                 ),
@@ -115,16 +114,30 @@ class _NavbarState extends State<Navbar> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
+                // Home Menu
                 ListTile(
                   leading: Icon(Icons.home, color: Colors.white),
                   title: Text('Home', style: TextStyle(color: Colors.white)),
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => Home()),
-                    );
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    final hasCheckedSkintone = prefs.getBool('hasCheckedSkintone') ?? false;
+
+                    if (hasCheckedSkintone) {
+                      // Jika sudah memeriksa skintone, navigasi ke halaman Home
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Home()),
+                      );
+                    } else {
+                  
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                      );
+                    }
                   },
                 ),
+                // Akun Menu
                 ListTile(
                   leading: Icon(Icons.account_circle, color: Colors.white),
                   title: Text('Akun', style: TextStyle(color: Colors.white)),
@@ -135,30 +148,29 @@ class _NavbarState extends State<Navbar> {
                     );
                   },
                 ),
+                // Rekomendasi Menu
                 ListTile(
                   leading: Icon(Icons.recommend, color: Colors.white),
-                  title: Text('Rekomendasi',
-                      style: TextStyle(color: Colors.white)),
+                  title: Text('Rekomendasi', style: TextStyle(color: Colors.white)),
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => SkinIdentificationPage()),
+                      MaterialPageRoute(builder: (context) => SkinIdentificationPage()),
                     );
                   },
                 ),
+                // Notifikasi Menu
                 ListTile(
                   leading: Icon(Icons.notifications, color: Colors.white),
-                  title:
-                      Text('Notifikasi', style: TextStyle(color: Colors.white)),
+                  title: Text('Notifikasi', style: TextStyle(color: Colors.white)),
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => NotificationScreen()),
+                      MaterialPageRoute(builder: (context) => NotificationScreen()),
                     );
                   },
                 ),
+                // Logout Menu
                 ListTile(
                   leading: Icon(Icons.logout, color: Colors.white),
                   title: Text('Logout', style: TextStyle(color: Colors.white)),
@@ -172,9 +184,7 @@ class _NavbarState extends State<Navbar> {
                     // Navigate to the login screen
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              CreateLogin()), // Ensure CreateLogin is the correct login screen
+                      MaterialPageRoute(builder: (context) => CreateLogin()), // Ensure CreateLogin is the correct login screen
                     );
                   },
                 ),
