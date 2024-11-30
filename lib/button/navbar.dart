@@ -1,13 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:skin_id/screen/account_screen.dart';
 import 'package:skin_id/screen/recomendation.dart';
 import 'package:skin_id/screen/skin_identification.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Navbar extends StatelessWidget {
+class Navbar extends StatefulWidget {
+  @override
+  _NavbarState createState() => _NavbarState();
+}
+
+class _NavbarState extends State<Navbar> {
+  String username = "Loading...";
+  String email = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        throw Exception('No token found. Please log in.');
+      }
+
+      final url = Uri.parse('http://192.168.185.15:8000/api/user/profile/');
+      final response = await http.get(url, headers: {
+        'Authorization': '$token',
+      });
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          username = data['username'] ?? "Unknown";
+          email = data['email'] ?? "Unknown";
+        });
+      } else {
+        print("Failed to fetch user profile: ${response.body}");
+      }
+    } catch (e) {
+      print("Error fetching user profile: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -25,7 +70,7 @@ class Navbar extends StatelessWidget {
               children: [
                 // Profile Photo
                 Padding(
-                  padding: const EdgeInsets.only(left:10 ,top: 30, bottom: 2),
+                  padding: const EdgeInsets.only(left: 10, top: 30, bottom: 2),
                   child: CircleAvatar(
                     radius: 30, // Avatar size
                     backgroundImage: AssetImage(
@@ -35,19 +80,32 @@ class Navbar extends StatelessWidget {
                 // Username
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(top:30,left:10),
-                    child: Text(
-                      'Aku_cantiks', // Username
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14, // Font size
-                        fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.ellipsis, // Truncate if too long
-                      ),
-                      softWrap: false, // Prevent wrapping to the next line
-                      maxLines: 1, // Limit to 1 line
-                    ),
-                  ),
+                      padding: const EdgeInsets.only(top: 30, left: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            username, // Username
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14, // Font size
+                              fontWeight: FontWeight.bold,
+                              overflow:
+                                  TextOverflow.ellipsis, // Truncate if too long
+                            ),
+                            softWrap:
+                                false, // Prevent wrapping to the next line
+                            maxLines: 1, // Limit to 1 line
+                          ),
+                          Text(
+                            email,
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 12,
+                            ),
+                          )
+                        ],
+                      )),
                 ),
               ],
             ),
@@ -101,24 +159,25 @@ class Navbar extends StatelessWidget {
                     );
                   },
                 ),
-            ListTile(
-  leading: Icon(Icons.logout, color: Colors.white),
-  title: Text('Logout', style: TextStyle(color: Colors.white)),
-  onTap: () async {
-    // Directly remove the token and navigate to the login screen
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token'); // Remove the stored token
+                ListTile(
+                  leading: Icon(Icons.logout, color: Colors.white),
+                  title: Text('Logout', style: TextStyle(color: Colors.white)),
+                  onTap: () async {
+                    // Directly remove the token and navigate to the login screen
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.remove('auth_token'); // Remove the stored token
 
-    print('Logged out successfully.');
+                    print('Logged out successfully.');
 
-    // Navigate to the login screen
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => CreateLogin()), // Ensure CreateLogin is the correct login screen
-    );
-  },
-),
-
+                    // Navigate to the login screen
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              CreateLogin()), // Ensure CreateLogin is the correct login screen
+                    );
+                  },
+                ),
               ],
             ),
           ),

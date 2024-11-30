@@ -21,7 +21,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
   // Fetch makeup products from the API
   Future<List<dynamic>> fetchMakeupProducts() async {
     const url =
-        'http://127.0.0.1:8000/api/makeup-products/'; // Ganti dengan URL API Anda
+        'http://912.168.1.7:8000/api/makeup-products/'; // Ganti dengan URL API Anda
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {

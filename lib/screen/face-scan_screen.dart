@@ -76,7 +76,7 @@ class _CameraPageState extends State<CameraPage> {
       throw Exception('User is not logged in');
     }
 
-    final url = Uri.parse('http://192.168.1.7:8000/api/user/update-skintone/');
+    final url = Uri.parse('http://192.168.185.15:8000/api/user/update-skintone/');
     final request = http.MultipartRequest('POST', url);
 
     // Tambahkan file gambar
@@ -114,7 +114,7 @@ class _CameraPageState extends State<CameraPage> {
 
     try {
       final url =
-          Uri.parse('http://192.168.1.7:8000/api/user/recommendations/');
+          Uri.parse('http://192.168.185.15:8000/api/user/recommendations/');
       final response = await http.get(
         url,
         headers: {

@@ -105,8 +105,8 @@ def login_user(request):
         }
         
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256', headers=header)
-        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        print(decoded_token)
+        # decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        # print(decoded_token)
         
         pengguna.token = token
         pengguna.last_login = timezone.now()
