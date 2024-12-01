@@ -3,11 +3,15 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/notification_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -15,9 +19,9 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  String username = '';
-  String displayName = '';
-  String email = '';
+  String username = "Loading...";
+  String displayName = "Loading...";
+  String email = "Loading...";
 
   @override
   void initState() {
@@ -64,7 +68,6 @@ class _AccountScreenState extends State<AccountScreen> {
             color: Colors.black,
             fontSize: 28,
             fontWeight: FontWeight.w400,
-            height: 0.06,
           ),
         ),
         actions: [
@@ -86,7 +89,7 @@ class _AccountScreenState extends State<AccountScreen> {
             leading: CircleAvatar(
               radius: 50,
               backgroundImage: NetworkImage(
-                  'https://www.example.com/profile-pic.jpg'), // URL profil gambar
+                  'https://www.example.com/profile-pic.jpg'), // URL gambar profil
             ),
             title: Text(displayName,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
@@ -138,6 +141,12 @@ class _AccountScreenState extends State<AccountScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
+                    MaterialPageRoute(builder: (context) => EditProfileScreen()),
+                  ).then((value) {
+                    if (value == true) {
+                      _loadUserData();
+                    }
+                  });
                     MaterialPageRoute(
                         builder: (context) => EditProfileScreen()),
                   ).then((_) => _loadUserData());
@@ -314,13 +323,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text('Edit Profile', style: TextStyle(color: Colors.black)),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: Text('Edit Profile'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -336,13 +339,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         as ImageProvider,
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 20),
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(),
-              ),
+              decoration: InputDecoration(labelText: 'Username'),
             ),
             SizedBox(height: 16),
             TextField(

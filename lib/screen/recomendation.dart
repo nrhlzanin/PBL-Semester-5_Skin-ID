@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
@@ -15,45 +16,50 @@ class Recomendation extends StatefulWidget {
 
 class _RecomendationState extends State<Recomendation> {
   String skinTone = "Light";
+    List<dynamic>? recommendedProducts;
   String skinDescription =
       "Your skin has higher skin moisture, low skin elasticity, good sebum, low moisture, and uneven texture. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.";
   int _currentIndex = 0;
   List<dynamic> _makeupProducts = [];
+  Future<void> _getRecommendations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
 
-  Future<List<dynamic>> fetchMakeupProducts() async {
-    final baseUrl = dotenv.env['BASE_URL'];
-    final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
+    if (token == null) throw Exception('User is not logged in.');
+
     try {
-      final response = await http.get(Uri.parse('$baseUrl$endpoint'));
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['RECOMMENDATION_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+
+      final response =
+          await http.get(url, headers: {'Authorization': '$token'});
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data;
+        final responseData = json.decode(response.body);
+        setState(() {
+          recommendedProducts = responseData['recommended_products'];
+        });
       } else {
-        print('Failed to load data: ${response.statusCode}');
-        throw Exception('Failed to load makeup products');
+        setState(() {
+          recommendedProducts = [];
+        });
+        print("Failed to fetch recommendations: ${response.body}");
       }
     } catch (e) {
-      print('Error fetching data: $e');
-      setState(() {
-        _makeupProducts = [];
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat data. Silakan coba lagi.')),
-      );
-      return [];
+      print("Error getting recommendations: $e");
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchMakeupProducts().then((data) {
-      setState(() {
-        _makeupProducts = data;
-      });
-    });
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   fetchMakeupProducts().then((data) {
+  //     setState(() {
+  //       _makeupProducts = data;
+  //     });
+  //   });
+  // }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -243,12 +249,12 @@ class RecomendationPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SkinToneColor(color: Color(0xFFF4C2C2)),
-                SkinToneColor(color: Color(0xFFE6A57E)),
-                SkinToneColor(color: Color(0xFFD2B48C)),
-                SkinToneColor(color: Color(0xFFC19A6B)),
-                SkinToneColor(color: Color(0xFF8D5524)),
-                SkinToneColor(color: Color(0xFF7D4B3E)),
+                SkinToneColor(color: Color(0xFFFFDFC4)),
+                SkinToneColor(color: Color(0xFFF0D5BE)),
+                SkinToneColor(color: Color(0xDDD1A684)),
+                SkinToneColor(color: Color(0xAAA67C52)),
+                SkinToneColor(color: Color(0x88825C3A)),
+                SkinToneColor(color: Color(0x444A312C)),
               ],
             ),
             SizedBox(height: 16),
