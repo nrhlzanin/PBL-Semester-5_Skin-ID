@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
@@ -36,13 +37,12 @@ class _AccountScreenState extends State<AccountScreen> {
         throw Exception('No token found. Please log in.');
       }
 
-      final url = Uri.parse('http://192.168.1.3:8000/api/user/profile/');
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': '$token',
-        },
-      );
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_ACCOUNT_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response = await http.get(url, headers: {
+        'Authorization': '$token',
+      });
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -56,9 +56,11 @@ class _AccountScreenState extends State<AccountScreen> {
       }
     } catch (e) {
       print("Error fetching user profile: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching user profile.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching user profile.')),
+        );
+      }
     }
   }
 
@@ -206,13 +208,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         throw Exception('No token found. Please log in.');
       }
 
-      final url = Uri.parse('http://192.168.1.3:8000/api/user/profile/');
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': '$token',
-        },
-      );
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_EDIT_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response = await http.get(url, headers: {
+        'Authorization': '$token',
+      });
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -248,39 +249,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-Future<void> _saveChanges() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+  Future<void> _saveChanges() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
 
-    if (token == null || token.isEmpty) {
-      throw Exception('No token found. Please log in.');
+      if (token == null || token.isEmpty) {
+        throw Exception('No token found. Please log in.');
+      }
+
+      if (_usernameController.text.isNotEmpty) {
+        await prefs.setString('username', _usernameController.text);
+      }
+
+      if (_emailController.text.isNotEmpty) {
+        await prefs.setString('email', _emailController.text);
+      }
+
+      await _updateProfileOnServer(
+        _usernameController.text.isNotEmpty ? _usernameController.text : null,
+        _emailController.text.isNotEmpty ? _emailController.text : null,
+        _passwordController.text.isNotEmpty ? _passwordController.text : null,
+        _selectedImage,
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      print('Error saving changes: $e');
     }
-
-    if (_usernameController.text.isNotEmpty) {
-      await prefs.setString('username', _usernameController.text);
-    }
-
-    if (_emailController.text.isNotEmpty) {
-      await prefs.setString('email', _emailController.text);
-    }
-
-    await _updateProfileOnServer(
-      _usernameController.text.isNotEmpty ? _usernameController.text : null,
-      _emailController.text.isNotEmpty ? _emailController.text : null,
-      _passwordController.text.isNotEmpty ? _passwordController.text : null,
-      _selectedImage,
-    );
-
-    Navigator.pop(context, true);
-  } catch (e) {
-    print('Error saving changes: $e');
   }
-}
 
   Future<void> _updateProfileOnServer(
-    String username,
-    String email,
+    String? username,
+    String? email,
     String? password,
     File? profileImage,
   ) async {
@@ -292,15 +293,18 @@ Future<void> _saveChanges() async {
         throw Exception('No token found. Please log in.');
       }
 
-      final url = Uri.parse('http://192.168.1.3:8000/api/user/profile/');
-      var request = http.MultipartRequest('PUT', url)
-        ..headers['Authorization'] = '$token'
-        ..fields['username'] = username
-        ..fields['email'] = email;
-
-      if (password != null && password.isNotEmpty) {
-        request.fields['password'] = password;
+      final baseUrl = dotenv.env['BASE_URL'];
+      if (baseUrl == null) {
+        throw Exception('Base URL is not set.');
       }
+
+      final url = Uri.parse('$baseUrl/api/user/profile/');
+      var request = http.MultipartRequest('PUT', url)
+        ..headers['Authorization'] = 'Bearer $token';
+
+      if (username != null) request.fields['username'] = username;
+      if (email != null) request.fields['email'] = email;
+      if (password != null) request.fields['password'] = password;
 
       if (profileImage != null) {
         request.files.add(await http.MultipartFile.fromPath(
@@ -310,12 +314,13 @@ Future<void> _saveChanges() async {
       }
 
       final response = await request.send();
-
-      if (response.statusCode != 200) {
+      if (response.statusCode == 200) {
+        print("Profile updated successfully.");
+      } else {
         throw Exception('Failed to update profile.');
       }
     } catch (e) {
-      print('Error updating profile: $e');
+      print("Error updating profile on server: $e");
     }
   }
 
@@ -323,13 +328,7 @@ Future<void> _saveChanges() async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text('Edit Profile', style: TextStyle(color: Colors.black)),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context, true),
-        ),
+        title: Text('Edit Profile'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -338,44 +337,26 @@ Future<void> _saveChanges() async {
             GestureDetector(
               onTap: _pickImage,
               child: CircleAvatar(
-                radius: 50,
+                radius: 60,
                 backgroundImage: _selectedImage != null
                     ? FileImage(_selectedImage!)
-                    : NetworkImage('https://www.example.com/profile-pic.jpg')
-                        as ImageProvider,
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: Colors.black,
-                    size: 20,
-                  ),
-                ),
+                    : AssetImage('assets/default_profile.jpg') as ImageProvider,
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 20),
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(),
-              ),
+              decoration: InputDecoration(labelText: 'Username'),
             ),
-            SizedBox(height: 16),
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
+              decoration: InputDecoration(labelText: 'Email'),
             ),
-            SizedBox(height: 16),
             TextField(
               controller: _passwordController,
               obscureText: !_passwordVisible,
               decoration: InputDecoration(
-                labelText: 'New Password',
-                border: OutlineInputBorder(),
+                labelText: 'Password',
                 suffixIcon: IconButton(
                   icon: Icon(
                     _passwordVisible ? Icons.visibility : Icons.visibility_off,
