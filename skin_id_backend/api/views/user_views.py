@@ -145,14 +145,22 @@ def edit_profile(request):
             pengguna.email = email
         if 'jenis_kelamin' in data:
             pengguna.jenis_kelamin = data['jenis_kelamin']
-        
+
+        if 'profile_picture' in request.FILES:
+            # Hapus foto profil lama jika ada
+            if pengguna.profile_picture:
+                pengguna.profile_picture.delete()
+            pengguna.profile_picture = request.FILES['profile_picture']
+            
         pengguna.save()
+        
         return Response({
             'message':'Data pengguna berhasil diperbarui',
             'data': {
                 'username' : pengguna.username,
                 'email' : pengguna.email,
-                'jenis_kelamin' : pengguna.jenis_kelamin
+                'jenis_kelamin' : pengguna.jenis_kelamin,
+                'profile_picture_url': request.build_absolute_uri(pengguna.profile_picture.url) if pengguna.profile_picture else None,
             }
         }, status=status.HTTP_200_OK)
         
@@ -271,3 +279,21 @@ def send_verification_email(user):
         [user_email],                # Email penerima
         fail_silently=False          # Jika ada error, jangan abaikan
     )
+    
+@api_view(['POST'])
+def send_reset_password_otp(request):
+    email = request.data.get('email')
+    try:
+        pengguna = Pengguna.objects.get(email=email)
+        pengguna.set_reset_otp()
+
+        # Kirim OTP melalui email
+        send_mail(
+            subject='Reset Password OTP',
+            message=f"Kode OTP untuk mengatur ulang password Anda adalah: {pengguna.reset_otp}. Berlaku selama 10 menit.",
+            from_email='noreply@yourapp.com',
+            recipient_list=[email],
+        )
+        return Response({'message': 'OTP telah dikirim ke email Anda.'}, status=200)
+    except Pengguna.DoesNotExist:
+        return Response({'error': 'Email tidak ditemukan.'}, status=404)
