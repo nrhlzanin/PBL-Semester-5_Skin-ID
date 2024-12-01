@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class Login extends StatefulWidget {
   const Login({super.key});
 
@@ -36,8 +36,11 @@ class _LoginAccountState extends State<Login> {
   }
 
   Future<void> loginUser(String email, String password) async {
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['LOGIN_ENDPOINT'];
+    
     final response = await http.post(
-      Uri.parse('http://192.168.1.4:8000/api/user/login/'),
+      Uri.parse('$baseUrl$endpoint'),
       body: {'email': email, 'password': password},
     );
 
