@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/create-login.dart';
@@ -33,10 +34,11 @@ class _NavbarState extends State<Navbar> {
       if (token == null) {
         throw Exception('No token found. Please log in.');
       }
-
-      final url = Uri.parse('http://192.168.185.15:8000/api/user/profile/');
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
       final response = await http.get(url, headers: {
-        'Authorization': 'Bearer $token',
+        'Authorization': '$token',
       });
 
       if (response.statusCode == 200) {

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
@@ -20,11 +21,10 @@ class _ListProductState extends State<ListProduct> {
   int _currentIndex = 0;
 
   Future<List<dynamic>> fetchMakeupProducts() async {
-    final url =
-        // 'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
-        'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse('$baseUrl$endpoint'));
 
       if (response.statusCode == 200) {
         // Parsing JSON dari response API
