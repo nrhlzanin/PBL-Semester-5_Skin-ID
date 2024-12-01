@@ -1,7 +1,10 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, prefer_const_literals_to_create_immutables
-
+import 'dart:convert';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/notification_screen.dart';
@@ -23,12 +26,31 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      username = prefs.getString('username') ?? 'John Doe';
-      displayName = prefs.getString('displayName') ?? 'John Doe';
-      email = prefs.getString('email') ?? 'johndoe@example.com';
-    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        throw Exception('No token found. Please log in.');
+      }
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response = await http.get(url, headers: {
+        'Authorization': '$token',
+      });
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          username = data['username'] ?? "Unknown";
+          email = data['email'] ?? "Unknown";
+        });
+      } else {
+        print("Failed to fetch user profile: ${response.body}");
+      }
+    } catch (e) {
+      print("Error fetching user profile: $e");
+    }
   }
 
   @override
@@ -66,8 +88,21 @@ class _AccountScreenState extends State<AccountScreen> {
               backgroundImage: NetworkImage(
                   'https://www.example.com/profile-pic.jpg'), // URL profil gambar
             ),
-            title: Text(displayName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            subtitle: Text('@$username', style: TextStyle(fontSize: 18)),
+            title: Text(displayName,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$username',
+                  style: TextStyle(fontSize: 18),
+                ),
+                Text(
+                  '$email',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -103,7 +138,8 @@ class _AccountScreenState extends State<AccountScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => EditProfileScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => EditProfileScreen()),
                   ).then((_) => _loadUserData());
                 },
                 child: Text('Edit Profile'),
@@ -149,8 +185,15 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _displayNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _genderController = TextEditingController();
+  String username = '';
+  String displayName = '';
+  String email = '';
+
+  File? _profileImage;
+  final _picker = ImagePicker();
+  String? _selectedGender;
 
   @override
   void initState() {
@@ -159,20 +202,112 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _loadInitialData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _usernameController.text = prefs.getString('username') ?? 'John Doe';
-    _displayNameController.text = prefs.getString('displayName') ?? 'John Doe';
-    _emailController.text = prefs.getString('email') ?? 'johndoe@example.com';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        throw Exception('No token found. Please log in.');
+      }
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response = await http.get(url, headers: {
+        'Authorization': '$token',
+      });
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _usernameController.text = data['username'] ?? 'Anonymous';
+          _emailController.text = data['email'] ?? 'anonymous@mail.com';
+          _genderController.text = data['gender'] ?? 'men';
+        });
+      } else {
+        print("Failed to fetch user profile: ${response.body}");
+      }
+    } catch (e) {
+      print("Error fetching user profile: $e");
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('No image selected.'),
+        backgroundColor: Colors.orange,
+      ));
+    }
   }
 
   Future<void> _saveChanges() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', _usernameController.text);
-    await prefs.setString('displayName', _displayNameController.text);
-    await prefs.setString('email', _emailController.text);
+    String? token = prefs.getString('token');
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Token is missing. Please log in again.'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
 
-    // Navigasi kembali setelah menyimpan
-    Navigator.pop(context);
+    try {
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['EDIT_PROFILE_ENDPOINT'];
+      final uri = Uri.parse('$baseUrl$endpoint');
+      var request = http.MultipartRequest('PUT', uri);
+
+      // Tambahkan header untuk autentikasi
+      request.headers['Authorization'] = '$token';
+
+      // Tambahkan field data
+      request.fields['username'] = _usernameController.text;
+      request.fields['email'] = _emailController.text;
+      if (_genderController.text.isNotEmpty) {
+        request.fields['jenis_kelamin'] = _genderController.text;
+      }
+
+      // Tambahkan file gambar jika ada
+      if (_profileImage != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'profile_picture',
+          _profileImage!.path,
+        ));
+      }
+
+      // Kirim permintaan ke server
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Profile updated successfully.'),
+          backgroundColor: Colors.green,
+        ));
+        // Perbarui data lokal
+        prefs.setString('username', _usernameController.text);
+        prefs.setString('email', _emailController.text);
+        prefs.setString('gender', _genderController.text);
+        Navigator.pop(context);
+      } else {
+        var responseBody = await response.stream.bytesToString();
+        var error = jsonDecode(responseBody);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to update profile: ${error['error']}'),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('An error occurred: $e'),
+        backgroundColor: Colors.red,
+      ));
+    }
   }
 
   @override
@@ -187,13 +322,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage('https://www.example.com/profile-pic.jpg'),
+            GestureDetector(
+              onTap: _pickImage,
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: _profileImage != null
+                    ? FileImage(_profileImage!)
+                    : NetworkImage('https://www.example.com/profile-pic.jpg')
+                        as ImageProvider,
+              ),
             ),
             SizedBox(height: 16),
             TextField(
@@ -205,19 +346,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             SizedBox(height: 16),
             TextField(
-              controller: _displayNameController,
-              decoration: InputDecoration(
-                labelText: 'Display Name',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16),
-            TextField(
               controller: _emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
                 border: OutlineInputBorder(),
               ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Jenis Kelamin',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _selectedGender,
+                  items: ['pria', 'wanita'].map((gender) {
+                    return DropdownMenuItem<String>(
+                      value: gender,
+                      child:
+                          Text(gender[0].toUpperCase() + gender.substring(1)),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedGender = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 24),
             ElevatedButton(
@@ -226,7 +387,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                 backgroundColor: Colors.black,
               ),
-              child: Text('Apply'),
+              child: Text('Save Changes'),
             ),
           ],
         ),
