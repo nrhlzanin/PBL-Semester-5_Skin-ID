@@ -38,7 +38,7 @@ class _NavbarState extends State<Navbar> {
       final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
       final response = await http.get(url, headers: {
-        'Authorization': 'Bearer $token',
+        'Authorization': '$token',
       });
 
       if (response.statusCode == 200) {
