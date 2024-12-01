@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() {
   runApp(MakeupDetail(product: {}));
@@ -20,10 +21,10 @@ class _MakeUpDetailState extends State<MakeupDetail> {
 
   // Fetch makeup products from the API
   Future<List<dynamic>> fetchMakeupProducts() async {
-    const url =
-        'http://912.168.1.7:8000/api/makeup-products/'; // Ganti dengan URL API Anda
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse('$baseUrl$endpoint'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data;
@@ -70,11 +71,11 @@ class _MakeUpDetailState extends State<MakeupDetail> {
       home: Scaffold(
         backgroundColor: Colors.black, // Set Scaffold background to black
         appBar: AppBar(
-       
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.white), // Tombol kembali
             onPressed: () {
-              Navigator.pop(context); // Menutup halaman dan kembali ke halaman sebelumnya
+              Navigator.pop(
+                  context); // Menutup halaman dan kembali ke halaman sebelumnya
             },
           ),
           title: Text(
@@ -230,6 +231,6 @@ class ColorCircle extends StatelessWidget {
         shape: BoxShape.circle,
         color: color,
       ),
-    ); 
+    );
   }
 }

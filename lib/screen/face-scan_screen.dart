@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -75,8 +76,9 @@ class _CameraPageState extends State<CameraPage> {
       print('No token found. User is not logged in.');
       throw Exception('User is not logged in');
     }
-
-    final url = Uri.parse('http://192.168.185.15:8000/api/user/update-skintone/');
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['SKIN_PREDICT_ENDPOINT'];
+    final url = Uri.parse('$baseUrl$endpoint');
     final request = http.MultipartRequest('POST', url);
 
     // Tambahkan file gambar
@@ -113,8 +115,10 @@ class _CameraPageState extends State<CameraPage> {
     }
 
     try {
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['RECOMMENDATION_ENDPOINT'];
       final url =
-          Uri.parse('http://192.168.185.15:8000/api/user/recommendations/');
+          Uri.parse('$baseUrl$endpoint');
       final response = await http.get(
         url,
         headers: {

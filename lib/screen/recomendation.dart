@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
@@ -20,9 +21,11 @@ class _RecomendationState extends State<Recomendation> {
   List<dynamic> _makeupProducts = [];
 
   Future<List<dynamic>> fetchMakeupProducts() async {
-    const url = 'http://172.0.0.1:8000/api/user/makeup-products/';
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse('$baseUrl$endpoint'));
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data;
