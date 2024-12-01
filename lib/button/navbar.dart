@@ -55,6 +55,38 @@ class _NavbarState extends State<Navbar> {
     }
   }
 
+  Future<void> _userLogout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        throw Exception('No token found... Wait how can you get in then?');
+      }
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['LOGOUT_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+
+      final response = await http.post(url, 
+        headers: {
+          'Authorization': '$token',
+          'Content-Type':'application/json',
+        },
+        body: jsonEncode({'token':token}),
+      );
+
+      if (response.statusCode == 200) {
+        await prefs.remove('auth_token');
+        print('Logout successful');
+      } else {
+        final error = jsonDecode(response.body)['error'] ?? 'Logout failed';
+        print('Logout error: $error');
+      }
+    } catch (e) {
+      print("Error logout for user profile: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -95,7 +127,8 @@ class _NavbarState extends State<Navbar> {
                               overflow:
                                   TextOverflow.ellipsis, // Truncate if too long
                             ),
-                            softWrap: false, // Prevent wrapping to the next line
+                            softWrap:
+                                false, // Prevent wrapping to the next line
                             maxLines: 1, // Limit to 1 line
                           ),
                           Text(
@@ -122,7 +155,8 @@ class _NavbarState extends State<Navbar> {
                   title: Text('Home', style: TextStyle(color: Colors.white)),
                   onTap: () async {
                     final prefs = await SharedPreferences.getInstance();
-                    final hasCheckedSkintone = prefs.getBool('hasCheckedSkintone') ?? false;
+                    final hasCheckedSkintone =
+                        prefs.getBool('hasCheckedSkintone') ?? false;
 
                     if (hasCheckedSkintone) {
                       // Jika sudah memeriksa skintone, navigasi ke halaman Home
@@ -131,7 +165,6 @@ class _NavbarState extends State<Navbar> {
                         MaterialPageRoute(builder: (context) => Home()),
                       );
                     } else {
-                  
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -153,22 +186,26 @@ class _NavbarState extends State<Navbar> {
                 // Rekomendasi Menu
                 ListTile(
                   leading: Icon(Icons.recommend, color: Colors.white),
-                  title: Text('Rekomendasi', style: TextStyle(color: Colors.white)),
+                  title: Text('Rekomendasi',
+                      style: TextStyle(color: Colors.white)),
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => SkinIdentificationPage()),
+                      MaterialPageRoute(
+                          builder: (context) => SkinIdentificationPage()),
                     );
                   },
                 ),
                 // Notifikasi Menu
                 ListTile(
                   leading: Icon(Icons.notifications, color: Colors.white),
-                  title: Text('Notifikasi', style: TextStyle(color: Colors.white)),
+                  title:
+                      Text('Notifikasi', style: TextStyle(color: Colors.white)),
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => NotificationScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => NotificationScreen()),
                     );
                   },
                 ),
@@ -177,17 +214,18 @@ class _NavbarState extends State<Navbar> {
                   leading: Icon(Icons.logout, color: Colors.white),
                   title: Text('Logout', style: TextStyle(color: Colors.white)),
                   onTap: () async {
-                    // Directly remove the token and navigate to the login screen
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.remove('auth_token'); // Remove the stored token
-
-                    print('Logged out successfully.');
-
-                    // Navigate to the login screen
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => CreateLogin()), // Ensure CreateLogin is the correct login screen
-                    );
+                    try {
+                      await _userLogout();
+                      // Navigate to the login screen
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                CreateLogin()), // Ensure CreateLogin is the correct login screen
+                      );
+                    } catch (e) {
+                      print('Error logout: $e . Woho tidak bisa logout kau!');
+                    }
                   },
                 ),
               ],
