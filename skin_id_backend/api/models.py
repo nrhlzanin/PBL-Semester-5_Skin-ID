@@ -73,6 +73,9 @@ class Pengguna(models.Model):
     email = models.EmailField(max_length=100, unique=True)
     jenis_kelamin = models.CharField(max_length=100, null=True, blank=True, choices=[('pria','pria'),('wanita','wanita')])
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
+    profile_picture = models.ImageField(
+        upload_to='profile_pictures/', null=True, blank=True
+    )
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
