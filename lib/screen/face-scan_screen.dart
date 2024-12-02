@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -23,6 +24,7 @@ class _CameraPageState extends State<CameraPage> {
   Uint8List? _imageBytes; // Menyimpan gambar yang diambil dalam bentuk bytes
   String? skinToneResult; // Variabel untuk menyimpan hasil prediksi warna kulit
   List<dynamic>? recommendedProducts;
+  bool isLoading = false; // Added to manage loading state
 
   @override
   void initState() {
@@ -33,12 +35,15 @@ class _CameraPageState extends State<CameraPage> {
   Future<void> _initializeCamera() async {
     try {
       cameras = await availableCameras();
-      _controller = CameraController(cameras![0], ResolutionPreset.high);
-
-      await _controller!.initialize();
-      setState(() {
-        _isCameraInitialized = true;
-      });
+      if (cameras != null && cameras!.length > 1) {
+        _controller = CameraController(cameras![1], ResolutionPreset.high);
+        await _controller!.initialize();
+        setState(() {
+          _isCameraInitialized = true;
+        });
+      } else {
+        print("No sufficient cameras available");
+      }
     } catch (e) {
       print("Error initializing camera: $e");
     }
@@ -66,15 +71,21 @@ class _CameraPageState extends State<CameraPage> {
         setState(() {
           skinToneResult = responseData['skintone_name']; // Menyimpan hasil skin_tone
         });
+        _getRecommendations();
       } else {
         print("Failed to get prediction. Status code: ${response.statusCode}");
         setState(() {
           skinToneResult = "Failed to get prediction";
         });
-              _getRecommendations();
       }
     } catch (e) {
       print("Error capturing and predicting: $e");
+      setState(() {
+        skinToneResult = "Error occurred while predicting skin tone.";
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: Unable to process the image")),
+      );
     }
   }
 
@@ -111,7 +122,6 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
-
   Future<void> _getRecommendations() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
@@ -122,6 +132,10 @@ class _CameraPageState extends State<CameraPage> {
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['RECOMMENDATION_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
+
+      setState(() {
+        isLoading = true;
+      });
 
       final response =
           await http.get(url, headers: {'Authorization': '$token'});
@@ -139,6 +153,13 @@ class _CameraPageState extends State<CameraPage> {
       }
     } catch (e) {
       print("Error getting recommendations: $e");
+      setState(() {
+        recommendedProducts = [];
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -151,8 +172,17 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Navbar(),
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            // Replace the current screen with the HomePage
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()), // Replace HomePage with your actual home screen widget
+            );
+          },
+        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
@@ -161,17 +191,6 @@ class _CameraPageState extends State<CameraPage> {
             fontWeight: FontWeight.w400,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.black),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => NotificationScreen()),
-              );
-            },
-          ),
-        ],
       ),
       body: Stack(
         children: [
@@ -181,6 +200,7 @@ class _CameraPageState extends State<CameraPage> {
             )
           else
             Center(child: CircularProgressIndicator()),
+          
           Positioned(
             bottom: 20,
             left: MediaQuery.of(context).size.width / 2 - 30,
@@ -195,6 +215,7 @@ class _CameraPageState extends State<CameraPage> {
               },
             ),
           ),
+
           if (_imageBytes != null)
             Center(
               child: Dialog(
@@ -209,23 +230,22 @@ class _CameraPageState extends State<CameraPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Skin Tone Result: $skinToneResult', // Menampilkan hasil skin_tone
+                        'Skin Tone Result: $skinToneResult',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       SizedBox(height: 10),
-                      if (_imageBytes != null)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.memory(
-                            _imageBytes!,
-                            height: 200,
-                            width: 200,
-                            fit: BoxFit.cover,
-                          ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.memory(
+                          _imageBytes!,
+                          height: 200,
+                          width: 200,
+                          fit: BoxFit.cover,
                         ),
+                      ),
                       SizedBox(height: 10),
                       Text(
                         skinToneResult ?? 'No result available',
@@ -262,6 +282,9 @@ class _CameraPageState extends State<CameraPage> {
                 ),
               ),
             ),
+          
+          if (isLoading)
+            Center(child: CircularProgressIndicator()), // Show loading spinner
         ],
       ),
     );
