@@ -186,7 +186,7 @@ class _NavbarState extends State<Navbar> {
                 // Rekomendasi Menu
                 ListTile(
                   leading: Icon(Icons.recommend, color: Colors.white),
-                  title: Text('Rekomendasi',
+                  title: Text('Skin Identification',
                       style: TextStyle(color: Colors.white)),
                   onTap: () {
                     Navigator.pushReplacement(
