@@ -3,15 +3,11 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/notification_screen.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -19,9 +15,9 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  String username = "Loading...";
-  String displayName = "Loading...";
-  String email = "Loading...";
+  String username = '';
+  String displayName = '';
+  String email = '';
 
   @override
   void initState() {
@@ -68,6 +64,7 @@ class _AccountScreenState extends State<AccountScreen> {
             color: Colors.black,
             fontSize: 28,
             fontWeight: FontWeight.w400,
+            height: 0.06,
           ),
         ),
         actions: [
@@ -89,7 +86,7 @@ class _AccountScreenState extends State<AccountScreen> {
             leading: CircleAvatar(
               radius: 50,
               backgroundImage: NetworkImage(
-                  'https://www.example.com/profile-pic.jpg'), // URL gambar profil
+                  'https://www.example.com/profile-pic.jpg'), // URL profil gambar
             ),
             title: Text(displayName,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
@@ -141,12 +138,6 @@ class _AccountScreenState extends State<AccountScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => EditProfileScreen()),
-                  ).then((value) {
-                    if (value == true) {
-                      _loadUserData();
-                    }
-                  });
                     MaterialPageRoute(
                         builder: (context) => EditProfileScreen()),
                   ).then((_) => _loadUserData());
@@ -195,14 +186,13 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _genderController = TextEditingController();
   String username = '';
   String displayName = '';
   String email = '';
+  String? _selectedGender = 'tidak mengatakan';
 
   File? _profileImage;
   final _picker = ImagePicker();
-  String? _selectedGender;
 
   @override
   void initState() {
@@ -227,12 +217,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          _usernameController.text = data['username'] ?? 'Anonymous';
-          _emailController.text = data['email'] ?? 'anonymous@mail.com';
-          _genderController.text = data['gender'] ?? 'men';
+          _usernameController.text = data['username'] ?? '';
+          _emailController.text = data['email'] ?? '';
+          _selectedGender = ['pria', 'wanita', 'tidak mengatakan']
+                  .contains(data['jenis_kelamin'])
+              ? data['jenis_kelamin']
+              : 'tidak mengatakan';
         });
       } else {
-        print("Failed to fetch user profile: ${response.body}");
+        print(
+            "Failed to fetch user profile: ${response.statusCode}, ${response.body}");
       }
     } catch (e) {
       print("Error fetching user profile: $e");
@@ -256,8 +250,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _saveChanges() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
     if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Token is missing. Please log in again.'),
@@ -269,18 +264,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['EDIT_PROFILE_ENDPOINT'];
-      final uri = Uri.parse('$baseUrl$endpoint');
-      var request = http.MultipartRequest('PUT', uri);
+      final url = Uri.parse('$baseUrl$endpoint');
+      final request = http.MultipartRequest('PUT', url);
 
       // Tambahkan header untuk autentikasi
-      request.headers['Authorization'] = '$token';
+      request.headers.addAll({'Authorization': '$token'});
 
       // Tambahkan field data
       request.fields['username'] = _usernameController.text;
       request.fields['email'] = _emailController.text;
-      if (_genderController.text.isNotEmpty) {
-        request.fields['jenis_kelamin'] = _genderController.text;
-      }
 
       // Tambahkan file gambar jika ada
       if (_profileImage != null) {
@@ -301,7 +293,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         // Perbarui data lokal
         prefs.setString('username', _usernameController.text);
         prefs.setString('email', _emailController.text);
-        prefs.setString('gender', _genderController.text);
+        prefs.setString('jenis_kelamin', _selectedGender ?? 'tidak mengatakan');
         Navigator.pop(context);
       } else {
         var responseBody = await response.stream.bytesToString();
@@ -323,7 +315,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profile'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text('Edit Profile', style: TextStyle(color: Colors.black)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -339,10 +337,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         as ImageProvider,
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 16),
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: InputDecoration(
+                labelText: 'Username',
+                border: OutlineInputBorder(),
+              ),
             ),
             SizedBox(height: 16),
             TextField(
@@ -352,33 +353,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Jenis Kelamin',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: _selectedGender,
-                  items: ['pria', 'wanita'].map((gender) {
-                    return DropdownMenuItem<String>(
-                      value: gender,
-                      child:
-                          Text(gender[0].toUpperCase() + gender.substring(1)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedGender = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ],
+            SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _selectedGender,
+              items: ['pria', 'wanita', 'tidak mengatakan'].map((gender) {
+                return DropdownMenuItem<String>(
+                  value: gender,
+                  child: Text(gender[0].toUpperCase() + gender.substring(1)),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedGender = value;
+                });
+              },
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Jenis Kelamin',
+              ),
             ),
             SizedBox(height: 24),
             ElevatedButton(
