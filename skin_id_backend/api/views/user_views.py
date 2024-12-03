@@ -77,40 +77,43 @@ def register_user(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
+
+
 def login_user(request):
     email = request.data.get('email')
     password = request.data.get('password')
 
     if not email or not password:
-        return Response({"error":"Username dan password diperlukan"},status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({"error": "Username dan password diperlukan"}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        # pengguna = Pengguna.objects.filter(email=username_or_email).first() or Pengguna.objects.filter(username=username_or_email).first()
         pengguna = Pengguna.objects.filter(email=email).first()
         if pengguna is None:
-            return Response({'Error':'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'Error': 'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Menggunakan check_password untuk memverifikasi hash password
         if not check_password(password, pengguna.password):
-            return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({'Error': 'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Jika password benar, lanjutkan pembuatan token JWT
         header = {
-        "alg": "HS256",  # Algoritma untuk tanda tangan
-        "typ": "JWT"     # Jenis token
+            "alg": "HS256",
+            "typ": "JWT"
         }
-        
+
         payload = {
             'id': pengguna.user_id,
             'username': pengguna.username,
             'email': pengguna.email,
             'exp': datetime.utcnow() + timedelta(hours=1),
         }
-        
+
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256', headers=header)
-        # decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        # print(decoded_token)
-        
+
         pengguna.token = token
         pengguna.last_login = timezone.now()
         pengguna.save()
+
         return Response({
             'message': 'Login berhasil',
             'token': token,
@@ -120,9 +123,9 @@ def login_user(request):
                 'email': pengguna.email
             }
         }, status=status.HTTP_200_OK)
-    
+
     except Exception as e:
-        return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['PUT'])
 @token_required
@@ -130,6 +133,9 @@ def edit_profile(request):
     pengguna = request.user
     data = request.data
     try:
+        print("Request data:", request.data)
+        print("Request files:", request.FILES)
+        
         if 'username' in data:
             pengguna.username = data['username']
         
@@ -207,6 +213,7 @@ def user_logout(request):
 def get_user_profile(request):
     try:
         pengguna = request.user
+        profile_picture_url = request.build_absolute_uri(pengguna.profile_picture.url) if pengguna.profile_picture else "https://www.example.com/default-profile-pic.jpg"
         return Response({
             'id': pengguna.user_id,
             'username': pengguna.username,
@@ -214,7 +221,7 @@ def get_user_profile(request):
             'jenis kelamin': pengguna.jenis_kelamin,
             'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
             'role': pengguna.role_id if pengguna.role_id else "Not Set",
-            'profile_picture': pengguna.profile_picture.url if pengguna.profile_picture else "https://www.example.com/default-profile-pic.jpg",
+            'profile_picture': profile_picture_url,
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
