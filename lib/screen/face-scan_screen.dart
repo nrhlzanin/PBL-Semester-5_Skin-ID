@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:math' as math;  
 
 class CameraPage extends StatefulWidget {
   @override
@@ -214,10 +215,17 @@ class _CameraPageState extends State<CameraPage> {
         children: [
           if (_isCameraInitialized)
             Positioned.fill(
-              child: CameraPreview(_controller!),
+              child: Transform(
+                alignment: Alignment.center,
+                transform: _controller?.description.lensDirection == CameraLensDirection.front
+                    ? Matrix4.rotationY(math.pi)  // Membalikkan tampilan kamera depan
+                    : Matrix4.identity(), // Tidak melakukan apa-apa untuk kamera belakang
+                child: CameraPreview(_controller!),
+              ),
             )
           else
-            Center(child: CircularProgressIndicator()),
+            Center(child: CircularProgressIndicator()
+          ),
           Positioned(
             bottom: 20,
             left: MediaQuery.of(context).size.width / 2 - 30,
