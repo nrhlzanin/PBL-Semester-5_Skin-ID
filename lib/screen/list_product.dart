@@ -188,10 +188,19 @@ class _HomePageState extends State<HomePage> {
                       }).toList(),
                     ),
                   ),
-                  SizedBox(height: 16.0),
+                       SizedBox(height: 16.0),
+                   // Display selected category products in GridView
+                  filteredProducts.isEmpty
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+             
                   // Responsive GridView Section
 
-                  GridView.builder(
+                 :  GridView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.all(16.0),

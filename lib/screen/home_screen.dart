@@ -12,6 +12,7 @@ import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
+import 'dart:async';
 
 void main() {
   runApp(HomeScreen());
@@ -44,6 +45,31 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
+
+// Fungsi untuk memeriksa apakah URL gambar valid dan dapat dimuat
+Future<bool> isImageAvailable(String? url) async {
+  if (url == null || url.isEmpty) return false;
+  try {
+    final response = await http.head(Uri.parse(url));
+    return response.statusCode == 200; // Gambar tersedia jika status 200
+  } catch (e) {
+    return false; // Jika terjadi error, anggap gambar tidak tersedia
+  }
+}
+
+// Filter produk dengan gambar yang benar-benar dapat dimuat
+Future<List<dynamic>> filterValidProducts(List<dynamic> products) async {
+  List<dynamic> validProducts = [];
+  for (var product in products) {
+    final imageUrl = product['image_link'] as String?;
+    if (await isImageAvailable(imageUrl)) {
+      validProducts.add(product);
+    }
+  }
+  return validProducts;
+}
+
   @override
   void initState() {
     super.initState();
@@ -67,7 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
 
 List<dynamic> _makeupProducts = [];
 
@@ -110,6 +135,8 @@ class _HomePageState extends State<HomePage> {
           imageUrl.isNotEmpty &&
           Uri.tryParse(imageUrl)?.isAbsolute == true;
     }).toList();
+
+
     return Scaffold(
       drawer: Navbar(),
       appBar: AppBar(
@@ -202,14 +229,14 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
-                children: [
-                  SkinToneColor(color: Color(0xFFF4C2C2)),
-                  SkinToneColor(color: Color(0xFFE6A57E)),
-                  SkinToneColor(color: Color(0xFFD2B48C)),
-                  SkinToneColor(color: Color(0xFFC19A6B)),
-                  SkinToneColor(color: Color(0xFF8D5524)),
-                  SkinToneColor(color: Color(0xFF7D4B3E)),
-                ],
+               children: [
+                SkinToneColor(color: Color(0xFFFFDFC4)),
+                SkinToneColor(color: Color(0xFFF0D5BE)),
+                SkinToneColor(color: Color(0xFDD1A684)),
+                SkinToneColor(color: Color(0xFAA67C52)),
+                SkinToneColor(color: Color(0xF8825C3A)),
+                SkinToneColor(color: Color(0xF44A312C)),
+              ],
               ),
             ),
             // Updated makeup section with proper styling
@@ -306,33 +333,56 @@ class _HomePageState extends State<HomePage> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // Gambar produk
                                     SizedBox(height: 8),
                                     Container(
                                       width: 70,
                                       height: 50,
                                       decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: NetworkImage(
-                                            product['image_link'] ??
-                                                'https://via.placeholder.com/50',
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
                                         borderRadius: BorderRadius.circular(5),
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.black12,
-                                            blurRadius: 0,
+                                            blurRadius: 4.0,
                                           ),
                                         ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(5),
+                                        child: Image.network(
+                                          product['image_link'] ?? '',
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            // Jika gambar gagal dimuat, tampilkan widget kosong
+                                            return SizedBox(
+                                              width: 70,
+                                              height: 50,
+                                              child: Center(
+                                                child: Text(
+                                                  'No Image',
+                                                  style: TextStyle(
+                                                      fontSize: 8,
+                                                      color: Colors.grey),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child; // Jika loading selesai, tampilkan gambar
+                                            }
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(), // Loading indicator
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
                                     SizedBox(
                                         height:
                                             8), // Jarak antara gambar dan teks nama produk
-
-                                    // Nama produk
                                     Text(
                                       product['product_type'] ?? 'Tipe Produk',
                                       style: TextStyle(
@@ -355,8 +405,6 @@ class _HomePageState extends State<HomePage> {
                                     SizedBox(
                                         height:
                                             4), // Jarak antara nama produk dan merek
-
-                                    // Merek produk
                                     Text(
                                       product['brand'] ?? 'Merek Produk',
                                       style: TextStyle(
@@ -371,6 +419,7 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
+
                   SizedBox(height: 16.0),
                   // Browse Button
                   Center(
