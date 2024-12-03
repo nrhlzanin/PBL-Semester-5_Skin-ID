@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print, unnecessary_string_interpolations
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,8 +35,14 @@ class _NavbarState extends State<Navbar> {
       final token = prefs.getString('auth_token');
 
       if (token == null) {
-        throw Exception('No token found. Please log in.');
+        // Jika token tidak ada, arahkan ke halaman login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CreateLogin()),
+        );
+        return;
       }
+
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
@@ -47,12 +55,11 @@ class _NavbarState extends State<Navbar> {
         setState(() {
           username = data['username'] ?? "Unknown";
           email = data['email'] ?? "Unknown";
-          profilePictureUrl = data['profile_picture'] ??
+          profilePictureUrl = data['profile_picture'] ?? 
               'https://www.example.com/default-profile-pic.jpg';
         });
         print("Profile Picture URL: $profilePictureUrl");
         print("Response Body: ${response.body}");
-
       } else {
         throw Exception('Failed to fetch user profile.');
       }
@@ -67,7 +74,7 @@ class _NavbarState extends State<Navbar> {
       final token = prefs.getString('auth_token');
 
       if (token == null) {
-        throw Exception('No token found... Wait how can you get in then?');
+        throw Exception('No token found. Cannot logout.');
       }
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['LOGOUT_ENDPOINT'];
@@ -87,11 +94,50 @@ class _NavbarState extends State<Navbar> {
         print('Logout successful');
       } else {
         final error = jsonDecode(response.body)['error'] ?? 'Logout failed';
-        print('Logout error: $error');
+        if (error == 'Token invalid atau kadaluarsa') {
+          await prefs.remove('auth_token');
+          print('Token expired. Redirecting to login...');
+        } else {
+          print('Logout error: $error');
+        }
       }
+      // Setelah logout, arahkan ke halaman login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => CreateLogin()),
+      );
     } catch (e) {
-      print("Error logout for user profile: $e");
+      print("Error during logout: $e");
     }
+  }
+
+  void _showLogoutConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Konfirmasi Logout'),
+          content: Text('Apakah Anda yakin ingin logout?'),
+          actions: <Widget>[
+            // Tombol Batal
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Batal'),
+            ),
+            // Tombol Ya, Logout
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _userLogout(); // Memanggil logout setelah konfirmasi
+              },
+              child: Text('Ya, Logout'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -134,8 +180,7 @@ class _NavbarState extends State<Navbar> {
                               overflow:
                                   TextOverflow.ellipsis, // Truncate if too long
                             ),
-                            softWrap:
-                                false, // Prevent wrapping to the next line
+                            softWrap: false, // Prevent wrapping to the next line
                             maxLines: 1, // Limit to 1 line
                           ),
                           Text(
@@ -190,29 +235,25 @@ class _NavbarState extends State<Navbar> {
                     );
                   },
                 ),
-                // Rekomendasi Menu
+                // Skin Identification Menu
                 ListTile(
                   leading: Icon(Icons.recommend, color: Colors.white),
-                  title: Text('Skin Identification',
-                      style: TextStyle(color: Colors.white)),
+                  title: Text('Skin Identification', style: TextStyle(color: Colors.white)),
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => SkinIdentificationPage()),
+                      MaterialPageRoute(builder: (context) => SkinIdentificationPage()),
                     );
                   },
                 ),
                 // Notifikasi Menu
                 ListTile(
                   leading: Icon(Icons.notifications, color: Colors.white),
-                  title:
-                      Text('Notifikasi', style: TextStyle(color: Colors.white)),
+                  title: Text('Notifikasi', style: TextStyle(color: Colors.white)),
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => NotificationScreen()),
+                      MaterialPageRoute(builder: (context) => NotificationScreen()),
                     );
                   },
                 ),
@@ -220,19 +261,8 @@ class _NavbarState extends State<Navbar> {
                 ListTile(
                   leading: Icon(Icons.logout, color: Colors.white),
                   title: Text('Logout', style: TextStyle(color: Colors.white)),
-                  onTap: () async {
-                    try {
-                      await _userLogout();
-                      // Navigate to the login screen
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                CreateLogin()), // Ensure CreateLogin is the correct login screen
-                      );
-                    } catch (e) {
-                      print('Error logout: $e . Woho tidak bisa logout kau!');
-                    }
+                  onTap: () {
+                    _showLogoutConfirmation();
                   },
                 ),
               ],
