@@ -35,23 +35,20 @@ class Command(BaseCommand):
             )
         self.stdout.write(self.style.SUCCESS("Skintones berhasil ditambahkan"))
 
-        # Menambahkan data pengguna (contoh: admin atau pengguna pertama)
-        pengguna_data = {
-            'username': 'user',
-            'email': 'user@example.com',
-            'password': '123456',  # Pastikan untuk hash password sebelum digunakan
-            'jenis_kelamin': 'pria',  # Contoh jenis kelamin
-            'role_id':'1',
-            'skintone_id':'3',
-        }
-        pengguna_data['password'] = make_password(pengguna_data['password'])
-
-        pengguna = Pengguna.objects.create(
-            username=pengguna_data['username'],
-            email=pengguna_data['email'],
-            password=pengguna_data['password'],
-            jenis_kelamin=pengguna_data['jenis_kelamin'],
-            skintone_id=pengguna_data['skintone_id'],
-            role_id=pengguna_data['role_id']
-        )
-        self.stdout.write(self.style.SUCCESS(f"Pengguna {pengguna.username} berhasil ditambahkan"))
+        pengguna_data = [
+            {'username': 'user','email': 'user@example.com','password': '123456', 'jenis_kelamin': 'pria', 'role_id':'1','skintone_id':'3',},
+            {'username': 'user2','email': 'user2@mail.com','password': '123456', 'jenis_kelamin': 'pria', 'role_id':'1','skintone_id':'2',},
+            {'username': 'user3','email': 'user3@gmail.com','password': '123456', 'jenis_kelamin': '', 'role_id':'1','skintone_id':'',},
+        ]
+        
+        for pengguna in pengguna_data:
+            pengguna['password'] = make_password(pengguna['password'])
+            Pengguna.objects.create(
+                username=pengguna['username'],
+                email=pengguna['email'],
+                password=pengguna['password'],
+                jenis_kelamin=pengguna['jenis_kelamin'],
+                skintone_id=pengguna['skintone_id'],
+                role_id=pengguna['role_id']
+            )
+            self.stdout.write(self.style.SUCCESS(f"Pengguna {pengguna.username} berhasil ditambahkan"))

@@ -21,6 +21,7 @@ class _AccountScreenState extends State<AccountScreen> {
   String username = "Loading...";
   String displayName = "Loading...";
   String email = "Loading...";
+  String profilePictureUrl = '';
 
   @override
   void initState() {
@@ -38,7 +39,7 @@ class _AccountScreenState extends State<AccountScreen> {
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
-      final endpoint = dotenv.env['GET_ACCOUNT_ENDPOINT'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
       final response = await http.get(url, headers: {
         'Authorization': '$token',
@@ -48,8 +49,9 @@ class _AccountScreenState extends State<AccountScreen> {
         final data = json.decode(response.body);
         setState(() {
           username = data['username'] ?? "Unknown";
-          displayName = username;
           email = data['email'] ?? "Unknown";
+          profilePictureUrl = data['profile_picture'] ??
+              'https://www.example.com/default-profile-pic.jpg';
         });
       } else {
         throw Exception('Failed to fetch user profile.');
@@ -95,12 +97,11 @@ class _AccountScreenState extends State<AccountScreen> {
           ListTile(
             leading: CircleAvatar(
               radius: 50,
-              backgroundImage: NetworkImage(
-                  'https://www.example.com/profile-pic.jpg'), // URL gambar profil
+              backgroundImage: NetworkImage(profilePictureUrl),
             ),
-            title: Text(displayName,
+            title: Text(username,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            subtitle: Text('@$username', style: TextStyle(fontSize: 18)),
+            subtitle: Text(email, style: TextStyle(fontSize: 18)),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -136,7 +137,8 @@ class _AccountScreenState extends State<AccountScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => EditProfileScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => EditProfileScreen()),
                   ).then((value) {
                     if (value == true) {
                       _loadUserData();
@@ -187,7 +189,8 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _oldPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
   bool _passwordVisible = false;
 
   File? _selectedImage;
@@ -258,18 +261,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         throw Exception('No token found. Please log in.');
       }
 
-      if (_usernameController.text.isNotEmpty) {
-        await prefs.setString('username', _usernameController.text);
-      }
-
-      if (_emailController.text.isNotEmpty) {
-        await prefs.setString('email', _emailController.text);
-      }
-
       await _updateProfileOnServer(
         _usernameController.text.isNotEmpty ? _usernameController.text : null,
         _emailController.text.isNotEmpty ? _emailController.text : null,
-        _passwordController.text.isNotEmpty ? _passwordController.text : null,
+        _oldPasswordController.text.isNotEmpty
+            ? _oldPasswordController.text
+            : null,
+        _newPasswordController.text.isNotEmpty
+            ? _newPasswordController.text
+            : null,
         _selectedImage,
       );
 
@@ -282,7 +282,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _updateProfileOnServer(
     String? username,
     String? email,
-    String? password,
+    String? oldPassword,
+    String? newPassword,
     File? profileImage,
   ) async {
     try {
@@ -294,21 +295,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
       if (baseUrl == null) {
         throw Exception('Base URL is not set.');
       }
 
-      final url = Uri.parse('$baseUrl/api/user/profile/');
+      final url = Uri.parse('$baseUrl$endpoint');
       var request = http.MultipartRequest('PUT', url)
-        ..headers['Authorization'] = 'Bearer $token';
+        ..headers['Authorization'] = '$token';
 
       if (username != null) request.fields['username'] = username;
       if (email != null) request.fields['email'] = email;
-      if (password != null) request.fields['password'] = password;
+      if (oldPassword != null) request.fields['old_password'] = oldPassword;
+      if (newPassword != null) request.fields['new_password'] = newPassword;
 
       if (profileImage != null) {
         request.files.add(await http.MultipartFile.fromPath(
-          'profile_image',
+          'profile_picture',
           profileImage.path,
         ));
       }
@@ -353,10 +356,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               decoration: InputDecoration(labelText: 'Email'),
             ),
             TextField(
-              controller: _passwordController,
+              controller: _oldPasswordController,
               obscureText: !_passwordVisible,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: 'Old Password',
                 suffixIcon: IconButton(
                   icon: Icon(
                     _passwordVisible ? Icons.visibility : Icons.visibility_off,
@@ -367,6 +370,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     });
                   },
                 ),
+              ),
+            ),
+            TextField(
+              controller: _newPasswordController,
+              obscureText: !_passwordVisible,
+              decoration: InputDecoration(
+                labelText: 'New Password',
               ),
             ),
             SizedBox(height: 20),

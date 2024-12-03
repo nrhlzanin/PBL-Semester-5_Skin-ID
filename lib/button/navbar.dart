@@ -19,6 +19,7 @@ class Navbar extends StatefulWidget {
 class _NavbarState extends State<Navbar> {
   String username = "Loading...";
   String email = "";
+  String profilePictureUrl = "";
 
   @override
   void initState() {
@@ -46,9 +47,14 @@ class _NavbarState extends State<Navbar> {
         setState(() {
           username = data['username'] ?? "Unknown";
           email = data['email'] ?? "Unknown";
+          profilePictureUrl = data['profile_picture'] ??
+              'https://www.example.com/default-profile-pic.jpg';
         });
+        print("Profile Picture URL: $profilePictureUrl");
+        print("Response Body: ${response.body}");
+
       } else {
-        print("Failed to fetch user profile: ${response.body}");
+        throw Exception('Failed to fetch user profile.');
       }
     } catch (e) {
       print("Error fetching user profile: $e");
@@ -67,12 +73,13 @@ class _NavbarState extends State<Navbar> {
       final endpoint = dotenv.env['LOGOUT_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
 
-      final response = await http.post(url, 
+      final response = await http.post(
+        url,
         headers: {
           'Authorization': '$token',
-          'Content-Type':'application/json',
+          'Content-Type': 'application/json',
         },
-        body: jsonEncode({'token':token}),
+        body: jsonEncode({'token': token}),
       );
 
       if (response.statusCode == 200) {
@@ -107,8 +114,8 @@ class _NavbarState extends State<Navbar> {
                   padding: const EdgeInsets.only(left: 10, top: 30, bottom: 2),
                   child: CircleAvatar(
                     radius: 30, // Avatar size
-                    backgroundImage: AssetImage(
-                        'assets/image/avatar1.jpeg'), // Profile photo
+                    backgroundImage:
+                        NetworkImage(profilePictureUrl), // Profile photo
                   ),
                 ),
                 // Username

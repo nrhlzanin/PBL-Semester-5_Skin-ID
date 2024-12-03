@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.urls import path
+from django.conf.urls.static import static
 from api.views.user_views import register_user, login_user, edit_profile, user_logout, get_user_profile, verify_email
 from api.machine_learning.ml_model import predict_skin_tone_view, update_skintone
 from api.views.makeup_product import fetch_filtered_makeup_products, fetch_makeup_products, recommend_product, get_recommendations
@@ -15,4 +17,4 @@ urlpatterns = [
     path('update-skintone/',update_skintone, name='update-skintone'),
     path('recommendations/', recommend_product, name='make-recommendation'),
     path('get-recommendations/', get_recommendations, name='get-recommendation'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
