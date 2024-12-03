@@ -78,6 +78,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                   context); // Menutup halaman dan kembali ke halaman sebelumnya
             },
           ),
+
           title: Text(
             product['name'] ?? 'Product Detail',
             style: GoogleFonts.caveat(
@@ -86,6 +87,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
               fontWeight: FontWeight.w400,
             ),
           ),
+          
           backgroundColor: Colors.black, // Set app bar background to black
           iconTheme:
               IconThemeData(color: Colors.white), // Set icon color to white
@@ -95,6 +97,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              
               // Product Image
               Center(
                 child: ClipRRect(
@@ -212,6 +215,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
             ],
           ),
         ),
+        
       ),
     );
   }

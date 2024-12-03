@@ -194,28 +194,28 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             SizedBox(height: 16.0),
-          Padding(
-  padding: const EdgeInsets.all(16.0),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          SkinToneColor(color: Color(0xFFF4C2C2)),
-          SkinToneColor(color: Color(0xFFE6A57E)),
-          SkinToneColor(color: Color(0xFFD2B48C)),
-          SkinToneColor(color: Color(0xFFC19A6B)),
-          SkinToneColor(color: Color(0xFF8D5524)),
-          SkinToneColor(color: Color(0xFF7D4B3E)),
-        ],
-      ),
-      SizedBox(height: 16), // Menambahkan jarak antara Row dan Column
-      SkinIdentificationCard(),
-    ],
-  ),
-),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      SkinToneColor(color: Color(0xFFF4C2C2)),
+                      SkinToneColor(color: Color(0xFFE6A57E)),
+                      SkinToneColor(color: Color(0xFFD2B48C)),
+                      SkinToneColor(color: Color(0xFFC19A6B)),
+                      SkinToneColor(color: Color(0xFF8D5524)),
+                      SkinToneColor(color: Color(0xFF7D4B3E)),
+                    ],
+                  ),
+                  SizedBox(
+                      height: 16), // Menambahkan jarak antara Row dan Column
+                  SkinIdentificationCard(),
+                ],
+              ),
+            ),
 
-            
             // Updated makeup section with proper styling
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
@@ -269,13 +269,9 @@ class _HomePageState extends State<HomePage> {
                   // Display selected category products in GridView
                   filteredProducts.isEmpty
                       ? Center(
-                          child: Text(
-                            'Not Found',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : GridView.builder(
@@ -688,7 +684,7 @@ class ProductDetailPage extends StatelessWidget {
             Wrap(
               spacing: 8.0,
               children: productColors.map((color) {
-                 return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
+                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
               }).toList(),
             ),
           ],
@@ -794,6 +790,7 @@ class CommunityCard extends StatelessWidget {
     );
   }
 }
+
 class ColorBox extends StatelessWidget {
   final String color;
 
@@ -857,11 +854,12 @@ class SkinIdentificationCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildSkinToneColor(Color(0xFFF5E4D7)),
-                    _buildSkinToneColor(Color(0xFFE0C4A8)),
-                    _buildSkinToneColor(Color(0xFFC49A6C)),
-                    _buildSkinToneColor(Color(0xFFA66B3F)),
-                    _buildSkinToneColor(Color(0xFF7B3F1B)),
+                    SkinToneColor(color: Color(0xFFFFDFC4)),
+                    SkinToneColor(color: Color(0xFFF0D5BE)),
+                    SkinToneColor(color: Color(0xFDD1A684)),
+                    SkinToneColor(color: Color(0xFAA67C52)),
+                    SkinToneColor(color: Color(0xF8825C3A)),
+                    SkinToneColor(color: Color(0xF44A312C)),
                   ],
                 ),
                 SizedBox(height: 8),

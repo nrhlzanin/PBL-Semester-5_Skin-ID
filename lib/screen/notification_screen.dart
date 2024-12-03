@@ -96,9 +96,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ],
               ),
             ),
-
+  
             // List of Notifications
             Expanded(
+              
               child: ListView.builder(
                 padding: const EdgeInsets.all(10),
                 itemCount: notifications.length,
