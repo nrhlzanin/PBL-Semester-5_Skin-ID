@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
-import 'package:skin_id/screen/notification_screen.dart';
 
 class Recomendation extends StatefulWidget {
   @override
@@ -184,7 +183,7 @@ class RecomendationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Navbar(),
+      endDrawer: Navbar(),
       appBar: AppBar(
         title: Text(
           'YourSkin-ID',
@@ -195,18 +194,6 @@ class RecomendationPage extends StatelessWidget {
             height: 0.06,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            color: Colors.black,
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => NotificationScreen()),
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),

@@ -10,7 +10,6 @@ import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
-import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
 
 void main() {
   runApp(Home());
@@ -106,7 +105,7 @@ class _HomePageState extends State<HomePage> {
             .toList();
 
     return Scaffold(
-      drawer: Navbar(),
+      endDrawer: Navbar(),
       appBar: AppBar(
         title: Text(
           'YourSkin-ID',
@@ -117,20 +116,6 @@ class _HomePageState extends State<HomePage> {
             height: 0.06,
           ),
         ),
-        actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
-              },
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(

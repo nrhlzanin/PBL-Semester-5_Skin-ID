@@ -88,6 +88,15 @@ class _HomePageState extends State<HomePage> {
   // Menyimpan kategori yang dipilih
   String selectedCategory = 'All';
 
+  Future<bool> _onWillPop() async {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Home()),
+      (Route<dynamic> route) => false,
+    );
+    return false;
+  }
+  
   @override
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'All'
@@ -98,8 +107,18 @@ class _HomePageState extends State<HomePage> {
                 selectedCategory.toLowerCase())
             .toList();
     return Scaffold(
-      drawer: Navbar(),
+      endDrawer: Navbar(),
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => Home()),
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
@@ -109,20 +128,6 @@ class _HomePageState extends State<HomePage> {
             height: 0.06,
           ),
         ),
-        actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
-              },
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(

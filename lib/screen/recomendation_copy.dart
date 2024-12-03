@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/home.dart';
-import 'package:skin_id/screen/notification_screen.dart';
 
 class Recomendation2 extends StatefulWidget {
   final String? skinToneResult;
