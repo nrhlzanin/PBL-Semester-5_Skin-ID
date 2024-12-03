@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() {
   runApp(MakeupDetail(product: {}));
@@ -20,10 +21,10 @@ class _MakeUpDetailState extends State<MakeupDetail> {
 
   // Fetch makeup products from the API
   Future<List<dynamic>> fetchMakeupProducts() async {
-    const url =
-        'http://127.0.0.1:8000/api/makeup-products/'; // Ganti dengan URL API Anda
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse('$baseUrl$endpoint'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data;
@@ -46,6 +47,15 @@ class _MakeUpDetailState extends State<MakeupDetail> {
     });
   }
 
+  // Fungsi untuk memparsing hex color
+  Color parseColor(String hexColor) {
+    // Jika kode warna diawali dengan '#', kita hapus '#' dan tambahkan '0xFF' di depannya
+    if (hexColor.startsWith('#')) {
+      hexColor = hexColor.replaceFirst('#', '0xFF');
+    }
+    return Color(int.parse(hexColor));
+  }
+
   @override
   Widget build(BuildContext context) {
     final product = widget.product; // Akses data produk
@@ -61,6 +71,14 @@ class _MakeUpDetailState extends State<MakeupDetail> {
       home: Scaffold(
         backgroundColor: Colors.black, // Set Scaffold background to black
         appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white), // Tombol kembali
+            onPressed: () {
+              Navigator.pop(
+                  context); // Menutup halaman dan kembali ke halaman sebelumnya
+            },
+          ),
+
           title: Text(
             product['name'] ?? 'Product Detail',
             style: GoogleFonts.caveat(
@@ -69,6 +87,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
               fontWeight: FontWeight.w400,
             ),
           ),
+          
           backgroundColor: Colors.black, // Set app bar background to black
           iconTheme:
               IconThemeData(color: Colors.white), // Set icon color to white
@@ -78,6 +97,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              
               // Product Image
               Center(
                 child: ClipRRect(
@@ -131,56 +151,71 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              // Product Colors
-              Text(
-                'Product Colors:',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // White color for headers
+
+              // Warna Produk
+              if (product['product_colors'] != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Warna Tersedia:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // Warna putih untuk header
+                      ),
+                    ),
+                    const SizedBox(height: 8.0),
+                    Wrap(
+                      children: (product['product_colors'] as List)
+                          .map<Widget>((color) {
+                        final colorHex = color['hex_value'] ??
+                            ''; // Mengambil hex value dengan default string kosong
+                        final colorName = color['colour_name'] ??
+                            'Warna Tidak Dikenal'; // Mengambil nama warna, jika null gunakan default 'Warna Tidak Dikenal'
+
+                        // Memparsing warna hex dan menampilkan warna serta nama warna
+                        return Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Column(
+                            children: [
+                              ColorCircle(
+                                color:
+                                    parseColor(colorHex), // Memparse warna hex
+                              ),
+                              const SizedBox(
+                                  height:
+                                      4.0), // Spasi antara lingkaran warna dan nama warna
+                              Text(
+                                colorName, // Nama warna, jika null akan menampilkan 'Warna Tidak Dikenal'
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors
+                                      .white, // Warna putih untuk nama warna
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8.0),
-            product['product_colors'] != null && (product['product_colors'] as List).isNotEmpty
-    ? Wrap(
-        spacing: 8.0,
-        children: (product['product_colors'] as List).map((color) {
-          // Ambil nilai hex_value dari produk, fallback ke warna default jika null
-          String hexColor = color['hex_value']?.replaceAll('#', '') ?? '000000';
-
-          // Validasi panjang hexColor
-          if (hexColor.length != 6) {
-            hexColor = '000000'; // fallback ke warna hitam
-          }
-
-          try {
-            // Mengonversi hex menjadi warna dengan menambahkan '0xFF' untuk channel alpha (opacity 100%)
-            return ColorCircle(
-              color: Color(int.parse('0xFF$hexColor', radix: 16)),
-            );
-          } catch (e) {
-            // Jika terjadi kesalahan parsing, fallback ke warna hitam
-            return ColorCircle(
-              color: Color(0xFF000000),
-            );
-          }
-        }).toList(),
-      )
-    : const Text('No colors available'),
-
               const SizedBox(height: 16.0),
-              // Back Button
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(context); // Kembali ke halaman sebelumnya
-                },
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                label:
-                    const Text('Back', style: TextStyle(color: Colors.white)),
-              ),
+
+              // // Back Button
+              // TextButton.icon(
+              //   onPressed: () {
+              //     Navigator.pop(context); // Kembali ke halaman sebelumnya
+              //   },
+              //   icon: const Icon(Icons.arrow_back, color: Colors.white),
+              //   label:
+              //       const Text('Back', style: TextStyle(color: Colors.white)),
+              // ),
             ],
           ),
         ),
+        
       ),
     );
   }
@@ -189,16 +224,16 @@ class _MakeUpDetailState extends State<MakeupDetail> {
 class ColorCircle extends StatelessWidget {
   final Color color;
 
-  const ColorCircle({required this.color});
+  const ColorCircle({required this.color, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 50,
-      height: 50,
+      width: 60,
+      height: 60,
       decoration: BoxDecoration(
-        color: color,
         shape: BoxShape.circle,
+        color: color,
       ),
     );
   }

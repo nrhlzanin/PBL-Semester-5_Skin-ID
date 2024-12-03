@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http; // Import http package
 import 'package:skin_id/button/navbar.dart';
@@ -11,6 +12,7 @@ import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
+import 'dart:async';
 
 void main() {
   runApp(HomeScreen());
@@ -25,11 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   Future<List<dynamic>> fetchMakeupProducts() async {
-    final url =
-        // 'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
-        'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse('$baseUrl$endpoint'));
 
       if (response.statusCode == 200) {
         // Parsing JSON dari response API
@@ -43,6 +44,31 @@ class _HomeScreenState extends State<HomeScreen> {
       return [];
     }
   }
+
+
+
+// Fungsi untuk memeriksa apakah URL gambar valid dan dapat dimuat
+Future<bool> isImageAvailable(String? url) async {
+  if (url == null || url.isEmpty) return false;
+  try {
+    final response = await http.head(Uri.parse(url));
+    return response.statusCode == 200; // Gambar tersedia jika status 200
+  } catch (e) {
+    return false; // Jika terjadi error, anggap gambar tidak tersedia
+  }
+}
+
+// Filter produk dengan gambar yang benar-benar dapat dimuat
+Future<List<dynamic>> filterValidProducts(List<dynamic> products) async {
+  List<dynamic> validProducts = [];
+  for (var product in products) {
+    final imageUrl = product['image_link'] as String?;
+    if (await isImageAvailable(imageUrl)) {
+      validProducts.add(product);
+    }
+  }
+  return validProducts;
+}
 
   @override
   void initState() {
@@ -93,6 +119,15 @@ class _HomePageState extends State<HomePage> {
   // Menyimpan kategori yang dipilih
   String selectedCategory = 'All';
 
+  Future<bool> _onWillPop() async {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Home()),
+      (Route<dynamic> route) => false,
+    );
+    return false;
+  }
+  
   @override
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'All'
@@ -102,9 +137,17 @@ class _HomePageState extends State<HomePage> {
                 product['product_type']?.toString().toLowerCase() ==
                 selectedCategory.toLowerCase())
             .toList();
+// Filter produk yang memiliki gambar valid
+    List<dynamic> validFilteredProducts = filteredProducts.where((product) {
+      final imageUrl = product['image_link'] as String?;
+      return imageUrl != null &&
+          imageUrl.isNotEmpty &&
+          Uri.tryParse(imageUrl)?.isAbsolute == true;
+    }).toList();
+
 
     return Scaffold(
-      drawer: Navbar(),
+      endDrawer: Navbar(),
       appBar: AppBar(
         title: Text(
           'YourSkin-ID',
@@ -115,20 +158,6 @@ class _HomePageState extends State<HomePage> {
             height: 0.06,
           ),
         ),
-        actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
-              },
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -195,14 +224,14 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
-                children: [
-                  SkinToneColor(color: Color(0xFFF4C2C2)),
-                  SkinToneColor(color: Color(0xFFE6A57E)),
-                  SkinToneColor(color: Color(0xFFD2B48C)),
-                  SkinToneColor(color: Color(0xFFC19A6B)),
-                  SkinToneColor(color: Color(0xFF8D5524)),
-                  SkinToneColor(color: Color(0xFF7D4B3E)),
-                ],
+               children: [
+                SkinToneColor(color: Color(0xFFFFDFC4)),
+                SkinToneColor(color: Color(0xFFF0D5BE)),
+                SkinToneColor(color: Color(0xFDD1A684)),
+                SkinToneColor(color: Color(0xFAA67C52)),
+                SkinToneColor(color: Color(0xF8825C3A)),
+                SkinToneColor(color: Color(0xF44A312C)),
+              ],
               ),
             ),
             // Updated makeup section with proper styling
@@ -255,16 +284,13 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 20),
+
                   // Display selected category products in GridView
-                  filteredProducts.isEmpty
+                  validFilteredProducts.isEmpty
                       ? Center(
-                          child: Text(
-                            'Not Found',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : GridView.builder(
@@ -278,10 +304,10 @@ class _HomePageState extends State<HomePage> {
                             crossAxisSpacing: 16.0,
                             mainAxisSpacing: 16.0,
                           ),
-                          itemCount: min(filteredProducts.length,
+                          itemCount: min(validFilteredProducts.length,
                               6), // Menampilkan maksimal 6 item
                           itemBuilder: (context, index) {
-                            final product = filteredProducts[index];
+                            final product = validFilteredProducts[index];
 
                             return Card(
                               elevation: 4.0,
@@ -302,33 +328,56 @@ class _HomePageState extends State<HomePage> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // Gambar produk
                                     SizedBox(height: 8),
                                     Container(
                                       width: 70,
                                       height: 50,
                                       decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: NetworkImage(
-                                            product['image_link'] ??
-                                                'https://via.placeholder.com/50',
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
                                         borderRadius: BorderRadius.circular(5),
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.black12,
-                                            blurRadius: 0,
+                                            blurRadius: 4.0,
                                           ),
                                         ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(5),
+                                        child: Image.network(
+                                          product['image_link'] ?? '',
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            // Jika gambar gagal dimuat, tampilkan widget kosong
+                                            return SizedBox(
+                                              width: 70,
+                                              height: 50,
+                                              child: Center(
+                                                child: Text(
+                                                  'No Image',
+                                                  style: TextStyle(
+                                                      fontSize: 8,
+                                                      color: Colors.grey),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child; // Jika loading selesai, tampilkan gambar
+                                            }
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(), // Loading indicator
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
                                     SizedBox(
                                         height:
                                             8), // Jarak antara gambar dan teks nama produk
-
-                                    // Nama produk
                                     Text(
                                       product['product_type'] ?? 'Tipe Produk',
                                       style: TextStyle(
@@ -351,8 +400,6 @@ class _HomePageState extends State<HomePage> {
                                     SizedBox(
                                         height:
                                             4), // Jarak antara nama produk dan merek
-
-                                    // Merek produk
                                     Text(
                                       product['brand'] ?? 'Merek Produk',
                                       style: TextStyle(
@@ -367,6 +414,7 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
+
                   SizedBox(height: 16.0),
                   // Browse Button
                   Center(
@@ -405,34 +453,33 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             //konten
-           GridView.count(
-  crossAxisCount: 2,
-  shrinkWrap: true,
-  physics: NeverScrollableScrollPhysics(),
-  crossAxisSpacing: 16.0,
-  mainAxisSpacing: 16.0,
-  children: [
-    CommunityCard(
-      imageUrl:
-          'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
-      title: 'Tutorial make up shade',
-      subtitle: 'Tutorial make up',
-      author: 'Beauty',
-      likes: 2017,
-      comments: 333,
-    ),
-    CommunityCard(
-      imageUrl:
-          'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
-      title: 'Lumme brand new products',
-      subtitle: 'Lumme',
-      author: 'Women',
-      likes: 1115,
-      comments: 555,
-    ),
-  ],
-),
-
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              children: [
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
+                  title: 'Tutorial make up shade',
+                  subtitle: 'Tutorial make up',
+                  author: 'Beauty',
+                  likes: 2017,
+                  comments: 333,
+                ),
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
+                  title: 'Lumme brand new products',
+                  subtitle: 'Lumme',
+                  author: 'Women',
+                  likes: 1115,
+                  comments: 555,
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -525,11 +572,10 @@ class FilterButton extends StatelessWidget {
   }
 }
 
-// Assuming you have a list of products with 'brand' and 'name'
 String selectedCategory = 'All';
 
 class ProductCard extends StatelessWidget {
-  // final String imageUrl;
+  final String imageUrl;
   final String title;
   final String brand;
   final String description;
@@ -538,7 +584,7 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({
     required this.id,
-    // required this.imageUrl,
+    required this.imageUrl,
     required this.title,
     required this.brand,
     required this.description,
@@ -547,6 +593,11 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (imageUrl.isEmpty || !Uri.tryParse(imageUrl)!.isAbsolute == true) {
+      // Jangan tampilkan jika gambar tidak valid
+      return SizedBox.shrink();
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -556,7 +607,7 @@ class ProductCard extends StatelessWidget {
               id: id,
               title: title,
               brand: brand,
-              // imageUrl: imageUrl,
+              imageUrl: imageUrl,
               description: description,
               productColors: productColors,
             ),
@@ -571,15 +622,17 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Expanded(
-            //   child: ClipRRect(
-            //     borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-            //     child: Image.network(
-            //       imageUrl,
-            //       fit: BoxFit.cover,
-            //     ),
-            //   ),
-            // ),
+            // Gambar produk
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return SizedBox.shrink(); // Jangan tampilkan jika error
+                },
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -588,23 +641,23 @@ class ProductCard extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 14, // Adjusted font size
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Montserrat',
                     ),
-                    maxLines: 1, // Ensures the title does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4),
                   Text(
                     brand,
                     style: TextStyle(
-                      fontSize: 12, // Adjusted font size
+                      fontSize: 12,
                       color: Colors.grey[700],
                       fontFamily: 'Montserrat',
                     ),
-                    maxLines: 1, // Ensures the brand does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -612,6 +665,36 @@ class ProductCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class ProductList extends StatelessWidget {
+  final List<Map<String, dynamic>> products;
+
+  const ProductList({required this.products});
+
+  @override
+  Widget build(BuildContext context) {
+    // Filter produk yang memiliki gambar valid
+    final validProducts = products.where((product) {
+      final imageUrl = product['imageUrl'] as String;
+      return imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.isAbsolute == true;
+    }).toList();
+
+    return ListView.builder(
+      itemCount: validProducts.length,
+      itemBuilder: (context, index) {
+        final product = validProducts[index];
+        return ProductCard(
+          id: product['id'],
+          imageUrl: product['imageUrl'],
+          title: product['title'],
+          brand: product['brand'],
+          description: product['description'],
+          productColors: product['productColors'],
+        );
+      },
     );
   }
 }
@@ -631,6 +714,7 @@ class ProductDetailPage extends StatelessWidget {
     // required this.imageUrl,
     required this.description,
     required this.productColors,
+    required String imageUrl,
   });
 
   @override
@@ -696,7 +780,6 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 }
-
 
 class CommunityCard extends StatelessWidget {
   final String imageUrl;

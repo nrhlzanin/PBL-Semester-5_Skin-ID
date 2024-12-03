@@ -1,101 +1,152 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: avoid_print, unused_element
 
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:skin_id/button/navbar.dart';
-import 'package:skin_id/screen/notification_screen.dart';
+import 'package:skin_id/screen/edit_profil_screen.dart';
+import 'package:skin_id/screen/home.dart';
 
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
+  @override
+  _AccountScreenState createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  String username = "Loading...";
+  String email = "Loading...";
+  String profilePictureUrl = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null || token.isEmpty) {
+        throw Exception('No token found. Please log in.');
+      }
+
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response = await http.get(url, headers: {'Authorization': '$token'});
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          username = data['username'] ?? "Unknown";
+          email = data['email'] ?? "Unknown";
+          profilePictureUrl = data['profile_picture'] ?? 'default_profile.jpg';
+        });
+      } else {
+        throw Exception('Failed to fetch user profile.');
+      }
+    } catch (e) {
+      print("Error fetching user profile: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching user profile.')),
+      );
+    }
+  }
+
+  Future<bool> _onWillPop() async {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Home()),
+      (Route<dynamic> route) => false,
+    );
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Navbar(),
+      endDrawer: Navbar(),
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => Home()),
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
             color: Colors.black,
             fontSize: 28,
             fontWeight: FontWeight.w400,
-            height: 0.06,
           ),
         ),
-        actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
-              },
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
           SizedBox(height: 20),
+          // Profile Information
           ListTile(
             leading: CircleAvatar(
-              radius: 50, // Meningkatkan ukuran avatar
-              backgroundImage: NetworkImage('https://www.example.com/profile-pic.jpg'), // URL profil gambar
+              radius: 50,
+              backgroundImage: NetworkImage(profilePictureUrl),
             ),
-            title: Text('John Doe', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            subtitle: Text('@johndoe', style: TextStyle(fontSize: 18)),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Text('162', style: TextStyle(fontSize: 18)),
-                    Text('Following', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('734', style: TextStyle(fontSize: 18)),
-                    Text('Followers', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('34', style: TextStyle(fontSize: 18)),
-                    Text('Posts', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-              ],
+            title: Text(
+              username,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
+            subtitle: Text(email, style: TextStyle(fontSize: 18)),
           ),
           SizedBox(height: 20),
+          // Statistics Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatisticColumn('162', 'Following'),
+              _buildStatisticColumn('734', 'Followers'),
+              _buildStatisticColumn('34', 'Posts'),
+            ],
+          ),
+          SizedBox(height: 20),
+          // Buttons for Editing and Sharing Profile
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final updated = await Navigator.push<bool>(
                     context,
                     MaterialPageRoute(builder: (context) => EditProfileScreen()),
                   );
+                  if (updated == true) {
+                    _loadUserData(); // Reload user data
+                  }
                 },
                 child: Text('Edit Profile'),
               ),
               OutlinedButton(
-                onPressed: () {},
+                onPressed: () {}, // Add share logic here
                 child: Text('Share Profile'),
               ),
             ],
           ),
           SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {}, // Add upload logic here
             child: Text('Upload Content'),
           ),
+          // Posts Grid Section
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(10),
@@ -117,105 +168,13 @@ class AccountScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-// Halaman untuk mengedit profil
-class EditProfileScreen extends StatefulWidget {
-  @override
-  _EditProfileScreenState createState() => _EditProfileScreenState();
-}
-
-class _EditProfileScreenState extends State<EditProfileScreen> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _displayNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    // Mengisi controller dengan data awal
-    _usernameController.text = 'Kangaroo0_';
-    _displayNameController.text = 'Vanika Sandra Cantika';
-    _emailController.text = 'mykangaroo@gmail.com';
-  }
-
-  void _saveChanges() {
-    final username = _usernameController.text;
-    final displayName = _displayNameController.text;
-    final email = _emailController.text;
-
-    print('Username: $username');
-    print('Display Name: $displayName');
-    print('Email: $email');
-
-    // Navigasi kembali setelah penyimpanan
-    Navigator.pop(context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          'Edit Profile',
-          style: TextStyle(color: Colors.black),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Foto profil
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage(
-                  'https://www.example.com/profile-pic.jpg'), // Ganti dengan URL profil
-            ),
-            SizedBox(height: 16),
-            // Form edit username
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16),
-            // Form edit display name
-            TextField(
-              controller: _displayNameController,
-              decoration: InputDecoration(
-                labelText: 'Display Name',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16),
-            // Form edit email
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _saveChanges,
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                backgroundColor: Colors.black, // Warna tombol
-              ),
-              child: Text('Apply'),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildStatisticColumn(String value, String label) {
+    return Column(
+      children: [
+        Text(value, style: TextStyle(fontSize: 18)),
+        Text(label, style: TextStyle(fontSize: 16)),
+      ],
     );
   }
 }

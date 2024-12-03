@@ -1,7 +1,6 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import authenticate
-from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -15,11 +14,12 @@ from api.models import Role
 from django.utils import timezone
 from django.http import JsonResponse
 from functools import wraps
+from datetime import datetime, timedelta
 import uuid
 import jwt
 import requests
 import random
-import string
+import secrets
 
 # Pembuatan untuk verifikasi token pengguna/user
 def token_required(f):
@@ -34,6 +34,9 @@ def token_required(f):
         if not user:
             return Response({"error":"Token invalid atau kadaluarsa"},status=status.HTTP_401_UNAUTHORIZED)
         
+        print(f"Received token: {token}")
+        print(f"Database token: {user.token}")
+
         request.user = user
         return f(request, *args, **kwargs)
     return decorated_function
@@ -75,12 +78,11 @@ def register_user(request):
 
 @api_view(['POST'])
 def login_user(request):
-    # username_or_email = request.data.get('email_or_username')
     email = request.data.get('email')
     password = request.data.get('password')
 
     if not email or not password:
-        raise ValidationError("Username dan password diperlukan")
+        return Response({"error":"Username dan password diperlukan"},status=status.HTTP_400_BAD_REQUEST)
     
     try:
         # pengguna = Pengguna.objects.filter(email=username_or_email).first() or Pengguna.objects.filter(username=username_or_email).first()
@@ -89,14 +91,22 @@ def login_user(request):
             return Response({'Error':'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
         if not check_password(password, pengguna.password):
             return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        payload = {
-            'user_id': pengguna.user_id,
-            'username': pengguna.username,
-            'email': pengguna.email,
+        
+        header = {
+        "alg": "HS256",  # Algoritma untuk tanda tangan
+        "typ": "JWT"     # Jenis token
         }
         
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        payload = {
+            'id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+            'exp': datetime.utcnow() + timedelta(hours=1),
+        }
+        
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256', headers=header)
+        # decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        # print(decoded_token)
         
         pengguna.token = token
         pengguna.last_login = timezone.now()
@@ -105,7 +115,7 @@ def login_user(request):
             'message': 'Login berhasil',
             'token': token,
             'user': {
-                'id': pengguna.user_id,
+                'id pengguna': pengguna.user_id,
                 'username': pengguna.username,
                 'email': pengguna.email
             }
@@ -117,35 +127,60 @@ def login_user(request):
 @api_view(['PUT'])
 @token_required
 def edit_profile(request):
-    user_id = request.data.get('user_id')
-    username = request.data.get('username')
-    email = request.data.get('email')
-    jenis_kelamin = request.data.get('jenis_kelamin')
+    pengguna = request.user
+    data = request.data
     try:
-        pengguna = Pengguna.objects.get(user_id=user_id)
+        print("Request data:", request.data)
+        print("Request files:", request.FILES)
         
-        if email and Pengguna.objects.filter(email=email).exclude(id=user_id).exists():
-            return Response({"error": "Email sudah digunakan"}, status=status.HTTP_400_BAD_REQUEST)
-        # Pembaruan data yg dikirim
-        if username:
-            pengguna.username = username
-        if email:
+        if 'username' in data:
+            pengguna.username = data['username']
+        
+        if 'email' in data:
+            email = data['email']
+            if Pengguna.objects.filter(email=email).exclude(pk=pengguna.pk).exists():
+                return Response (
+                    {
+                    "error":"Email sudah digunakan oleh pengguna lain."
+                },status=status.HTTP_400_BAD_REQUEST
+                                 )
             pengguna.email = email
-        if jenis_kelamin:
-            pengguna.jenis_kelamin = jenis_kelamin
         
+        if 'jenis_kelamin' in data:
+            pengguna.jenis_kelamin = data['jenis_kelamin']
+        
+        if 'old_password' in data and 'new_password' in data:
+            old_password = data['old_password']
+            new_password = data['new_password']
+            
+            if not check_password(old_password, pengguna.password):
+                return Response({
+                    "error": "Password lama tidak sesuai."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            pengguna.password = make_password(new_password)
+        
+        if 'profile_picture' in request.FILES:
+            profile_picture = request.FILES['profile_picture']
+            pengguna.profile_picture = profile_picture
+        
+            MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+            if profile_picture.size > MAX_FILE_SIZE:
+                return Response({"error": "Ukuran gambar terlalu besar. Maksimal 5 MB."}, status=status.HTTP_400_BAD_REQUEST)
+
         pengguna.save()
         return Response({
-            'message':'Data pengguna berhasil diubah',
+            'message':'Data pengguna berhasil diperbarui',
             'data': {
                 'username' : pengguna.username,
                 'email' : pengguna.email,
-                'jenis_kelamin' : pengguna.jenis_kelamin
+                'jenis_kelamin' : pengguna.jenis_kelamin,
+                'profile_picture_url': pengguna.profile_picture.url if pengguna.profile_picture else None
             }
         }, status=status.HTTP_200_OK)
         
     except Pengguna.DoesNotExist:
-        print('An exception occurred')
+        print('An exception occurred in edit profile')
         return Response({"error":"Pengguna tidak ditemukan"}, status=status.HTTP_404_NOT_FOUND)
     
     except Exception as e:
@@ -175,6 +210,7 @@ def user_logout(request):
 def get_user_profile(request):
     try:
         pengguna = request.user
+        profile_picture_url = request.build_absolute_uri(pengguna.profile_picture.url) if pengguna.profile_picture else "https://www.example.com/default-profile-pic.jpg"
         return Response({
             'id': pengguna.user_id,
             'username': pengguna.username,
@@ -182,6 +218,7 @@ def get_user_profile(request):
             'jenis kelamin': pengguna.jenis_kelamin,
             'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
             'role': pengguna.role_id if pengguna.role_id else "Not Set",
+            'profile_picture': profile_picture_url,
         }, status=status.HTTP_200_OK)
         
     except Exception as e:

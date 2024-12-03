@@ -35,6 +35,8 @@ class CreateAccount extends StatefulWidget {
 }
 
 class _CreateAccountState extends State<CreateAccount> {
+    bool isObscured = true; // Declare isObscured at the class level to keep its state persistent
+    bool isObscured2 = true; // Declare isObscured at the class level to keep its state persistent
   bool _isAccountCreated = false;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
@@ -99,18 +101,21 @@ class _CreateAccountState extends State<CreateAccount> {
       return;
     }
     try {
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['REGISTER_ENDPOINT'];
+      print('Full URL: $baseUrl$endpoint');
       final response = await http.post(
-        // ===========================================================
-        // Uri.parse(APIConfig.getRegisterURL()),
-        Uri.parse('http://192.168.1.7:8000/api/user/register/'), //alamat IP diubah ke alamat IP kalian (cek cmd ipconfig)
-        body: {
+        Uri.parse('$baseUrl$endpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
           'username': username,
           'email': email,
           'password': password,
-          // 'skintone_id': null,
-        },
+        }),
       );
-        // ===========================================================
+      // ===========================================================
 
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -206,27 +211,57 @@ class _CreateAccountState extends State<CreateAccount> {
                           validator: _email,
                         ),
                         SizedBox(height: 20),
-                        TextFormField(
-                          controller: _passwordController,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            hintText: 'Type your password',
-                            border: OutlineInputBorder(),
+                       TextFormField(
+                        controller: _passwordController,
+                        obscureText: isObscured, // Use isObscured for password
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          hintText: 'Enter your password',
+                          border: OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isObscured ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isObscured = !isObscured; // Toggle visibility for password
+                                print("Password visibility toggled: $isObscured");
+                              });
+                            },
                           ),
-                          obscureText: true,
-                          validator: _password,
                         ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: _confirmPasswordController,
-                          decoration: InputDecoration(
-                            labelText: 'Confirm password',
-                            hintText: 'Type your password',
-                            border: OutlineInputBorder(),
+                      
+                      ),
+                      SizedBox(height: 20),
+                      // Confirm Password TextFormField with visibility toggle
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: isObscured2, // Use isObscured2 for confirm password
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          hintText: 'Re-enter your password',
+                          border: OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isObscured2 ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isObscured2 = !isObscured2; // Toggle visibility for confirm password
+                                print("Confirm Password visibility toggled: $isObscured2");
+                              });
+                            },
                           ),
-                          obscureText: true,
-                          validator: _confirmPassword,
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          } else if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                      ),
                         SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
@@ -269,14 +304,12 @@ class _CreateAccountState extends State<CreateAccount> {
                             backgroundColor: Colors.white,
                             side: BorderSide(color: Colors.grey),
                             padding: EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 50
-                            ),
+                                vertical: 15, horizontal: 50),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),
-                             
                         SizedBox(height: 20),
                         Text.rich(
                           TextSpan(
@@ -314,80 +347,3 @@ class _CreateAccountState extends State<CreateAccount> {
     );
   }
 }
-
-
-// else
-            //   Center(
-            //     child: Container(
-            //       padding: EdgeInsets.all(20),
-            //       margin: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-            //       decoration: BoxDecoration(
-            //         color: Colors.white.withOpacity(0.8),
-            //         borderRadius: BorderRadius.circular(20),
-            //       ),
-            //       child: Column(
-            //         mainAxisSize: MainAxisSize.min,
-            //         children: [
-            //           SizedBox(height: 20),
-            //           Text(
-            //             'Verification',
-            //             textAlign: TextAlign.center,
-            //             style: TextStyle(
-            //               color: Colors.black,
-            //               fontSize: 18,
-            //               fontFamily: 'Montserrat',
-            //               fontWeight: FontWeight.w800,
-            //               decoration: TextDecoration.underline,
-            //               height: 1.5,
-            //               letterSpacing: 0.02,
-            //             ),
-            //           ),
-            //           SizedBox(height: 20),
-            //           Text(
-            //             'We sent you an Email!',
-            //             textAlign: TextAlign.center,
-            //             style: TextStyle(
-            //               color: Colors.black,
-            //               fontSize: 16,
-            //               fontFamily: 'Montserrat',
-            //               fontWeight: FontWeight.w700,
-            //               height: 1.5,
-            //               letterSpacing: 0.01,
-            //             ),
-            //           ),
-            //           SizedBox(height: 20),
-            //           Text.rich(
-            //             TextSpan(
-            //               children: [
-            //                 TextSpan(
-            //                   text:
-            //                       'We have sent you a verification link to your email address before you can use ',
-            //                   style: TextStyle(
-            //                     color: Colors.black,
-            //                     fontSize: 14,
-            //                     fontFamily: 'Montserrat',
-            //                     fontWeight: FontWeight.w400,
-            //                     height: 1.5,
-            //                     letterSpacing: 0.01,
-            //                   ),
-            //                 ),
-            //                 TextSpan(
-            //                   text: 'Skin-ID',
-            //                   style: TextStyle(
-            //                     color: Colors.black,
-            //                     fontSize: 14,
-            //                     fontFamily: 'Pacifico',
-            //                     fontWeight: FontWeight.w400,
-            //                     height: 1.5,
-            //                     letterSpacing: 0.01,
-            //                   ),
-            //                 ),
-            //               ],
-            //             ),
-            //             textAlign: TextAlign.center,
-            //           ),
-            //           SizedBox(height: 20),
-            //         ],
-            //       ),
-            //     ),
-            //   ),

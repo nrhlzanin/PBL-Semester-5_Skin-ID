@@ -8,8 +8,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from api.models import Pengguna
-from api.models import SkinTone
+from api.models import Pengguna, SkinTone, Product, ProductColor, Recommendation
 from api.views.user_views import token_required 
 from math import sqrt
 
@@ -104,16 +103,16 @@ def color_distance(color1, color2):
 @api_view(['GET'])
 @token_required
 def recommend_product(request):
+    user = request.user
+    skintone = user.skintone
+        
+    if not skintone:
+        return Response(
+            {"error":"Skintone Anda belum diatur"},
+            status = status.HTTP_400_BAD_REQUEST
+            )
+    
     try:
-        user = request.user
-        skintone = user.skintone
-        
-        if not skintone:
-            return Response(
-                {"error":"Skintone Anda belum diatur"},
-                status = status.HTTP_400_BAD_REQUEST
-                )
-        
         skintone_start_rgb = hex_to_rgb(skintone.hex_range_start)
         skintone_end_rgb = hex_to_rgb(skintone.hex_range_end)
         
@@ -135,23 +134,71 @@ def recommend_product(request):
 
                         # Jika warna berada dalam range skin tone, tambahkan ke rekomendasi
                         if distance_start < 50 or distance_end < 50:
+                            db_product, _ = Product.objects.get_or_create(
+                                product_name=product['name'],
+                                defaults={
+                                    'brand':product['brand'],
+                                    'product_type':product['product_type'],
+                                    'description':product.get('description',''),
+                                    'image_url':product.get('image_link',''),
+                                },
+                            )
+                            
+                            db_color,_= ProductColor.objects.get_or_create(
+                                product=db_product,
+                                hex_value=color['hex_value'],
+                                defaults={'color_name':color.get('colour_name','')}
+                            )
+                            
+                            Recommendation.objects.create(
+                                user=user,
+                                skintone=skintone,
+                                product=db_product,
+                                color=db_color,
+                            )
                             recommendations.append({
                                 "product_name": product['name'],
+                                "image_url":product['product_type'],
                                 "product_type": product['product_type'],
                                 "brand": product['brand'],
-                                "colour_name": color['colour_name'],
                                 "hex_value": color['hex_value'],
-                                # "description":product['description']
+                                "colour_name":color.get('colour_name',''),
+                                "image_url":product.get('image_link',''),
+                                # "product_color":product['product_colors']
                             })
                     except ValueError as ve:
                         continue
 
         return Response(
-            {"recommendations": recommendations}, status=status.HTTP_200_OK)
+            {"message": "Rekomendasi berhasil dibuat dan disimpan", "recommendation":recommendations}, status=status.HTTP_201_CREATED)
     
     except Exception as e:
         return Response(
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-        
+
+@api_view(['GET'])
+@token_required
+def get_recommendations(request):
+    user = request.user
+    recommendations = Recommendation.objects.filter(user=user).select_related('product', 'color', 'skintone')
+    
+    if not recommendations.exists():
+        return Response(
+            {"message":"Belum ada rekomendasi untuk pengguna ini."},status=status.HTTP_404_NOT_FOUND,
+            )
+    data = [
+        {
+            "product_name": rec.product.product_name,
+            "brand": rec.product.brand,
+            "product_type": rec.product.product_type,
+            "description": rec.product.description,
+            "image_url": rec.product.image_url,
+            "hex_color": rec.color.hex_value,
+            "colour_name": rec.color.color_name,
+            "skintone": rec.skintone.skintone_name,
+        }
+        for rec in recommendations
+    ]
+    return Response({"recommendations": data}, status=status.HTTP_200_OK)

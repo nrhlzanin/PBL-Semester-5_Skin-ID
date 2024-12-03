@@ -1,12 +1,12 @@
-
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/notification_screen.dart';
+import 'package:skin_id/screen/makeup_detail.dart';
 
 void main() {
   runApp(ListProduct());
@@ -21,11 +21,10 @@ class _ListProductState extends State<ListProduct> {
   int _currentIndex = 0;
 
   Future<List<dynamic>> fetchMakeupProducts() async {
-    final url =
-        // 'http://192.168.1.7:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
-        'http://127.0.0.1:8000/api/user/makeup-products/'; // Sesuaikan dengan endpoint API Anda
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse('$baseUrl$endpoint'));
 
       if (response.statusCode == 200) {
         // Parsing JSON dari response API
@@ -89,6 +88,15 @@ class _HomePageState extends State<HomePage> {
   // Menyimpan kategori yang dipilih
   String selectedCategory = 'All';
 
+  Future<bool> _onWillPop() async {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Home()),
+      (Route<dynamic> route) => false,
+    );
+    return false;
+  }
+  
   @override
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'All'
@@ -99,8 +107,18 @@ class _HomePageState extends State<HomePage> {
                 selectedCategory.toLowerCase())
             .toList();
     return Scaffold(
-      drawer: Navbar(),
+      endDrawer: Navbar(),
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => Home()),
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
@@ -110,20 +128,6 @@ class _HomePageState extends State<HomePage> {
             height: 0.06,
           ),
         ),
-        actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
-              },
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -189,10 +193,19 @@ class _HomePageState extends State<HomePage> {
                       }).toList(),
                     ),
                   ),
-                  SizedBox(height: 16.0),
+                       SizedBox(height: 16.0),
+                   // Display selected category products in GridView
+                  filteredProducts.isEmpty
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+             
                   // Responsive GridView Section
 
-                  GridView.builder(
+                 :  GridView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.all(16.0),
@@ -213,7 +226,14 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            print('Clicked on ${product['name']}');
+                            // Navigasi ke MakeupDetail dengan data produk
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    MakeupDetail(product: product),
+                              ),
+                            );
                           },
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
