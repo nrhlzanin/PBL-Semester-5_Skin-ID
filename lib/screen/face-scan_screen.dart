@@ -36,7 +36,7 @@ class _CameraPageState extends State<CameraPage> {
     try {
       cameras = await availableCameras();
       if (cameras != null && cameras!.length > 1) {
-        _controller = CameraController(cameras![1], ResolutionPreset.high);
+        _controller = CameraController(cameras![0], ResolutionPreset.high);
         await _controller!.initialize();
         setState(() {
           _isCameraInitialized = true;

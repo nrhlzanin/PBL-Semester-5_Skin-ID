@@ -68,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+
 List<dynamic> _makeupProducts = [];
 
 class HomePage extends StatefulWidget {
@@ -102,7 +103,13 @@ class _HomePageState extends State<HomePage> {
                 product['product_type']?.toString().toLowerCase() ==
                 selectedCategory.toLowerCase())
             .toList();
-
+// Filter produk yang memiliki gambar valid
+    List<dynamic> validFilteredProducts = filteredProducts.where((product) {
+      final imageUrl = product['image_link'] as String?;
+      return imageUrl != null &&
+          imageUrl.isNotEmpty &&
+          Uri.tryParse(imageUrl)?.isAbsolute == true;
+    }).toList();
     return Scaffold(
       drawer: Navbar(),
       appBar: AppBar(
@@ -255,16 +262,13 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 20),
+
                   // Display selected category products in GridView
-                  filteredProducts.isEmpty
+                  validFilteredProducts.isEmpty
                       ? Center(
-                          child: Text(
-                            'Not Found',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : GridView.builder(
@@ -278,10 +282,10 @@ class _HomePageState extends State<HomePage> {
                             crossAxisSpacing: 16.0,
                             mainAxisSpacing: 16.0,
                           ),
-                          itemCount: min(filteredProducts.length,
+                          itemCount: min(validFilteredProducts.length,
                               6), // Menampilkan maksimal 6 item
                           itemBuilder: (context, index) {
-                            final product = filteredProducts[index];
+                            final product = validFilteredProducts[index];
 
                             return Card(
                               elevation: 4.0,
@@ -405,34 +409,33 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             //konten
-           GridView.count(
-  crossAxisCount: 2,
-  shrinkWrap: true,
-  physics: NeverScrollableScrollPhysics(),
-  crossAxisSpacing: 16.0,
-  mainAxisSpacing: 16.0,
-  children: [
-    CommunityCard(
-      imageUrl:
-          'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
-      title: 'Tutorial make up shade',
-      subtitle: 'Tutorial make up',
-      author: 'Beauty',
-      likes: 2017,
-      comments: 333,
-    ),
-    CommunityCard(
-      imageUrl:
-          'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
-      title: 'Lumme brand new products',
-      subtitle: 'Lumme',
-      author: 'Women',
-      likes: 1115,
-      comments: 555,
-    ),
-  ],
-),
-
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              children: [
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
+                  title: 'Tutorial make up shade',
+                  subtitle: 'Tutorial make up',
+                  author: 'Beauty',
+                  likes: 2017,
+                  comments: 333,
+                ),
+                CommunityCard(
+                  imageUrl:
+                      'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
+                  title: 'Lumme brand new products',
+                  subtitle: 'Lumme',
+                  author: 'Women',
+                  likes: 1115,
+                  comments: 555,
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -525,11 +528,10 @@ class FilterButton extends StatelessWidget {
   }
 }
 
-// Assuming you have a list of products with 'brand' and 'name'
 String selectedCategory = 'All';
 
 class ProductCard extends StatelessWidget {
-  // final String imageUrl;
+  final String imageUrl;
   final String title;
   final String brand;
   final String description;
@@ -538,7 +540,7 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({
     required this.id,
-    // required this.imageUrl,
+    required this.imageUrl,
     required this.title,
     required this.brand,
     required this.description,
@@ -547,6 +549,11 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (imageUrl.isEmpty || !Uri.tryParse(imageUrl)!.isAbsolute == true) {
+      // Jangan tampilkan jika gambar tidak valid
+      return SizedBox.shrink();
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -556,7 +563,7 @@ class ProductCard extends StatelessWidget {
               id: id,
               title: title,
               brand: brand,
-              // imageUrl: imageUrl,
+              imageUrl: imageUrl,
               description: description,
               productColors: productColors,
             ),
@@ -571,15 +578,17 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Expanded(
-            //   child: ClipRRect(
-            //     borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-            //     child: Image.network(
-            //       imageUrl,
-            //       fit: BoxFit.cover,
-            //     ),
-            //   ),
-            // ),
+            // Gambar produk
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return SizedBox.shrink(); // Jangan tampilkan jika error
+                },
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -588,23 +597,23 @@ class ProductCard extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 14, // Adjusted font size
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Montserrat',
                     ),
-                    maxLines: 1, // Ensures the title does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4),
                   Text(
                     brand,
                     style: TextStyle(
-                      fontSize: 12, // Adjusted font size
+                      fontSize: 12,
                       color: Colors.grey[700],
                       fontFamily: 'Montserrat',
                     ),
-                    maxLines: 1, // Ensures the brand does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -612,6 +621,36 @@ class ProductCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class ProductList extends StatelessWidget {
+  final List<Map<String, dynamic>> products;
+
+  const ProductList({required this.products});
+
+  @override
+  Widget build(BuildContext context) {
+    // Filter produk yang memiliki gambar valid
+    final validProducts = products.where((product) {
+      final imageUrl = product['imageUrl'] as String;
+      return imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.isAbsolute == true;
+    }).toList();
+
+    return ListView.builder(
+      itemCount: validProducts.length,
+      itemBuilder: (context, index) {
+        final product = validProducts[index];
+        return ProductCard(
+          id: product['id'],
+          imageUrl: product['imageUrl'],
+          title: product['title'],
+          brand: product['brand'],
+          description: product['description'],
+          productColors: product['productColors'],
+        );
+      },
     );
   }
 }
@@ -631,6 +670,7 @@ class ProductDetailPage extends StatelessWidget {
     // required this.imageUrl,
     required this.description,
     required this.productColors,
+    required String imageUrl,
   });
 
   @override
@@ -696,7 +736,6 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 }
-
 
 class CommunityCard extends StatelessWidget {
   final String imageUrl;
