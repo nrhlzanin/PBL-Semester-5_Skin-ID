@@ -1,14 +1,11 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, unnecessary_string_interpolations, use_build_context_synchronously
-
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/notification_screen.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
@@ -50,8 +47,7 @@ class _AccountScreenState extends State<AccountScreen> {
         setState(() {
           username = data['username'] ?? "Unknown";
           email = data['email'] ?? "Unknown";
-          profilePictureUrl = data['profile_picture'] ??
-              'https://www.example.com/default-profile-pic.jpg';
+          profilePictureUrl = data['profile_picture'] ?? 'default_profile.jpg';
         });
       } else {
         throw Exception('Failed to fetch user profile.');
@@ -134,16 +130,15 @@ class _AccountScreenState extends State<AccountScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final updated = await Navigator.push<bool>(
                     context,
                     MaterialPageRoute(
                         builder: (context) => EditProfileScreen()),
-                  ).then((value) {
-                    if (value == true) {
-                      _loadUserData();
-                    }
-                  });
+                  );
+                  if (updated == true) {
+                    _loadUserData(); // Muat ulang data profil
+                  }
                 },
                 child: Text('Edit Profile'),
               ),
@@ -191,18 +186,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  bool _passwordVisible = false;
-
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  String profilePictureUrl = '';
+  bool _passwordVisible = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
+    _fetchUserProfile();
   }
 
-  Future<void> _loadInitialData() async {
+  Future<void> _fetchUserProfile() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -212,7 +208,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
-      final endpoint = dotenv.env['GET_EDIT_ENDPOINT'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
       final response = await http.get(url, headers: {
         'Authorization': '$token',
@@ -223,12 +219,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         setState(() {
           _usernameController.text = data['username'] ?? 'Unknown';
           _emailController.text = data['email'] ?? 'unknown@example.com';
+          profilePictureUrl = data['profile_picture'] ?? '';
         });
       } else {
         throw Exception('Failed to load user data.');
       }
     } catch (e) {
-      print("Error loading profile: $e");
+      print("Error fetching profile: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading profile.')),
       );
@@ -253,6 +250,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _saveChanges() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -260,70 +261,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (token == null || token.isEmpty) {
         throw Exception('No token found. Please log in.');
       }
-
-      await _updateProfileOnServer(
-        _usernameController.text.isNotEmpty ? _usernameController.text : null,
-        _emailController.text.isNotEmpty ? _emailController.text : null,
-        _oldPasswordController.text.isNotEmpty
-            ? _oldPasswordController.text
-            : null,
-        _newPasswordController.text.isNotEmpty
-            ? _newPasswordController.text
-            : null,
-        _selectedImage,
-      );
-
-      Navigator.pop(context, true);
-    } catch (e) {
-      print('Error saving changes: $e');
-    }
-  }
-
-  Future<void> _updateProfileOnServer(
-    String? username,
-    String? email,
-    String? oldPassword,
-    String? newPassword,
-    File? profileImage,
-  ) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-
-      if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
-      }
-
       final baseUrl = dotenv.env['BASE_URL'];
-      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
-      if (baseUrl == null) {
-        throw Exception('Base URL is not set.');
-      }
-
+      final endpoint = dotenv.env['EDIT_PROFILE_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
+
       var request = http.MultipartRequest('PUT', url)
         ..headers['Authorization'] = '$token';
 
-      if (username != null) request.fields['username'] = username;
-      if (email != null) request.fields['email'] = email;
-      if (oldPassword != null) request.fields['old_password'] = oldPassword;
-      if (newPassword != null) request.fields['new_password'] = newPassword;
-
-      if (profileImage != null) {
+      request.fields['username'] = _usernameController.text;
+      request.fields['email'] = _emailController.text;
+      if (_oldPasswordController.text.isNotEmpty &&
+          _newPasswordController.text.isNotEmpty) {
+        request.fields['old_password'] = _oldPasswordController.text;
+        request.fields['new_password'] = _newPasswordController.text;
+      }
+      if (_selectedImage != null) {
         request.files.add(await http.MultipartFile.fromPath(
           'profile_picture',
-          profileImage.path,
+          _selectedImage!.path,
         ));
+        print("Selected Image Path: ${_selectedImage!.path}");
       }
 
       final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
       if (response.statusCode == 200) {
-        print("Profile updated successfully.");
+        final updatedData = json.decode(responseBody);
+        setState(() {
+          profilePictureUrl = updatedData['data']['profile_picture'] ?? '';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Profile updated successfully.')),
+        );
+        Navigator.pop(context, true);
       } else {
-        throw Exception('Failed to update profile.');
+        final errorData = json.decode(responseBody);
+        throw Exception(errorData['error'] ?? 'Failed to update profile.');
       }
     } catch (e) {
-      print("Error updating profile on server: $e");
+      print("Error saving changes: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving changes.')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -343,7 +327,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 radius: 60,
                 backgroundImage: _selectedImage != null
                     ? FileImage(_selectedImage!)
-                    : AssetImage('assets/default_profile.jpg') as ImageProvider,
+                    : (profilePictureUrl.isNotEmpty
+                        ? NetworkImage(profilePictureUrl)
+                        : AssetImage('assets/image/default_profile.jpg')
+                            as ImageProvider),
               ),
             ),
             SizedBox(height: 20),
@@ -381,8 +368,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _saveChanges,
-              child: Text('Save Changes'),
+              onPressed: _isLoading ? null : _saveChanges,
+              child: _isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text('Save Changes'),
             ),
           ],
         ),
