@@ -35,6 +35,8 @@ class CreateAccount extends StatefulWidget {
 }
 
 class _CreateAccountState extends State<CreateAccount> {
+    bool isObscured = true; // Declare isObscured at the class level to keep its state persistent
+    bool isObscured2 = true; // Declare isObscured at the class level to keep its state persistent
   bool _isAccountCreated = false;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
@@ -209,27 +211,57 @@ class _CreateAccountState extends State<CreateAccount> {
                           validator: _email,
                         ),
                         SizedBox(height: 20),
-                        TextFormField(
-                          controller: _passwordController,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            hintText: 'Type your password',
-                            border: OutlineInputBorder(),
+                       TextFormField(
+                        controller: _passwordController,
+                        obscureText: isObscured, // Use isObscured for password
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          hintText: 'Enter your password',
+                          border: OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isObscured ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isObscured = !isObscured; // Toggle visibility for password
+                                print("Password visibility toggled: $isObscured");
+                              });
+                            },
                           ),
-                          obscureText: true,
-                          validator: _password,
                         ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: _confirmPasswordController,
-                          decoration: InputDecoration(
-                            labelText: 'Confirm password',
-                            hintText: 'Type your password',
-                            border: OutlineInputBorder(),
+                      
+                      ),
+                      SizedBox(height: 20),
+                      // Confirm Password TextFormField with visibility toggle
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: isObscured2, // Use isObscured2 for confirm password
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          hintText: 'Re-enter your password',
+                          border: OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isObscured2 ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isObscured2 = !isObscured2; // Toggle visibility for confirm password
+                                print("Confirm Password visibility toggled: $isObscured2");
+                              });
+                            },
                           ),
-                          obscureText: true,
-                          validator: _confirmPassword,
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          } else if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                      ),
                         SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {

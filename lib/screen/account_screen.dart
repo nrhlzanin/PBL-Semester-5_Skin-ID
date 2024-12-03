@@ -1,15 +1,16 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, prefer_const_literals_to_create_immutables, avoid_print, unnecessary_string_interpolations, use_build_context_synchronously
+// ignore_for_file: avoid_print, unused_element
 
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:skin_id/button/navbar.dart';
-import 'package:skin_id/screen/notification_screen.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/edit_profil_screen.dart';
+import 'package:skin_id/screen/home.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -18,8 +19,8 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   String username = "Loading...";
-  String displayName = "Loading...";
   String email = "Loading...";
+  String profilePictureUrl = '';
 
   @override
   void initState() {
@@ -36,20 +37,17 @@ class _AccountScreenState extends State<AccountScreen> {
         throw Exception('No token found. Please log in.');
       }
 
-      final url = Uri.parse('http://192.168.1.3:8000/api/user/profile/');
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': '$token',
-        },
-      );
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response = await http.get(url, headers: {'Authorization': '$token'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
           username = data['username'] ?? "Unknown";
-          displayName = username;
           email = data['email'] ?? "Unknown";
+          profilePictureUrl = data['profile_picture'] ?? 'default_profile.jpg';
         });
       } else {
         throw Exception('Failed to fetch user profile.');
@@ -62,11 +60,30 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  Future<bool> _onWillPop() async {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Home()),
+      (Route<dynamic> route) => false,
+    );
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Navbar(),
+      endDrawer: Navbar(),
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => Home()),
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
@@ -75,85 +92,61 @@ class _AccountScreenState extends State<AccountScreen> {
             fontWeight: FontWeight.w400,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.black),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => NotificationScreen()),
-              );
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
           SizedBox(height: 20),
+          // Profile Information
           ListTile(
             leading: CircleAvatar(
               radius: 50,
-              backgroundImage: NetworkImage(
-                  'https://www.example.com/profile-pic.jpg'), // URL gambar profil
+              backgroundImage: NetworkImage(profilePictureUrl),
             ),
-            title: Text(displayName,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            subtitle: Text('@$username', style: TextStyle(fontSize: 18)),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Text('162', style: TextStyle(fontSize: 18)),
-                    Text('Following', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('734', style: TextStyle(fontSize: 18)),
-                    Text('Followers', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('34', style: TextStyle(fontSize: 18)),
-                    Text('Posts', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-              ],
+            title: Text(
+              username,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
+            subtitle: Text(email, style: TextStyle(fontSize: 18)),
           ),
           SizedBox(height: 20),
+          // Statistics Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatisticColumn('162', 'Following'),
+              _buildStatisticColumn('734', 'Followers'),
+              _buildStatisticColumn('34', 'Posts'),
+            ],
+          ),
+          SizedBox(height: 20),
+          // Buttons for Editing and Sharing Profile
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final updated = await Navigator.push<bool>(
                     context,
                     MaterialPageRoute(builder: (context) => EditProfileScreen()),
-                  ).then((value) {
-                    if (value == true) {
-                      _loadUserData();
-                    }
-                  });
+                  );
+                  if (updated == true) {
+                    _loadUserData(); // Reload user data
+                  }
                 },
                 child: Text('Edit Profile'),
               ),
               OutlinedButton(
-                onPressed: () {},
+                onPressed: () {}, // Add share logic here
                 child: Text('Share Profile'),
               ),
             ],
           ),
           SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {}, // Add upload logic here
             child: Text('Upload Content'),
           ),
+          // Posts Grid Section
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(10),
@@ -175,227 +168,13 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
     );
   }
-}
 
-class EditProfileScreen extends StatefulWidget {
-  @override
-  _EditProfileScreenState createState() => _EditProfileScreenState();
-}
-
-class _EditProfileScreenState extends State<EditProfileScreen> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _passwordVisible = false;
-
-  File? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadInitialData();
-  }
-
-  Future<void> _loadInitialData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-
-      if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
-      }
-
-      final url = Uri.parse('http://192.168.1.3:8000/api/user/profile/');
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': '$token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          _usernameController.text = data['username'] ?? 'Unknown';
-          _emailController.text = data['email'] ?? 'unknown@example.com';
-        });
-      } else {
-        throw Exception('Failed to load user data.');
-      }
-    } catch (e) {
-      print("Error loading profile: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading profile.')),
-      );
-    }
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
-      if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
-      }
-    } catch (e) {
-      print("Error picking image: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error selecting image.')),
-      );
-    }
-  }
-
-Future<void> _saveChanges() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-
-    if (token == null || token.isEmpty) {
-      throw Exception('No token found. Please log in.');
-    }
-
-    if (_usernameController.text.isNotEmpty) {
-      await prefs.setString('username', _usernameController.text);
-    }
-
-    if (_emailController.text.isNotEmpty) {
-      await prefs.setString('email', _emailController.text);
-    }
-
-    await _updateProfileOnServer(
-      _usernameController.text.isNotEmpty ? _usernameController.text : null,
-      _emailController.text.isNotEmpty ? _emailController.text : null,
-      _passwordController.text.isNotEmpty ? _passwordController.text : null,
-      _selectedImage,
-    );
-
-    Navigator.pop(context, true);
-  } catch (e) {
-    print('Error saving changes: $e');
-  }
-}
-
-  Future<void> _updateProfileOnServer(
-    String username,
-    String email,
-    String? password,
-    File? profileImage,
-  ) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-
-      if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
-      }
-
-      final url = Uri.parse('http://192.168.1.3:8000/api/user/profile/');
-      var request = http.MultipartRequest('PUT', url)
-        ..headers['Authorization'] = '$token'
-        ..fields['username'] = username
-        ..fields['email'] = email;
-
-      if (password != null && password.isNotEmpty) {
-        request.fields['password'] = password;
-      }
-
-      if (profileImage != null) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'profile_image',
-          profileImage.path,
-        ));
-      }
-
-      final response = await request.send();
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to update profile.');
-      }
-    } catch (e) {
-      print('Error updating profile: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text('Edit Profile', style: TextStyle(color: Colors.black)),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context, true),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: _pickImage,
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: _selectedImage != null
-                    ? FileImage(_selectedImage!)
-                    : NetworkImage('https://www.example.com/profile-pic.jpg')
-                        as ImageProvider,
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: Colors.black,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              obscureText: !_passwordVisible,
-              decoration: InputDecoration(
-                labelText: 'New Password',
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _passwordVisible = !_passwordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveChanges,
-              child: Text('Save Changes'),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildStatisticColumn(String value, String label) {
+    return Column(
+      children: [
+        Text(value, style: TextStyle(fontSize: 18)),
+        Text(label, style: TextStyle(fontSize: 16)),
+      ],
     );
   }
 }

@@ -73,6 +73,9 @@ class Pengguna(models.Model):
     email = models.EmailField(max_length=100, unique=True)
     jenis_kelamin = models.CharField(max_length=100, null=True, blank=True, choices=[('pria','pria'),('wanita','wanita')])
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
+    profile_picture = models.ImageField(
+        upload_to='profile_pictures/', null=True, blank=True
+    )
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -105,7 +108,7 @@ class Product(models.Model):
     brand = models.CharField(max_length=255, null=True, blank=True)
     product_type = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    image_url = models.URLField(max_length=255, null=True, blank=True)
+    image_url = models.URLField(max_length=1000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
