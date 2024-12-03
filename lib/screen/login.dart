@@ -1,17 +1,20 @@
+// ignore_for_file: dead_code
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class Login extends StatefulWidget {
   const Login({super.key});
 
   @override
   _LoginAccountState createState() => _LoginAccountState();
 }
-
 class _LoginAccountState extends State<Login> {
+  bool isObscured = true; // Declare isObscured at the class level to keep its state persistent
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -38,7 +41,7 @@ class _LoginAccountState extends State<Login> {
   Future<void> loginUser(String email, String password) async {
     final baseUrl = dotenv.env['BASE_URL'];
     final endpoint = dotenv.env['LOGIN_ENDPOINT'];
-    
+
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
       body: {'email': email, 'password': password},
@@ -155,13 +158,31 @@ class _LoginAccountState extends State<Login> {
                       // Password TextFormField with validation
                       TextFormField(
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: isObscured, // Use the class-level isObscured variable
                         decoration: InputDecoration(
                           labelText: 'Password',
                           hintText: 'Enter your password',
                           border: OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isObscured
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isObscured = !isObscured; // Toggle visibility
+                                print("Password visibility toggled: $isObscured");
+                              });
+                            },
+                          ),
                         ),
-                        validator: _validatePassword,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a password';
+                          }
+                          return null;
+                        },
                       ),
                       SizedBox(height: 10),
                       ElevatedButton(
@@ -174,8 +195,7 @@ class _LoginAccountState extends State<Login> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 50),
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -204,10 +224,7 @@ class _LoginAccountState extends State<Login> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           side: BorderSide(color: Colors.grey),
-                          padding: EdgeInsets.symmetric(
-                            vertical: 13,
-                            horizontal: 73,
-                          ),
+                          padding: EdgeInsets.symmetric(vertical: 13, horizontal: 73),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
