@@ -17,4 +17,4 @@ urlpatterns = [
     path('update-skintone/',update_skintone, name='update-skintone'),
     path('recommendations/', recommend_product, name='make-recommendation'),
     path('get-recommendations/', get_recommendations, name='get-recommendation'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
