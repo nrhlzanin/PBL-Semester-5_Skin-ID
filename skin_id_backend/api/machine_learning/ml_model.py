@@ -30,9 +30,8 @@ fitzpatrick_map_reverse = {
     1: "very_light",
     2: "light",
     3: "medium",
-    4: "olive",
-    5: "brown",
-    6: "dark"
+    4: "brown",
+    5: "dark"
 }
 face_cascade = cv2.CascadeClassifier(HAARCASCADE)
 
