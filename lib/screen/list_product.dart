@@ -207,7 +207,8 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   SizedBox(height: 15.0),
-                  // Filter Buttons Section
+              
+                   // Filter Buttons Section
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -227,28 +228,16 @@ class _HomePageState extends State<HomePage> {
                       }).toList(),
                     ),
                   ),
-                  SizedBox(height: 16.0),
-                  // Display selected category products in GridView
+                  SizedBox(height: 20),
 
-                  filteredProducts.isEmpty
+                  // Display selected category products in GridView
+                  validFilteredProducts.isEmpty
                       ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize
-                                .min, // Mengatur ukuran kolom agar sesuai dengan anak-anak
-                            children: [
-                              CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                              SizedBox(
-                                  height:
-                                      10), // Memberikan jarak antara indikator dan teks
-                            ],
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-
-                      // Filter out 'no_image' products beforehand
-
                       : GridView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
@@ -259,20 +248,12 @@ class _HomePageState extends State<HomePage> {
                                 MediaQuery.of(context).size.width > 600 ? 3 : 2,
                             crossAxisSpacing: 16.0,
                             mainAxisSpacing: 16.0,
+                            childAspectRatio:
+                                0.75, // Mengatur rasio lebar-tinggi item
                           ),
-                          itemCount: filteredProducts.length,
+                          itemCount: (validFilteredProducts.length), // Maksimal 6 item
                           itemBuilder: (context, index) {
-                            final product = filteredProducts[index];
-
-                            // Validasi ulang gambar di sini
-                            final imageUrl = product['image_link'];
-                            if (imageUrl == null ||
-                                imageUrl == 'no image' ||
-                                imageUrl.isEmpty ||
-                                imageUrl.contains('ProgressEvent')) {
-                              return SizedBox
-                                  .shrink(); // Jangan tampilkan produk
-                            }
+                            final product = validFilteredProducts[index];
 
                             return Card(
                               elevation: 4.0,
@@ -291,73 +272,107 @@ class _HomePageState extends State<HomePage> {
                                   );
                                 },
                                 child: Column(
-                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
-                                    SizedBox(height: 8),
-                                    Container(
-                                      width: 70,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black12,
-                                            blurRadius: 4.0,
-                                          ),
-                                        ],
-                                      ),
+                                    // Container untuk gambar
+                                    Expanded(
+                                      flex:
+                                          3, // Bagian gambar mengambil lebih banyak ruang
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(5),
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(8.0)),
                                         child: Image.network(
                                           product['image_link'] ?? '',
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) {
-                                            // Validasi error "ProgressEvent"
-                                            if (error
-                                                .toString()
-                                                .contains('ProgressEvent')) {
-                                              return SizedBox
-                                                  .shrink(); // Jangan tampilkan produk
-                                            }
-                                            return SizedBox
-                                                .shrink(); // Default jika ada error lain
+                                            return Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                size: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.1,
+                                                color: Colors.grey,
+                                              ),
+                                            );
+                                          },
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
                                           },
                                         ),
                                       ),
                                     ),
-                                    SizedBox(
-                                        height:
-                                            8), // Jarak antara gambar dan teks nama produk
-                                    Text(
-                                      product['product_type'] ?? 'Tipe Produk',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                    // Container untuk teks
+                                    Expanded(
+                                      flex:
+                                          2, // Bagian teks lebih kecil dibanding gambar
+                                      child: Padding(
+                                        padding: EdgeInsets.all(
+                                            MediaQuery.of(context).size.width *
+                                                0.02),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product['product_type'] ??
+                                                  'Tipe Produk',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.03,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.005),
+                                            Text(
+                                              product['name'] ?? 'Nama Produk',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.025,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.005),
+                                            Text(
+                                              product['brand'] ??
+                                                  'Merek Produk',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.025,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            4), // Jarak antara nama produk dan merek
-                                    Text(
-                                      product['name'] ?? 'Nama Produk',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            4), // Jarak antara nama produk dan merek
-                                    Text(
-                                      product['brand'] ?? 'Merek Produk',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 10,
-                                      ),
-                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ),
@@ -365,6 +380,7 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
+
                 ],
               ),
             ),
