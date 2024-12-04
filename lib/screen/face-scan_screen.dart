@@ -8,7 +8,7 @@ import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:math' as math;  
+import 'dart:math' as math;
 import 'package:skin_id/screen/recomendation.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/recomendation_copy.dart';
@@ -22,10 +22,12 @@ class _CameraPageState extends State<CameraPage> {
   CameraController? _controller;
   List<CameraDescription>? cameras;
   bool _isCameraInitialized = false;
-  Uint8List? _imageBytes; // Menyimpan gambar yang diambil dalam bentuk bytes
-  String? skinToneResult; // Variabel untuk menyimpan hasil prediksi warna kulit
+  Uint8List? _imageBytes;
+  String? skinToneResult;
   List<dynamic>? recommendedProducts;
-  bool isLoading = false; // Added to manage loading state
+  bool isLoading = false;
+  bool hasRecommendations = false;
+  bool isFetching = false;
 
   @override
   void initState() {
@@ -70,7 +72,8 @@ class _CameraPageState extends State<CameraPage> {
         final responseData = json.decode(response.body);
         print("Decoded response data: $responseData");
         setState(() {
-          skinToneResult = responseData['skintone_name']; // Menyimpan hasil skin_tone
+          skinToneResult =
+              responseData['skintone_name']; // Menyimpan hasil skin_tone
         });
         _getRecommendations();
       } else {
@@ -135,20 +138,23 @@ class _CameraPageState extends State<CameraPage> {
       final url = Uri.parse('$baseUrl$endpoint');
 
       setState(() {
+        isFetching = true;
         isLoading = true;
       });
 
       final response =
           await http.get(url, headers: {'Authorization': '$token'});
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         final responseData = json.decode(response.body);
         setState(() {
           recommendedProducts = responseData['recommended_products'];
+          hasRecommendations = true;
         });
       } else {
         setState(() {
           recommendedProducts = [];
+          hasRecommendations = false;
         });
         print("Failed to fetch recommendations: ${response.body}");
       }
@@ -159,6 +165,7 @@ class _CameraPageState extends State<CameraPage> {
       });
     } finally {
       setState(() {
+        isFetching = false;
         isLoading = false;
       });
     }
@@ -180,7 +187,9 @@ class _CameraPageState extends State<CameraPage> {
             // Replace the current screen with the HomePage
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomePage()), // Replace HomePage with your actual home screen widget
+              MaterialPageRoute(
+                  builder: (context) =>
+                      HomePage()), // Replace HomePage with your actual home screen widget
             );
           },
         ),
@@ -199,15 +208,17 @@ class _CameraPageState extends State<CameraPage> {
             Positioned.fill(
               child: Transform(
                 alignment: Alignment.center,
-                transform: _controller?.description.lensDirection == CameraLensDirection.front
-                    ? Matrix4.rotationY(math.pi)  // Membalikkan tampilan kamera depan
-                    : Matrix4.identity(), // Tidak melakukan apa-apa untuk kamera belakang
+                transform: _controller?.description.lensDirection ==
+                        CameraLensDirection.front
+                    ? Matrix4.rotationY(
+                        math.pi) // Membalikkan tampilan kamera depan
+                    : Matrix4
+                        .identity(), // Tidak melakukan apa-apa untuk kamera belakang
                 child: CameraPreview(_controller!),
               ),
             )
           else
-            Center(child: CircularProgressIndicator()
-          ),
+            Center(child: CircularProgressIndicator()),
           Positioned(
             bottom: 20,
             left: MediaQuery.of(context).size.width / 2 - 30,
@@ -222,7 +233,6 @@ class _CameraPageState extends State<CameraPage> {
               },
             ),
           ),
-
           if (_imageBytes != null)
             Center(
               child: Dialog(
@@ -259,39 +269,54 @@ class _CameraPageState extends State<CameraPage> {
                         style: TextStyle(fontSize: 16, color: Colors.black),
                       ),
                       SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Recomendation2(),
-                                ),
-                              );
-                            },
-                            child: Text("Recommendations"),
+                      if (isFetching)
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 10),
+                              Text(
+                                "Mohon tunggu sistem sedang membuat rekomendasi...",
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black),
+                              ),
+                            ],
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _imageBytes = null;
-                                skinToneResult = null;
-                              });
-                            },
-                            child: Text("Retake"),
-                          ),
-                        ],
-                      ),
+                        )
+                      else
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            if (hasRecommendations)
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Recomendation2(),
+                                    ),
+                                  );
+                                },
+                                child: Text("Recommendations"),
+                              ),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _imageBytes = null;
+                                  skinToneResult = null;
+                                  hasRecommendations = false;
+                                });
+                              },
+                              child: Text("Retake"),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
               ),
             ),
-          
-          if (isLoading)
-            Center(child: CircularProgressIndicator()), // Show loading spinner
         ],
       ),
     );
