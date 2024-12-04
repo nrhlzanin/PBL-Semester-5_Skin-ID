@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
         '/homescreen': (context) => HomeScreen(), // Define the /home route
         '/home': (context) => Home(), // Define the Home screen route
         '/skin-identification': (context) =>
-            SkinIdentificationPage(), // Define the skin identification
+            SkinIdentification(), // Define the skin identification
         '/notifications': (context) =>
             NotificationScreen(), // Define the Notification route
         '/recomendation': (context) =>

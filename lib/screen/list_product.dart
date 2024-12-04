@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,17 +26,13 @@ class _ListProductState extends State<ListProduct> {
     final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
     try {
       final response = await http.get(Uri.parse('$baseUrl$endpoint'));
-
       if (response.statusCode == 200) {
-        // Parsing JSON dari response API
-        final List<dynamic> data = json.decode(response.body);
-        return data;
+        return json.decode(response.body);
       } else {
-        throw Exception('Failed to load makeup products');
+        return Future.error('Failed to load makeup products');
       }
     } catch (e) {
-      print('Error fetching data: $e');
-      return [];
+      return Future.error('Error fetching data: $e');
     }
   }
 
@@ -96,7 +93,28 @@ class _HomePageState extends State<HomePage> {
     );
     return false;
   }
-  
+
+// Check if the image URL is valid
+  Future<bool> isImageValid(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      // Check if the response is a success and if the content type is an image
+      return response.statusCode == 200 &&
+          response.headers['content-type']?.contains('image') == true;
+    } catch (e) {
+      return false; // In case of an error (e.g., invalid URL)
+    }
+  }
+
+  Future<bool> loadImage(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'All'
@@ -106,6 +124,22 @@ class _HomePageState extends State<HomePage> {
                 product['product_type']?.toString().toLowerCase() ==
                 selectedCategory.toLowerCase())
             .toList();
+// Filter produk yang memiliki gambar valid
+
+    List<dynamic> validFilteredProducts = filteredProducts.where((product) {
+      final imageUrl = product['image_link'] as String?;
+      return imageUrl != null &&
+          imageUrl.isNotEmpty &&
+          Uri.tryParse(imageUrl)?.isAbsolute == true;
+    }).toList();
+    filteredProducts = validFilteredProducts.where((product) {
+      final imageUrl = product['image_link'];
+      return imageUrl != null &&
+          imageUrl != 'no image' &&
+          imageUrl.isNotEmpty &&
+          !imageUrl.contains('ProgressEvent'); // Filter untuk ProgressEvent
+    }).toList();
+
     return Scaffold(
       endDrawer: Navbar(),
       appBar: AppBar(
@@ -171,7 +205,7 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(color: Color(0xFF242424)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   SizedBox(height: 15.0),
                   // Filter Buttons Section
                   SingleChildScrollView(
@@ -193,116 +227,144 @@ class _HomePageState extends State<HomePage> {
                       }).toList(),
                     ),
                   ),
-                       SizedBox(height: 16.0),
-                   // Display selected category products in GridView
+                  SizedBox(height: 16.0),
+                  // Display selected category products in GridView
+
                   filteredProducts.isEmpty
                       ? Center(
-                          child: CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          child: Column(
+                            mainAxisSize: MainAxisSize
+                                .min, // Mengatur ukuran kolom agar sesuai dengan anak-anak
+                            children: [
+                              CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                              SizedBox(
+                                  height:
+                                      10), // Memberikan jarak antara indikator dan teks
+                            ],
                           ),
                         )
-             
-                  // Responsive GridView Section
 
-                 :  GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.all(16.0),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount:
-                          MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                      crossAxisSpacing: 16.0,
-                      mainAxisSpacing: 16.0,
-                    ),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = filteredProducts[index];
+                      // Filter out 'no_image' products beforehand
 
-                      return Card(
-                        elevation: 4.0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: GestureDetector(
-                          onTap: () {
-                            // Navigasi ke MakeupDetail dengan data produk
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    MakeupDetail(product: product),
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.all(16.0),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                          ),
+                          itemCount: filteredProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = filteredProducts[index];
+
+                            // Validasi ulang gambar di sini
+                            final imageUrl = product['image_link'];
+                            if (imageUrl == null ||
+                                imageUrl == 'no image' ||
+                                imageUrl.isEmpty ||
+                                imageUrl.contains('ProgressEvent')) {
+                              return SizedBox
+                                  .shrink(); // Jangan tampilkan produk
+                            }
+
+                            return Card(
+                              elevation: 4.0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
-                            );
-                          },
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Gambar produk
-                              SizedBox(height: 8),
-                              Container(
-                                width: 70,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      product['image_link'] ??
-                                          'https://via.placeholder.com/50',
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Navigasi ke MakeupDetail dengan data produk
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          MakeupDetail(product: product),
                                     ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                  borderRadius: BorderRadius.circular(5),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 0,
+                                  );
+                                },
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(height: 8),
+                                    Container(
+                                      width: 70,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 4.0,
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(5),
+                                        child: Image.network(
+                                          product['image_link'] ?? '',
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            // Validasi error "ProgressEvent"
+                                            if (error
+                                                .toString()
+                                                .contains('ProgressEvent')) {
+                                              return SizedBox
+                                                  .shrink(); // Jangan tampilkan produk
+                                            }
+                                            return SizedBox
+                                                .shrink(); // Default jika ada error lain
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            8), // Jarak antara gambar dan teks nama produk
+                                    Text(
+                                      product['product_type'] ?? 'Tipe Produk',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            4), // Jarak antara nama produk dan merek
+                                    Text(
+                                      product['name'] ?? 'Nama Produk',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            4), // Jarak antara nama produk dan merek
+                                    Text(
+                                      product['brand'] ?? 'Merek Produk',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 10,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                  height:
-                                      8), // Jarak antara gambar dan teks nama produk
-
-                              // Nama produk
-                              Text(
-                                product['product_type'] ?? 'Tipe Produk',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(
-                                  height:
-                                      4), // Jarak antara nama produk dan merek
-                              Text(
-                                product['name'] ?? 'Nama Produk',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(
-                                  height:
-                                      4), // Jarak antara nama produk dan merek
-
-                              // Merek produk
-                              Text(
-                                product['brand'] ?? 'Merek Produk',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 10,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
@@ -470,11 +532,13 @@ class ProductDetailPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8.0),
-            Text(
-              "Brand: $brand",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+            Container(
+              child: Text(
+                "Brand: $brand",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
               ),
             ),
             SizedBox(height: 16.0),
