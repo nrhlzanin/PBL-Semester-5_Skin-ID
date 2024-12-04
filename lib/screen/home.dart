@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last
 
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,8 +24,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final int _currentIndex = 0;
   List<dynamic> _makeupProducts = [];
-  // bool _isLoading = true;
-  // bool _isError = false;
 
   Future<List<dynamic>> fetchMakeupProducts() async {
     final baseUrl = dotenv.env['BASE_URL'];
@@ -103,6 +102,13 @@ class _HomePageState extends State<HomePage> {
                 product['product_type']?.toString().toLowerCase() ==
                 selectedCategory.toLowerCase())
             .toList();
+    // Filter produk yang memiliki gambar valid
+    List<dynamic> validFilteredProducts = filteredProducts.where((product) {
+      final imageUrl = product['image_link'] as String?;
+      return imageUrl != null &&
+          imageUrl.isNotEmpty &&
+          Uri.tryParse(imageUrl)?.isAbsolute == true;
+    }).toList();
 
     return Scaffold(
       endDrawer: Navbar(),
@@ -117,7 +123,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,12 +192,12 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Row(
                     children: [
-                      SkinToneColor(color: Color(0xFFF4C2C2)),
-                      SkinToneColor(color: Color(0xFFE6A57E)),
-                      SkinToneColor(color: Color(0xFFD2B48C)),
-                      SkinToneColor(color: Color(0xFFC19A6B)),
-                      SkinToneColor(color: Color(0xFF8D5524)),
-                      SkinToneColor(color: Color(0xFF7D4B3E)),
+                      SkinToneColor(color: Color(0xFFFFDFC4)),
+                      SkinToneColor(color: Color(0xFFF0D5BE)),
+                      SkinToneColor(color: Color(0xFDD1A684)),
+                      SkinToneColor(color: Color(0xFAA67C52)),
+                      SkinToneColor(color: Color(0xF8825C3A)),
+                      SkinToneColor(color: Color(0xF44A312C)),
                     ],
                   ),
                   SizedBox(
@@ -253,8 +258,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                   SizedBox(height: 20),
                   // Display selected category products in GridView
-                  
-                  filteredProducts.isEmpty
+
+                  // Display selected category products in GridView
+                  validFilteredProducts.isEmpty
                       ? Center(
                           child: CircularProgressIndicator(
                             valueColor:
@@ -271,10 +277,13 @@ class _HomePageState extends State<HomePage> {
                                 MediaQuery.of(context).size.width > 600 ? 3 : 2,
                             crossAxisSpacing: 16.0,
                             mainAxisSpacing: 16.0,
+                            childAspectRatio:
+                                0.75, // Mengatur rasio lebar-tinggi item
                           ),
-                          itemCount: filteredProducts.length,
+                          itemCount: min(validFilteredProducts.length,
+                              6), // Maksimal 6 item
                           itemBuilder: (context, index) {
-                            final product = filteredProducts[index];
+                            final product = validFilteredProducts[index];
 
                             return Card(
                               elevation: 4.0,
@@ -283,69 +292,117 @@ class _HomePageState extends State<HomePage> {
                               ),
                               child: GestureDetector(
                                 onTap: () {
-                                  print('Clicked on ${product['name']}');
+                                  // Navigasi ke MakeupDetail dengan data produk
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          MakeupDetail(product: product),
+                                    ),
+                                  );
                                 },
                                 child: Column(
-                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
-                                    // Gambar produk
-                                    SizedBox(height: 8),
-                                    Container(
-                                      width: 70,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: NetworkImage(
-                                            product['image_link'] ??
-                                                'https://via.placeholder.com/50',
-                                          ),
+                                    // Container untuk gambar
+                                    Expanded(
+                                      flex:
+                                          3, // Bagian gambar mengambil lebih banyak ruang
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(8.0)),
+                                        child: Image.network(
+                                          product['image_link'] ?? '',
                                           fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                size: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.1,
+                                                color: Colors.grey,
+                                              ),
+                                            );
+                                          },
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
+                                          },
                                         ),
-                                        borderRadius: BorderRadius.circular(5),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black12,
-                                            blurRadius: 0,
-                                          ),
-                                        ],
                                       ),
                                     ),
-                                    SizedBox(
-                                        height:
-                                            8), // Jarak antara gambar dan teks nama produk
-
-                                    // Nama produk
-                                    Text(
-                                      product['product_type'] ?? 'Tipe Produk',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                    // Container untuk teks
+                                    Expanded(
+                                      flex:
+                                          2, // Bagian teks lebih kecil dibanding gambar
+                                      child: Padding(
+                                        padding: EdgeInsets.all(
+                                            MediaQuery.of(context).size.width *
+                                                0.02),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product['product_type'] ??
+                                                  'Tipe Produk',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.03,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.005),
+                                            Text(
+                                              product['name'] ?? 'Nama Produk',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.025,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.005),
+                                            Text(
+                                              product['brand'] ??
+                                                  'Merek Produk',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.025,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            4), // Jarak antara nama produk dan merek
-                                    Text(
-                                      product['name'] ?? 'Nama Produk',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            4), // Jarak antara nama produk dan merek
-
-                                    // Merek produk
-                                    Text(
-                                      product['brand'] ?? 'Merek Produk',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 10,
-                                      ),
-                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ),
@@ -379,8 +436,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-
-       
           ],
         ),
       ),
@@ -644,7 +699,6 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 }
-
 
 class ColorBox extends StatelessWidget {
   final String color;

@@ -242,7 +242,7 @@ class _NavbarState extends State<Navbar> {
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => SkinIdentification()),
+                      MaterialPageRoute(builder: (context) => SkinIdentificationPage()),
                     );
                   },
                 ),
