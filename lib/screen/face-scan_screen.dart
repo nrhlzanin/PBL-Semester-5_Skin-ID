@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/home2.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -189,7 +190,7 @@ class _CameraPageState extends State<CameraPage> {
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      HomePage()), // Replace HomePage with your actual home screen widget
+                      HomeScreen()), // Replace HomePage with your actual home screen widget
             );
           },
         ),
@@ -294,7 +295,7 @@ class _CameraPageState extends State<CameraPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => Recomendation2(),
+                                      builder: (context) => Recomendation(),
                                     ),
                                   );
                                 },
