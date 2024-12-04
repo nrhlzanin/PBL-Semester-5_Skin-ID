@@ -191,7 +191,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-             // Updated makeup section with proper styling
+            // Updated makeup section with proper styling
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
               width: double.infinity, // Mengisi lebar penuh layar
@@ -220,8 +220,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 15.0),
-            
-                       // Filter Buttons Section
+
+                  // Filter Buttons Section
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -264,7 +264,8 @@ class _HomePageState extends State<HomePage> {
                             childAspectRatio:
                                 0.75, // Mengatur rasio lebar-tinggi item
                           ),
-                          itemCount: (validFilteredProducts.length), // Maksimal 6 item
+                          itemCount:
+                              (validFilteredProducts.length), // Maksimal 6 item
                           itemBuilder: (context, index) {
                             final product = validFilteredProducts[index];
 
@@ -393,7 +394,6 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
-
                 ],
               ),
             ),
