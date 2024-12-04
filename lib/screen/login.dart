@@ -80,7 +80,7 @@ Future<void> loginUser(String email, String password) async {
         }
       } else if (response.statusCode == 404) {
         if (errorMessage.contains('Email tidak ditemukan')) {
-          _showErrorMessage('Email salah.');
+          _showErrorMessage('Email Salah');
         }
       } else {
         _showErrorMessage('Login gagal: $errorMessage');
