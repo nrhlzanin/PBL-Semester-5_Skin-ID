@@ -41,64 +41,79 @@ class _LoginAccountState extends State<Login> {
     }
     return null;
   }
+Future<void> loginUser(String email, String password) async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
 
-  // Fungsi untuk login
-  Future<void> loginUser(String email, String password) async {
+  final baseUrl = dotenv.env['BASE_URL']; // URL base, e.g. 'http://your-api-url'
+  final endpoint = dotenv.env['LOGIN_ENDPOINT']; // e.g. '/api/login/'
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      body: {'email': email, 'password': password},
+    );
+
+    // Handle response status code
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // If token exists, save it and navigate to the home screen
+      if (data.containsKey('token')) {
+        final token = data['token'];
+        await _saveTokenAndNavigate(token);
+      } else {
+        _showErrorMessage('Terjadi kesalahan saat memproses login.');
+      }
+    } else {
+      // Handle different error responses based on status code and error message
+      final data = jsonDecode(response.body);
+      final errorMessage = data['Error'] ?? 'Terjadi kesalahan tak dikenal';
+
+      if (response.statusCode == 400) {
+        if (errorMessage.contains('Password salah')) {
+          _showErrorMessage('Password salah.');
+        } else if (errorMessage.contains('Username dan password diperlukan')) {
+          _showErrorMessage('Email dan password diperlukan.');
+        }
+      } else if (response.statusCode == 404) {
+        if (errorMessage.contains('Email tidak ditemukan')) {
+          _showErrorMessage('Email tidak ditemukan.');
+        }
+      } else {
+        _showErrorMessage('Login gagal: $errorMessage');
+      }
+    }
+  } catch (e) {
+    _showErrorMessage('Terjadi kesalahan. Coba lagi nanti.');
+  } finally {
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _isLoading = false;
+    });
+  }
+}
+
+// Save token to SharedPreferences and navigate to HomeScreen
+  Future<void> _saveTokenAndNavigate(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreen()),
+    );
+  }
+
+// Show error message
+  void _showErrorMessage(String message) {
+    setState(() {
+      _errorMessage = message;
     });
 
-    final baseUrl = dotenv.env['BASE_URL'];
-    final endpoint = dotenv.env['LOGIN_ENDPOINT'];
-
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl$endpoint'),
-        body: {'email': email, 'password': password},
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final token = data['token'];
-
-        // Simpan token ke SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token);
-
-        // Pindah ke halaman HomeScreen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
-      } else {
-        final data = jsonDecode(response.body);
-        final errorMessage = data['error'] ?? 'Terjadi kesalahan tak dikenal';
-
-        setState(() {
-          _errorMessage = errorMessage.contains('Email not found')
-              ? 'Email tidak ditemukan.'
-              : errorMessage.contains('Incorrect password')
-                  ? 'Password salah.'
-                  : 'Login gagal: $errorMessage';
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_errorMessage!)),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Terjadi kesalahan. Coba lagi nanti.';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_errorMessage!)),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   // Periksa token di SharedPreferences
@@ -258,7 +273,7 @@ class _LoginAccountState extends State<Login> {
                           text: const TextSpan(
                             children: [
                               TextSpan(
-                                text: 'Buat Akun',
+                                text: 'Create account,',
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 10,
@@ -267,7 +282,7 @@ class _LoginAccountState extends State<Login> {
                                 ),
                               ),
                               TextSpan(
-                                text: ' jika belum punya akun',
+                                text: " If you don't have an account ",
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 10,
