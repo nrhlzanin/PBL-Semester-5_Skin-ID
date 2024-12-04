@@ -1,7 +1,7 @@
+// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers
+
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,20 +9,23 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
+import 'package:skin_id/screen/notification_screen.dart';
+import 'package:skin_id/screen/home.dart' as home;
+import 'package:skin_id/screen/home_screen.dart' as home_screen;
 
-class SkinIdentification extends StatefulWidget {
+class SkinIdentificationPage extends StatefulWidget {
   final String? skinToneResult;
   final String? skinDescription;
 
-  SkinIdentification({this.skinToneResult, this.skinDescription});
-
+  SkinIdentificationPage({this.skinToneResult, this.skinDescription});
   @override
-  _SkinIdentification createState() => _SkinIdentification();
+  _SkinIdentificationPageState createState() => _SkinIdentificationPageState();
 }
 
-class _SkinIdentification extends State<SkinIdentification> {
+class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   String? skinToneResult;
   String? skinDescription;
   List<dynamic>? recommendedProducts;
@@ -80,24 +83,6 @@ class _SkinIdentification extends State<SkinIdentification> {
         recommendedProducts = [];
       });
       print("Error getting recommendations: $e");
-    }
-  }
-
-  Future<void> _fetchData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    final baseUrl = dotenv.env['BASE_URL'];
-    final endpoint = dotenv.env['GET_RECOMMENDATION_ENDPOINT'];
-    final url = Uri.parse('$baseUrl$endpoint');
-    final response = await http.get(url, headers: {'Authorization': '$token'});
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        selectedCategory =
-            data['recommendations']; // Replace with your actual field name
-      });
-    } else {
-      throw Exception('Failed to load data');
     }
   }
 
@@ -177,15 +162,16 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSkinIdentificationSection(skinTone, skinDescription),
-            SizedBox(height: 32),
-            _buildMakeupRecommendationSection(context),
-            SizedBox(height: 32),
-            _buildCommunityInspirationSection(),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSkinIdentificationSection(skinTone, skinDescription),
+              SizedBox(height: 32),
+              _buildMakeupRecommendationSection(context),
+            ],
+          ),
         ),
       ),
     );
@@ -197,15 +183,12 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Title
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Skin Identification',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+        Text(
+          'Skin Identification',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
         ),
         SizedBox(height: 16),
@@ -239,12 +222,12 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SkinToneColor(color: Color(0xFFFFDFC4)),
-                  SkinToneColor(color: Color(0xFFF0D5BE)),
-                  SkinToneColor(color: Color(0xFDD1A684)),
-                  SkinToneColor(color: Color(0xFAA67C52)),
-                  SkinToneColor(color: Color(0xF8825C3A)),
-                  SkinToneColor(color: Color(0xF44A312C)),
+                  home.SkinToneColor(color: const Color(0xFFF4C2C2)),
+                  home.SkinToneColor(color: Color(0xFFE6A57E)),
+                  home.SkinToneColor(color: Color(0xFFD2B48C)),
+                  home.SkinToneColor(color: Color(0xFFC19A6B)),
+                  home.SkinToneColor(color: Color(0xFF8D5524)),
+                  home.SkinToneColor(color: Color(0xFF7D4B3E)),
                 ],
               ),
 
@@ -285,141 +268,120 @@ class _HomePageState extends State<HomePage> {
                 product['product_type']?.toString().toLowerCase() ==
                 selectedCategory.toLowerCase())
             .toList();
-
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Updated makeup section with proper styling
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
-          width: double.infinity, // Mengisi lebar penuh layar
-          decoration: BoxDecoration(
-            color: Color(0xFF242424),
+        Text(
+          'Makeup Recommendation',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Makeup Recommendation',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+        ),
+        SizedBox(height: 16),
+        // Filter Buttons Section
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: categories.map((product_type) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: FilterButton(
+                  label: product_type,
+                  isSelected: selectedCategory ==
+                      product_type, // Check if this category is selected
+                  onTap: () => setState(() {
+                    selectedCategory =
+                        product_type; // Set the selected category
+                  }),
+                  textColor: Colors.black,
                 ),
-              ),
-              SizedBox(height: 16),
-              // Filter Buttons Section
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: categories.map((product_type) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: FilterButton(
-                        label: product_type,
-                        isSelected: selectedCategory ==
-                            product_type, // Check if this category is selected
-                        onTap: () => setState(() {
-                          selectedCategory =
-                              product_type; // Set the selected category
-                        }),
-                        textColor: Colors.black,
-                      ),
-                    );
-                  }).toList(),
+              );
+            }).toList(),
+          ),
+        ),
+        SizedBox(height: 20),
+        // Display selected category products in GridView
+        recommendedProducts.isEmpty
+            ? Center(child: Text('No products found'))
+            : GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.all(16.0),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount:
+                      MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                  crossAxisSpacing: 16.0,
+                  mainAxisSpacing: 16.0,
                 ),
-              ),
-              SizedBox(height: 20),
-              // Display selected category products in GridView
-              recommendedProducts.isEmpty
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.all(16.0),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount:
-                            MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
-                      ),
-                      itemCount: min(recommendedProducts.length,
-                          6), // Menampilkan maksimal 6 item
-                      itemBuilder: (context, index) {
-                        final product = recommendedProducts[index];
+                itemCount:
+                    min(recommendedProducts.length, 6), // Maksimal 6 item
+                itemBuilder: (context, index) {
+                  final product = recommendedProducts[index];
 
-                        return Card(
-                          elevation: 4.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
+                  return Card(
+                    elevation: 4.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        // Navigasi ke MakeupDetail dengan data produk
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                MakeupDetail(product: product),
                           ),
-                          child: GestureDetector(
-                            onTap: () {
-                              // Navigasi ke MakeupDetail dengan data produk
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      MakeupDetail(product: product),
-                                ),
-                              );
-                            },
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(height: 8),
-                                Container(
-                                  width: 70,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 4.0,
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
-                                    child: Image.network(
-                                      product['image_link'] ?? '',
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        // Jika gambar gagal dimuat, tampilkan widget kosong
-                                        return SizedBox(
-                                          width: 70,
-                                          height: 50,
-                                          child: Center(
-                                            child: Text(
-                                              'No Image',
-                                              style: TextStyle(
-                                                  fontSize: 8,
-                                                  color: Colors.grey),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                        if (loadingProgress == null) {
-                                          return child; // Jika loading selesai, tampilkan gambar
-                                        }
-                                        return Center(
-                                          child:
-                                              CircularProgressIndicator(), // Loading indicator
-                                        );
-                                      },
+                        );
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Container untuk gambar
+                          Container(
+                            height: 120, // Tinggi gambar lebih besar
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(8.0)),
+                              image: DecorationImage(
+                                image:
+                                    NetworkImage(product['image_link'] ?? ''),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(8.0)),
+                              child: Image.network(
+                                product['image_link'] ?? '',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Text(
+                                      'No Image',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.grey),
                                     ),
-                                  ),
-                                ),
-                                SizedBox(
-                                    height:
-                                        8), // Jarak antara gambar dan teks nama produk
+                                  );
+                                },
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          // Container untuk teks
+                          Container(
+                            padding: EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
                                   product['product_type'] ?? 'Tipe Produk',
                                   style: TextStyle(
@@ -428,9 +390,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                SizedBox(
-                                    height:
-                                        4), // Jarak antara nama produk dan merek
+                                SizedBox(height: 4),
                                 Text(
                                   product['name'] ?? 'Nama Produk',
                                   style: TextStyle(
@@ -439,9 +399,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                SizedBox(
-                                    height:
-                                        4), // Jarak antara nama produk dan merek
+                                SizedBox(height: 4),
                                 Text(
                                   product['brand'] ?? 'Merek Produk',
                                   style: TextStyle(
@@ -453,73 +411,30 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
-              SizedBox(height: 16.0),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => ListProduct()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24.0),
-                    ),
-                  ),
-                  child: Text('Browse for more'),
-                ),
+                  );
+                },
               ),
-            ],
-          ),
-        )
-      ],
-    );
-  }
 
-  Widget _buildCommunityInspirationSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Inspirations from the community',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 30,
-            fontFamily: 'Playfair Display',
-            fontWeight: FontWeight.w700,
+        SizedBox(height: 16.0),
+        Center(
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => ListProduct()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24.0),
+              ),
+            ),
+            child: Text('Browse for more'),
           ),
-        ),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 16.0,
-          mainAxisSpacing: 16.0,
-          children: [
-            CommunityCard(
-              imageUrl:
-                  'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
-              title: 'Tutorial make up shade',
-              subtitle: 'Tutorial make up',
-              author: 'Beauty',
-              likes: 2017,
-              comments: 333,
-            ),
-            CommunityCard(
-              imageUrl:
-                  'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
-              title: 'Lumme brand new products',
-              subtitle: 'Lumme',
-              author: 'Women',
-              likes: 1115,
-              comments: 555,
-            ),
-          ],
         ),
       ],
     );
@@ -717,98 +632,6 @@ class ProductDetailPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class CommunityCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String subtitle;
-  final String author;
-  final int likes;
-  final int comments;
-
-  const CommunityCard({
-    required this.imageUrl,
-    required this.title,
-    required this.subtitle,
-    required this.author,
-    required this.likes,
-    required this.comments,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 8.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Column(
-        children: [
-          // Set a fixed height for the image
-          Container(
-            height: 150, // Fixed height for the image
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title with overflow handling
-                Text(
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  title,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4.0),
-                // Subtitle with overflow handling
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4.0),
-                // Author text
-                Text(
-                  'By $author',
-                  style: TextStyle(fontSize: 12),
-                ),
-                SizedBox(height: 8.0),
-                // Likes and comments section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.thumb_up, size: 16),
-                        SizedBox(width: 4.0),
-                        Text('$likes'),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.comment, size: 16),
-                        SizedBox(width: 4.0),
-                        Text('$comments'),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

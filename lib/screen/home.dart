@@ -24,8 +24,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final int _currentIndex = 0;
   List<dynamic> _makeupProducts = [];
-  // bool _isLoading = true;
-  // bool _isError = false;
 
   Future<List<dynamic>> fetchMakeupProducts() async {
     final baseUrl = dotenv.env['BASE_URL'];
@@ -104,14 +102,14 @@ class _HomePageState extends State<HomePage> {
                 product['product_type']?.toString().toLowerCase() ==
                 selectedCategory.toLowerCase())
             .toList();
-
-            
+    // Filter produk yang memiliki gambar valid
     List<dynamic> validFilteredProducts = filteredProducts.where((product) {
       final imageUrl = product['image_link'] as String?;
       return imageUrl != null &&
           imageUrl.isNotEmpty &&
           Uri.tryParse(imageUrl)?.isAbsolute == true;
     }).toList();
+
 
     return Scaffold(
       endDrawer: Navbar(),
@@ -126,7 +124,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,12 +193,12 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Row(
                     children: [
-                      SkinToneColor(color: Color(0xFFF4C2C2)),
-                      SkinToneColor(color: Color(0xFFE6A57E)),
-                      SkinToneColor(color: Color(0xFFD2B48C)),
-                      SkinToneColor(color: Color(0xFFC19A6B)),
-                      SkinToneColor(color: Color(0xFF8D5524)),
-                      SkinToneColor(color: Color(0xFF7D4B3E)),
+                      SkinToneColor(color: Color(0xFFFFDFC4)),
+                      SkinToneColor(color: Color(0xFFF0D5BE)),
+                      SkinToneColor(color: Color(0xFDD1A684)),
+                      SkinToneColor(color: Color(0xFAA67C52)),
+                      SkinToneColor(color: Color(0xF8825C3A)),
+                      SkinToneColor(color: Color(0xF44A312C)),
                     ],
                   ),
                   SizedBox(
@@ -440,8 +437,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-
-       
           ],
         ),
       ),
@@ -705,7 +700,6 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 }
-
 
 class ColorBox extends StatelessWidget {
   final String color;

@@ -132,14 +132,6 @@ class _HomePageState extends State<HomePage> {
           imageUrl.isNotEmpty &&
           Uri.tryParse(imageUrl)?.isAbsolute == true;
     }).toList();
-    filteredProducts = validFilteredProducts.where((product) {
-      final imageUrl = product['image_link'];
-      return imageUrl != null &&
-          imageUrl != 'no image' &&
-          imageUrl.isNotEmpty &&
-          !imageUrl.contains('ProgressEvent'); // Filter untuk ProgressEvent
-    }).toList();
-
     return Scaffold(
       endDrawer: Navbar(),
       appBar: AppBar(
@@ -199,13 +191,27 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            // Filter Buttons Section
+             // Updated makeup section with proper styling
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
-              decoration: BoxDecoration(color: Color(0xFF242424)),
+              width: double.infinity, // Mengisi lebar penuh layar
+              decoration: BoxDecoration(
+                color: Color(0xFF242424),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
+                children: [
+                  SizedBox(height: 7.0),
+                  Text(
+                    'Makeup',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontFamily: 'Playfair Display',
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                  ),
                   SizedBox(height: 15.0),
               
                    // Filter Buttons Section

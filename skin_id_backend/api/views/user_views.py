@@ -1,3 +1,4 @@
+
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import authenticate
@@ -295,21 +296,5 @@ def send_verification_email(user):
         [user_email],                # Email penerima
         fail_silently=False          # Jika ada error, jangan abaikan
     )
-    
-@api_view(['POST'])
-def send_reset_password_otp(request):
-    email = request.data.get('email')
-    try:
-        pengguna = Pengguna.objects.get(email=email)
-        pengguna.set_reset_otp()
 
-        # Kirim OTP melalui email
-        send_mail(
-            subject='Reset Password OTP',
-            message=f"Kode OTP untuk mengatur ulang password Anda adalah: {pengguna.reset_otp}. Berlaku selama 10 menit.",
-            from_email='noreply@yourapp.com',
-            recipient_list=[email],
-        )
-        return Response({'message': 'OTP telah dikirim ke email Anda.'}, status=200)
-    except Pengguna.DoesNotExist:
-        return Response({'error': 'Email tidak ditemukan.'}, status=404)
+    

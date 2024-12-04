@@ -288,28 +288,7 @@ class _CreateAccountState extends State<CreateAccount> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 10),
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Image.asset(
-                            "assets/image/Logo-google-icon-PNG.png",
-                            height: 20,
-                            width: 20,
-                          ),
-                          label: Text(
-                            'Continue with Google',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            side: BorderSide(color: Colors.grey),
-                            padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
+                
                         SizedBox(height: 20),
                         Text.rich(
                           TextSpan(
