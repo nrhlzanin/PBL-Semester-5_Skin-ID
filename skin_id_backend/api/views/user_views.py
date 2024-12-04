@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-from api.models import Pengguna
+from api.models import Pengguna, SkinTone
 from api.models import Role
 from django.utils import timezone
 from django.http import JsonResponse
@@ -214,32 +214,25 @@ def user_logout(request):
 def get_user_profile(request):
     try:
         pengguna = request.user
+        skintone = pengguna.skintone
+        skintone_data = {
+            "skintone_id": skintone.skintone_id,
+            "skintone_name": skintone.skintone_name,
+            "hex_start": skintone.hex_range_start,
+            "hex_end": skintone.hex_range_end,
+            "skintone_description": skintone.skintone_description,
+        } if skintone else None
+        
         profile_picture_url = request.build_absolute_uri(pengguna.profile_picture.url) if pengguna.profile_picture else "https://www.example.com/default-profile-pic.jpg"
         return Response({
             'id': pengguna.user_id,
             'username': pengguna.username,
             'email': pengguna.email,
             'jenis kelamin': pengguna.jenis_kelamin,
-            'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
+            # 'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
+            'skintone':skintone_data,
             'role': pengguna.role_id if pengguna.role_id else "Not Set",
             'profile_picture': profile_picture_url,
-        }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-@api_view(['GET'])
-@token_required
-def get_user_profile(request):
-    try:
-        pengguna = request.user
-        return Response({
-            'id': pengguna.user_id,
-            'username': pengguna.username,
-            'email': pengguna.email,
-            'jenis kelamin': pengguna.jenis_kelamin,
-            'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
-            'role': pengguna.role_id if pengguna.role_id else "Not Set",
         }, status=status.HTTP_200_OK)
         
     except Exception as e:

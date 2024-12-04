@@ -54,7 +54,7 @@ class _NavbarState extends State<Navbar> {
         final data = json.decode(response.body);
         setState(() {
           username = data['username'] ?? "Unknown";
-          email = data['email'] ?? "Unknown";
+          email = data['email'] ?? "Unknown@email.com";
           profilePictureUrl = data['profile_picture'] ?? 
               'https://www.example.com/default-profile-pic.jpg';
         });

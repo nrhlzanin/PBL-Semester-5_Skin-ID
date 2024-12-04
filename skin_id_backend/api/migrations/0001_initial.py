@@ -45,11 +45,7 @@ class Migration(migrations.Migration):
                 ('brand', models.CharField(blank=True, max_length=255, null=True)),
                 ('product_type', models.CharField(blank=True, max_length=255, null=True)),
                 ('description', models.TextField(blank=True, null=True)),
-<<<<<<< HEAD
-                ('image_url', models.URLField(blank=True, max_length=255, null=True)),
-=======
                 ('image_url', models.URLField(blank=True, max_length=1000, null=True)),
->>>>>>> 606bc311d385635a39e5021a4eb354e4a0d0b8af
                 ('created_at', models.DateTimeField(auto_now_add=True)),
             ],
             options={
@@ -112,21 +108,12 @@ class Migration(migrations.Migration):
                 ('password', models.CharField(max_length=255, validators=[django.core.validators.MinLengthValidator(6)])),
                 ('email', models.EmailField(max_length=100, unique=True)),
                 ('jenis_kelamin', models.CharField(blank=True, choices=[('pria', 'pria'), ('wanita', 'wanita')], max_length=100, null=True)),
-<<<<<<< HEAD
-=======
                 ('profile_picture', models.ImageField(blank=True, null=True, upload_to='profile_pictures/')),
->>>>>>> 606bc311d385635a39e5021a4eb354e4a0d0b8af
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('last_login', models.DateTimeField(blank=True, null=True)),
                 ('is_active', models.BooleanField(default=True)),
                 ('token', models.CharField(blank=True, max_length=255, null=True)),
-<<<<<<< HEAD
-                ('profile_picture', models.ImageField(blank=True, null=True, upload_to='profile_pictures/')),
-                ('reset_otp', models.CharField(blank=True, max_length=6, null=True)),
-                ('reset_otp_expiry', models.DateTimeField(blank=True, null=True)),
-=======
->>>>>>> 606bc311d385635a39e5021a4eb354e4a0d0b8af
                 ('role', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='pengguna', to='api.role')),
                 ('skintone', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='pengguna', to='api.skintone')),
             ],
