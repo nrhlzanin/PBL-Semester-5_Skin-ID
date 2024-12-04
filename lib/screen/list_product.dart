@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,17 +26,13 @@ class _ListProductState extends State<ListProduct> {
     final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
     try {
       final response = await http.get(Uri.parse('$baseUrl$endpoint'));
-
       if (response.statusCode == 200) {
-        // Parsing JSON dari response API
-        final List<dynamic> data = json.decode(response.body);
-        return data;
+        return json.decode(response.body);
       } else {
-        throw Exception('Failed to load makeup products');
+        return Future.error('Failed to load makeup products');
       }
     } catch (e) {
-      print('Error fetching data: $e');
-      return [];
+      return Future.error('Error fetching data: $e');
     }
   }
 
@@ -96,7 +93,28 @@ class _HomePageState extends State<HomePage> {
     );
     return false;
   }
-  
+
+// Check if the image URL is valid
+  Future<bool> isImageValid(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      // Check if the response is a success and if the content type is an image
+      return response.statusCode == 200 &&
+          response.headers['content-type']?.contains('image') == true;
+    } catch (e) {
+      return false; // In case of an error (e.g., invalid URL)
+    }
+  }
+
+  Future<bool> loadImage(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'All'
@@ -106,6 +124,14 @@ class _HomePageState extends State<HomePage> {
                 product['product_type']?.toString().toLowerCase() ==
                 selectedCategory.toLowerCase())
             .toList();
+// Filter produk yang memiliki gambar valid
+
+    List<dynamic> validFilteredProducts = filteredProducts.where((product) {
+      final imageUrl = product['image_link'] as String?;
+      return imageUrl != null &&
+          imageUrl.isNotEmpty &&
+          Uri.tryParse(imageUrl)?.isAbsolute == true;
+    }).toList();
     return Scaffold(
       endDrawer: Navbar(),
       appBar: AppBar(
@@ -165,15 +191,37 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            // Filter Buttons Section
+             // Updated makeup section with proper styling
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
-              decoration: BoxDecoration(color: Color(0xFF242424)),
+              width: double.infinity, // Mengisi lebar penuh layar
+              decoration: BoxDecoration(
+                color: Color(0xFF242424),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 7.0),
+                  Text(
+                    'Makeup',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontFamily: 'Playfair Display',
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                  ),
                   SizedBox(height: 15.0),
-                  // Filter Buttons Section
+                  Text(
+                    'Find makeup that suits you with choices from many brands around the world.',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 15.0),
+            
+                       // Filter Buttons Section
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -193,116 +241,159 @@ class _HomePageState extends State<HomePage> {
                       }).toList(),
                     ),
                   ),
-                       SizedBox(height: 16.0),
-                   // Display selected category products in GridView
-                  filteredProducts.isEmpty
+                  SizedBox(height: 20),
+
+                  // Display selected category products in GridView
+                  validFilteredProducts.isEmpty
                       ? Center(
                           child: CircularProgressIndicator(
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-             
-                  // Responsive GridView Section
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.all(16.0),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                            childAspectRatio:
+                                0.75, // Mengatur rasio lebar-tinggi item
+                          ),
+                          itemCount: (validFilteredProducts.length), // Maksimal 6 item
+                          itemBuilder: (context, index) {
+                            final product = validFilteredProducts[index];
 
-                 :  GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.all(16.0),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount:
-                          MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                      crossAxisSpacing: 16.0,
-                      mainAxisSpacing: 16.0,
-                    ),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = filteredProducts[index];
-
-                      return Card(
-                        elevation: 4.0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: GestureDetector(
-                          onTap: () {
-                            // Navigasi ke MakeupDetail dengan data produk
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    MakeupDetail(product: product),
+                            return Card(
+                              elevation: 4.0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
-                            );
-                          },
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Gambar produk
-                              SizedBox(height: 8),
-                              Container(
-                                width: 70,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      product['image_link'] ??
-                                          'https://via.placeholder.com/50',
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Navigasi ke MakeupDetail dengan data produk
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          MakeupDetail(product: product),
                                     ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                  borderRadius: BorderRadius.circular(5),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 0,
+                                  );
+                                },
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    // Container untuk gambar
+                                    Expanded(
+                                      flex:
+                                          3, // Bagian gambar mengambil lebih banyak ruang
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(8.0)),
+                                        child: Image.network(
+                                          product['image_link'] ?? '',
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                size: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.1,
+                                                color: Colors.grey,
+                                              ),
+                                            );
+                                          },
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    // Container untuk teks
+                                    Expanded(
+                                      flex:
+                                          2, // Bagian teks lebih kecil dibanding gambar
+                                      child: Padding(
+                                        padding: EdgeInsets.all(
+                                            MediaQuery.of(context).size.width *
+                                                0.02),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product['product_type'] ??
+                                                  'Tipe Produk',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.03,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.005),
+                                            Text(
+                                              product['name'] ?? 'Nama Produk',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.025,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.005),
+                                            Text(
+                                              product['brand'] ??
+                                                  'Merek Produk',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.025,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                  height:
-                                      8), // Jarak antara gambar dan teks nama produk
-
-                              // Nama produk
-                              Text(
-                                product['product_type'] ?? 'Tipe Produk',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(
-                                  height:
-                                      4), // Jarak antara nama produk dan merek
-                              Text(
-                                product['name'] ?? 'Nama Produk',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(
-                                  height:
-                                      4), // Jarak antara nama produk dan merek
-
-                              // Merek produk
-                              Text(
-                                product['brand'] ?? 'Merek Produk',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 10,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+
                 ],
               ),
             ),
@@ -470,11 +561,13 @@ class ProductDetailPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8.0),
-            Text(
-              "Brand: $brand",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+            Container(
+              child: Text(
+                "Brand: $brand",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
               ),
             ),
             SizedBox(height: 16.0),

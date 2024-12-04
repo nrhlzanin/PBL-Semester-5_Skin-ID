@@ -45,30 +45,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
 // Fungsi untuk memeriksa apakah URL gambar valid dan dapat dimuat
-Future<bool> isImageAvailable(String? url) async {
-  if (url == null || url.isEmpty) return false;
-  try {
-    final response = await http.head(Uri.parse(url));
-    return response.statusCode == 200; // Gambar tersedia jika status 200
-  } catch (e) {
-    return false; // Jika terjadi error, anggap gambar tidak tersedia
-  }
-}
-
-// Filter produk dengan gambar yang benar-benar dapat dimuat
-Future<List<dynamic>> filterValidProducts(List<dynamic> products) async {
-  List<dynamic> validProducts = [];
-  for (var product in products) {
-    final imageUrl = product['image_link'] as String?;
-    if (await isImageAvailable(imageUrl)) {
-      validProducts.add(product);
+  Future<bool> isImageAvailable(String? url) async {
+    if (url == null || url.isEmpty) return false;
+    try {
+      final response = await http.head(Uri.parse(url));
+      return response.statusCode == 200; // Gambar tersedia jika status 200
+    } catch (e) {
+      return false; // Jika terjadi error, anggap gambar tidak tersedia
     }
   }
-  return validProducts;
-}
+
+// Filter produk dengan gambar yang benar-benar dapat dimuat
+  Future<List<dynamic>> filterValidProducts(List<dynamic> products) async {
+    List<dynamic> validProducts = [];
+    for (var product in products) {
+      final imageUrl = product['image_link'] as String?;
+      if (await isImageAvailable(imageUrl)) {
+        validProducts.add(product);
+      }
+    }
+    return validProducts;
+  }
 
   @override
   void initState() {
@@ -127,7 +125,7 @@ class _HomePageState extends State<HomePage> {
     );
     return false;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'All'
@@ -144,7 +142,6 @@ class _HomePageState extends State<HomePage> {
           imageUrl.isNotEmpty &&
           Uri.tryParse(imageUrl)?.isAbsolute == true;
     }).toList();
-
 
     return Scaffold(
       endDrawer: Navbar(),
@@ -224,14 +221,14 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
-               children: [
-                SkinToneColor(color: Color(0xFFFFDFC4)),
-                SkinToneColor(color: Color(0xFFF0D5BE)),
-                SkinToneColor(color: Color(0xFDD1A684)),
-                SkinToneColor(color: Color(0xFAA67C52)),
-                SkinToneColor(color: Color(0xF8825C3A)),
-                SkinToneColor(color: Color(0xF44A312C)),
-              ],
+                children: [
+                  SkinToneColor(color: Color(0xFFFFDFC4)),
+                  SkinToneColor(color: Color(0xFFF0D5BE)),
+                  SkinToneColor(color: Color(0xFDD1A684)),
+                  SkinToneColor(color: Color(0xFAA67C52)),
+                  SkinToneColor(color: Color(0xF8825C3A)),
+                  SkinToneColor(color: Color(0xF44A312C)),
+                ],
               ),
             ),
             // Updated makeup section with proper styling
@@ -303,9 +300,11 @@ class _HomePageState extends State<HomePage> {
                                 MediaQuery.of(context).size.width > 600 ? 3 : 2,
                             crossAxisSpacing: 16.0,
                             mainAxisSpacing: 16.0,
+                            childAspectRatio:
+                                0.75, // Mengatur rasio lebar-tinggi item
                           ),
                           itemCount: min(validFilteredProducts.length,
-                              6), // Menampilkan maksimal 6 item
+                              6), // Maksimal 6 item
                           itemBuilder: (context, index) {
                             final product = validFilteredProducts[index];
 
@@ -326,87 +325,107 @@ class _HomePageState extends State<HomePage> {
                                   );
                                 },
                                 child: Column(
-                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
-                                    SizedBox(height: 8),
-                                    Container(
-                                      width: 70,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black12,
-                                            blurRadius: 4.0,
-                                          ),
-                                        ],
-                                      ),
+                                    // Container untuk gambar
+                                    Expanded(
+                                      flex:
+                                          3, // Bagian gambar mengambil lebih banyak ruang
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(5),
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(8.0)),
                                         child: Image.network(
                                           product['image_link'] ?? '',
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) {
-                                            // Jika gambar gagal dimuat, tampilkan widget kosong
-                                            return SizedBox(
-                                              width: 70,
-                                              height: 50,
-                                              child: Center(
-                                                child: Text(
-                                                  'No Image',
-                                                  style: TextStyle(
-                                                      fontSize: 8,
-                                                      color: Colors.grey),
-                                                ),
+                                            return Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                size: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.1,
+                                                color: Colors.grey,
                                               ),
                                             );
                                           },
                                           loadingBuilder: (context, child,
                                               loadingProgress) {
-                                            if (loadingProgress == null) {
-                                              return child; // Jika loading selesai, tampilkan gambar
-                                            }
+                                            if (loadingProgress == null)
+                                              return child;
                                             return Center(
                                               child:
-                                                  CircularProgressIndicator(), // Loading indicator
+                                                  CircularProgressIndicator(),
                                             );
                                           },
                                         ),
                                       ),
                                     ),
-                                    SizedBox(
-                                        height:
-                                            8), // Jarak antara gambar dan teks nama produk
-                                    Text(
-                                      product['product_type'] ?? 'Tipe Produk',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                    // Container untuk teks
+                                    Expanded(
+                                      flex:
+                                          2, // Bagian teks lebih kecil dibanding gambar
+                                      child: Padding(
+                                        padding: EdgeInsets.all(
+                                            MediaQuery.of(context).size.width *
+                                                0.02),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product['product_type'] ??
+                                                  'Tipe Produk',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.03,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.005),
+                                            Text(
+                                              product['name'] ?? 'Nama Produk',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.025,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.005),
+                                            Text(
+                                              product['brand'] ??
+                                                  'Merek Produk',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.025,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            4), // Jarak antara nama produk dan merek
-                                    Text(
-                                      product['name'] ?? 'Nama Produk',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            4), // Jarak antara nama produk dan merek
-                                    Text(
-                                      product['brand'] ?? 'Merek Produk',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 10,
-                                      ),
-                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ),
@@ -440,45 +459,6 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 10.0),
                 ],
               ),
-            ),
-
-            Text(
-              'Inspirations from the community',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontFamily: 'Playfair Display',
-                fontWeight: FontWeight.w700,
-                height: 4,
-              ),
-            ),
-            //konten
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 16.0,
-              mainAxisSpacing: 16.0,
-              children: [
-                CommunityCard(
-                  imageUrl:
-                      'https://storage.googleapis.com/a1aa/image/zRIoLp5MScojNhaNOYN6K07c9Gymwm7PbdCGuhWM7dDVHU8E.jpg',
-                  title: 'Tutorial make up shade',
-                  subtitle: 'Tutorial make up',
-                  author: 'Beauty',
-                  likes: 2017,
-                  comments: 333,
-                ),
-                CommunityCard(
-                  imageUrl:
-                      'https://storage.googleapis.com/a1aa/image/N8QFqmhw3644G1AqeYo4Amvblmowlr86IIGKJIlyIw0oOo4JA.jpg',
-                  title: 'Lumme brand new products',
-                  subtitle: 'Lumme',
-                  author: 'Women',
-                  likes: 1115,
-                  comments: 555,
-                ),
-              ],
             ),
           ],
         ),
@@ -776,103 +756,6 @@ class ProductDetailPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class CommunityCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String subtitle;
-  final String author;
-  final int likes;
-  final int comments;
-
-  const CommunityCard({
-    required this.imageUrl,
-    required this.title,
-    required this.subtitle,
-    required this.author,
-    required this.likes,
-    required this.comments,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 8.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Column(
-        children: [
-          // Gambar dengan tinggi tetap
-          Container(
-            height: 150, // Tinggi tetap untuk gambar
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          // Konten Card dengan Scroll jika terlalu panjang
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Judul dengan overflow handling
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 4.0),
-                    // Subtitle dengan overflow handling
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4.0),
-                    // Penulis
-                    Text(
-                      'By $author',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    SizedBox(height: 8.0),
-                    // Likes dan Comments
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.thumb_up, size: 16),
-                            SizedBox(width: 4.0),
-                            Text('$likes'),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(Icons.comment, size: 16),
-                            SizedBox(width: 4.0),
-                            Text('$comments'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

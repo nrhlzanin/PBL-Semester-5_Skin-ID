@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:skin_id/button/navbar.dart';
-import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,6 +11,7 @@ import 'dart:math' as math;
 import 'package:skin_id/screen/recomendation.dart';
 import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/recomendation_copy.dart';
+import 'package:skin_id/screen/skin_identification.dart';
 
 class CameraPage extends StatefulWidget {
   @override
