@@ -4,6 +4,8 @@ from django.core.validators import MinLengthValidator
 from django.core.validators import MaxLengthValidator
 from django.contrib.auth.models import AbstractUser
 import uuid
+from datetime import timedelta
+from django.utils.timezone import now
 
 # Model Brands
 class Brand(models.Model):
@@ -90,16 +92,6 @@ class Pengguna(models.Model):
         return self.username
     class Meta:
         db_table = 'Pengguna'
-
-# class Pengguna(AbstractUser):
-#     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
-#     role_id = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna')
-#     is_verified = models.BooleanField(default=False)
-#     verification_token = models.UUIDField(default=None, null=True)
-
-#     class Meta:
-#         db_table = 'Pengguna'
-        
 # Model Products
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)

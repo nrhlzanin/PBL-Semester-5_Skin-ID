@@ -228,26 +228,44 @@ def get_user_profile(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @api_view(['GET'])
+@token_required
+def get_user_profile(request):
+    try:
+        pengguna = request.user
+        return Response({
+            'id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+            'jenis kelamin': pengguna.jenis_kelamin,
+            'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
+            'role': pengguna.role_id if pengguna.role_id else "Not Set",
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@token_required
 def verify_email(request, token):
     try:
-        user = Pengguna.objects.get(verification_token=token)
-        if user.is_verified:
+        pengguna = request.user
+        if pengguna.is_verified:
             return Response({'message': 'Account already verified'}, status=status.HTTP_400_BAD_REQUEST)
         
-        user.is_verified = True
-        user.verification_token = None
-        user.save()
+        pengguna.is_verified = True
+        pengguna.verification_token = None
+        pengguna.save()
         
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(pengguna)
         return Response({
             'message': 'Account verified successfully',
             'access_token': str(refresh.access_token),
             'refresh_token': str(refresh),
             'user': {
-                'id': user.user_id,
-                'username': user.username,
-                'email': user.email,
-                'skintone': user.skintone_id if user.skintone else None
+                'id': pengguna.user_id,
+                'username': pengguna.username,
+                'email': pengguna.email,
+                'skintone': pengguna.skintone_id if pengguna.skintone else None
             }
         }, status=status.HTTP_200_OK)        
     except Pengguna.DoesNotExist:
@@ -257,18 +275,10 @@ def send_verification_email(user):
     """
     Fungsi untuk mengirim email verifikasi ke pengguna
     """
-    # Ambil email pengguna
     user_email = user.email
-
-    # Buat token verifikasi
     token = user.verification_token
-    # uid = urlsafe_base64_encode(force_bytes(user.pk))
-
-    # Buat URL untuk link verifikasi
-    # verification_link = f"http://192.168.1.7:8000/api/user/verify-email/{uid}/{token}/"
     verification_link = f"http://192.168.56.217:8000/api/user/verify-email/{token}/"
 
-    # Subjek dan isi email
     subject = 'Verifikasi Akun Skin-ID'
     message = f'''
     Halo {user.username},
@@ -278,7 +288,6 @@ def send_verification_email(user):
     Jika Anda tidak merasa mendaftar di aplikasi ini, abaikan pesan ini.
     '''
 
-    # Kirim email
     send_mail(
         subject,
         message,
@@ -286,3 +295,21 @@ def send_verification_email(user):
         [user_email],                # Email penerima
         fail_silently=False          # Jika ada error, jangan abaikan
     )
+    
+@api_view(['POST'])
+def send_reset_password_otp(request):
+    email = request.data.get('email')
+    try:
+        pengguna = Pengguna.objects.get(email=email)
+        pengguna.set_reset_otp()
+
+        # Kirim OTP melalui email
+        send_mail(
+            subject='Reset Password OTP',
+            message=f"Kode OTP untuk mengatur ulang password Anda adalah: {pengguna.reset_otp}. Berlaku selama 10 menit.",
+            from_email='noreply@yourapp.com',
+            recipient_list=[email],
+        )
+        return Response({'message': 'OTP telah dikirim ke email Anda.'}, status=200)
+    except Pengguna.DoesNotExist:
+        return Response({'error': 'Email tidak ditemukan.'}, status=404)

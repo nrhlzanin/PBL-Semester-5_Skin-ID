@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, unused_element
+// ignore_for_file: avoid_print, unused_element, unused_local_variable, unnecessary_null_comparison, use_build_context_synchronously, unnecessary_string_interpolations
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -64,6 +64,7 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   // Fetch and update skin tone data from the user profile
+// Fetch and update skin tone data from the user profile
   Future<void> _fetchSkinToneData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -74,25 +75,43 @@ class _AccountScreenState extends State<AccountScreen> {
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
-      final endpoint = dotenv.env['SKIN_PREDICT_ENDPOINT'];
+      final endpoint = dotenv.env['SKIN_PREDICT_ENDPOINT']; // Use the correct endpoint
       final url = Uri.parse('$baseUrl$endpoint');
 
+      // You may need to send data as a body for the update
       final response = await http.post(
         url,
-        headers: {'Authorization': 'Bearer $token'},
-        body: json.encode({}), 
+        headers: {
+          'Authorization': '$token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({}), // Provide necessary data here if required by the API
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print(data);
-        setState(() {
-          skinTone = data['skintone_name'] ?? 'Unknown';
-          skinDescription = data['skintone_description'] ?? 'No description available';
-          skinToneColor = Color(int.parse(data['color_code'].substring(1), radix: 16) + 0xFF000000);
-        });
+        debugPrint(data.toString()); // Debugging to check the response structure
+
+        // Extract skintone_id, hex_range_start, and other data from the response
+        String skintoneId = data['skintone_id'].toString();
+        String hexRangeStart = data['hex_range_start']; // Get hex_range_start for skin color
+        String skinToneName = data['skintone_name'] ?? 'Unknown';
+        String skinDescriptionText = data['skintone_description'] ?? 'No description available';
+
+        // If hex_range_start exists, convert it to Color format for use
+        if (hexRangeStart != null && hexRangeStart.isNotEmpty && hexRangeStart.startsWith('#')) {
+          try {
+            setState(() {
+              skinTone = skinToneName;
+              skinDescription = skinDescriptionText;
+              skinToneColor = Color(int.parse(hexRangeStart.substring(1), radix: 16) + 0xFF000000);
+            });
+          } catch (e) {
+            print("Error parsing hex color: $e");
+          }
+        }
       } else {
-        throw Exception('Failed to fetch skin tone data.');
+        throw Exception('Failed to update skin tone data.');
       }
     } catch (e) {
       print('Error fetching skin tone data: $e');
@@ -101,6 +120,7 @@ class _AccountScreenState extends State<AccountScreen> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
