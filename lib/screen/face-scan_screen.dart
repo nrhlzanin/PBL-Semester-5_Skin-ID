@@ -1,18 +1,17 @@
-// ignore_for_file: unused_import, duplicate_import
-
 import 'dart:typed_data'; // Untuk bekerja dengan Uint8List
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:skin_id/button/navbar.dart';
-import 'package:skin_id/screen/home.dart';
-// import 'dart:html' as html; // Untuk bekerja dengan elemen HTML (Web)
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'dart:typed_data';
-import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/notification_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:math' as math;
+import 'package:skin_id/screen/recomendation.dart';
+import 'package:http/http.dart' as http;
+import 'package:skin_id/screen/recomendation_copy.dart';
+import 'package:skin_id/screen/skin_identification.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -23,9 +22,12 @@ class _CameraPageState extends State<CameraPage> {
   CameraController? _controller;
   List<CameraDescription>? cameras;
   bool _isCameraInitialized = false;
-  int _currentIndex = 1;
-  Uint8List? _imageBytes; // Menyimpan gambar yang diambil dalam bentuk bytes
+  Uint8List? _imageBytes;
   String? skinToneResult;
+  List<dynamic>? recommendedProducts;
+  bool isLoading = false;
+  bool hasRecommendations = false;
+  bool isFetching = false;
 
   @override
   void initState() {
@@ -34,72 +36,139 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Future<void> _initializeCamera() async {
-    cameras = await availableCameras();
-    _controller = CameraController(cameras![0], ResolutionPreset.high);
-
-    await _controller!.initialize();
-    setState(() {
-      _isCameraInitialized = true;
-    });
+    try {
+      cameras = await availableCameras();
+      if (cameras != null && cameras!.length > 1) {
+        _controller = CameraController(cameras![1], ResolutionPreset.high);
+        await _controller!.initialize();
+        setState(() {
+          _isCameraInitialized = true;
+        });
+      } else {
+        print("No sufficient cameras available");
+      }
+    } catch (e) {
+      print("Error initializing camera: $e");
+    }
   }
 
   Future<void> _captureAndPredict() async {
     try {
-      // Ambil gambar
+      print("Capturing image...");
       final picture = await _controller!.takePicture();
       final imageBytes = await picture.readAsBytes();
 
-      // Kirim gambar ke Django API
+      setState(() {
+        _imageBytes = imageBytes;
+      });
+
+      print("Sending image to server...");
       final response = await _sendImageToServer(imageBytes);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
+        print("Decoded response data: $responseData");
         setState(() {
-          skinToneResult = responseData['skin_tone'];
+          skinToneResult =
+              responseData['skintone_name']; // Menyimpan hasil skin_tone
         });
+        _getRecommendations();
       } else {
+        print("Failed to get prediction. Status code: ${response.statusCode}");
         setState(() {
           skinToneResult = "Failed to get prediction";
         });
       }
     } catch (e) {
-      print("Error: $e");
+      print("Error capturing and predicting: $e");
+      setState(() {
+        skinToneResult = "Error occurred while predicting skin tone.";
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: Unable to process the image")),
+      );
     }
   }
 
   Future<http.Response> _sendImageToServer(Uint8List imageBytes) async {
-    final url = Uri.parse(
-        // 'http://192.168.64.224:8000/api/user/predict/'
-        'http://192.168.56.217:8000/api/user/predict/'); //Masih kirim ke local
-    final request = http.MultipartRequest('POST', url);
-    request.files.add(
-      http.MultipartFile.fromBytes('image', imageBytes, filename: 'skin.jpg'),
-    );
-    final response = await http.Response.fromStream(await request.send());
-    return response;
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) throw Exception('User is not logged in.');
+
+    try {
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['SKIN_PREDICT_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+
+      print("Base URL: $baseUrl");
+      print("Endpoint: $endpoint");
+
+      final request = http.MultipartRequest('POST', url);
+
+      request.files.add(
+        http.MultipartFile.fromBytes('image', imageBytes, filename: 'skin.jpg'),
+      );
+
+      request.headers.addAll({'Authorization': '$token'});
+
+      print("Headers: ${request.headers}");
+      print("Sending request to server...");
+
+      final streamedResponse = await request.send();
+      return await http.Response.fromStream(streamedResponse);
+    } catch (e) {
+      print("Error sending image to server: $e");
+      rethrow;
+    }
   }
 
-  void _showPredictionDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Prediction Result'),
-        content: skinToneResult == null
-            ? CircularProgressIndicator()
-            : Text(
-                'Detected Skin Tone: $skinToneResult',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Close'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _getRecommendations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) throw Exception('User is not logged in.');
+
+    try {
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['RECOMMENDATION_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+
+      setState(() {
+        isFetching = true;
+        isLoading = true;
+      });
+
+      final response =
+          await http.get(url, headers: {'Authorization': '$token'});
+
+      if (response.statusCode == 201) {
+        final responseData = json.decode(response.body);
+        setState(() {
+          recommendedProducts = responseData['recommended_products'];
+          hasRecommendations = true;
+        });
+      } else {
+        setState(() {
+          recommendedProducts = [];
+          hasRecommendations = false;
+        });
+        print("Failed to fetch recommendations: ${response.body}");
+      }
+    } catch (e) {
+      print("Error getting recommendations: $e");
+      setState(() {
+        recommendedProducts = [];
+      });
+    } finally {
+      setState(() {
+        isFetching = false;
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -108,163 +177,147 @@ class _CameraPageState extends State<CameraPage> {
     super.dispose();
   }
 
-  void _onTabTapped(int index) {
-    if (index != _currentIndex) {
-      setState(() => _currentIndex = index);
-      // Navigasi ke halaman yang sesuai berdasarkan index
-      switch (index) {
-        case 0:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => Home()),
-          );
-          break;
-        case 1:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => CameraPage()),
-          );
-          break;
-        // Tambahkan halaman Profile jika dibutuhkan
-        case 2:
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => ProfilePage()),
-          // );
-          break;
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Navbar(),
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            // Replace the current screen with the HomePage
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      HomePage()), // Replace HomePage with your actual home screen widget
+            );
+          },
+        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
             color: Colors.black,
             fontSize: 28,
             fontWeight: FontWeight.w400,
-            height: 0.06,
           ),
         ),
-        actions: [
-          Container(
+      ),
+      body: Stack(
+        children: [
+          if (_isCameraInitialized)
+            Positioned.fill(
+              child: Transform(
+                alignment: Alignment.center,
+                transform: _controller?.description.lensDirection ==
+                        CameraLensDirection.front
+                    ? Matrix4.rotationY(
+                        math.pi) // Membalikkan tampilan kamera depan
+                    : Matrix4
+                        .identity(), // Tidak melakukan apa-apa untuk kamera belakang
+                child: CameraPreview(_controller!),
+              ),
+            )
+          else
+            Center(child: CircularProgressIndicator()),
+          Positioned(
+            bottom: 20,
+            left: MediaQuery.of(context).size.width / 2 - 30,
             child: IconButton(
-              icon: Icon(Icons.notifications),
-              color: Colors.black,
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => NotificationScreen()),
-                );
+              icon: Icon(Icons.camera, color: Colors.black, size: 40),
+              onPressed: () async {
+                try {
+                  await _captureAndPredict();
+                } catch (e) {
+                  print("Error capturing image: $e");
+                }
               },
             ),
           ),
-        ],
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          ),
-        child: Stack(
-          children: [
-            if (_isCameraInitialized)
-              Positioned(
-                left: 30,
-                top: 80,
-                right: 30,
-                bottom: 120,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(40),
-                  child: CameraPreview(_controller!),
+          if (_imageBytes != null)
+            Center(
+              child: Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-              )
-            else
-              Center(child: CircularProgressIndicator()),
-            Positioned(
-              left: 26,
-              bottom: 50,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width - 52,
-                height: 60,
-                child: Text(
-                  'Let our AI find the best makeup that suits you!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.02,
+                elevation: 5,
+                backgroundColor: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Skin Tone Result: $skinToneResult',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.memory(
+                          _imageBytes!,
+                          height: 200,
+                          width: 200,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        skinToneResult ?? 'No result available',
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                      SizedBox(height: 20),
+                      if (isFetching)
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 10),
+                              Text(
+                                "Mohon tunggu sistem sedang membuat rekomendasi...",
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            if (hasRecommendations)
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Recomendation2(),
+                                    ),
+                                  );
+                                },
+                                child: Text("Recommendations"),
+                              ),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _imageBytes = null;
+                                  skinToneResult = null;
+                                  hasRecommendations = false;
+                                });
+                              },
+                              child: Text("Retake"),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
                 ),
               ),
             ),
-            Positioned(
-              bottom: 20,
-              left: MediaQuery.of(context).size.width / 2 - 30,
-              child: IconButton(
-                icon: Icon(Icons.camera, color: Colors.black, size: 40),
-                onPressed: () async {
-                  try {
-                    await _initializeCamera();
-                    final picture = await _controller!.takePicture();
-                    print("Picture taken: ${picture.path}");
-
-                    // Membaca file gambar sebagai bytes
-                    final byteData = await picture.readAsBytes();
-                    setState(() {
-                      _imageBytes = byteData; // Menyimpan bytes gambar
-                    });
-                    await _captureAndPredict();
-                    // Menampilkan gambar dalam dialog
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Captured Image'),
-                        content: _imageBytes == null
-                            ? CircularProgressIndicator()
-                            : Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Image.memory(
-                                      _imageBytes!), // Menampilkan gambar dari memory
-                                  SizedBox(height: 10),
-                                  Text(
-                                    skinToneResult ?? "No result available",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ), // Menampilkan gambar dari memory
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  } catch (e) {
-                    print("Error capturing image: $e");
-                  }
-                },
-                padding: EdgeInsets.all(20),
-                iconSize: 40,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

@@ -1,53 +1,172 @@
-// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers
-
 import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
-import 'package:skin_id/screen/notification_screen.dart';
 
-class SkinIdentificationPage extends StatefulWidget {
+class SkinIdentification extends StatefulWidget {
+  final String? skinToneResult;
+  final String? skinDescription;
+
+  SkinIdentification({this.skinToneResult, this.skinDescription});
+
   @override
-  _SkinIdentificationPageState createState() => _SkinIdentificationPageState();
+  _SkinIdentification createState() => _SkinIdentification();
 }
 
-class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
-  String skinTone = "Light"; 
-  String skinDescription =
-      "Your skin has higher skin moisture, low skin elasticity, good sebum, low moisture, and uneven texture. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.";
-  int _currentIndex = 0;
-  final List<dynamic> _makeupProducts = [];
+class _SkinIdentification extends State<SkinIdentification> {
+  String? skinToneResult;
+  String? skinDescription;
+  List<dynamic>? recommendedProducts;
+  bool isLoading = true;
+  String product_name = '';
+  String brand = '';
+  String product_type = '';
+  String product_description = '';
+  String image_url = '';
+  String hex_color = '';
+  String colour_name = '';
 
-  Future<List<dynamic>> fetchMakeupProducts() async {
-    const url = 'http://127.0.0.1:8000/api/user/makeup-products/';
+  @override
+  void initState() {
+    super.initState();
+    skinToneResult = widget.skinToneResult;
+    skinDescription = widget.skinDescription;
+    _getRecommendations();
+  }
+
+  Future<void> _getRecommendations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) {
+      throw Exception('User is not logged in or token is missing.');
+    }
     try {
-      final response = await http.get(Uri.parse(url));
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_RECOMMENDATION_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response =
+          await http.get(url, headers: {'Authorization': '$token'});
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data;
+        final data = json.decode(response.body);
+        setState(() {
+          // image_url = data['image_url'] ?? "No image";
+          // product_name = data['product_name'] ?? "Unknown";
+          // brand = data['brand'] ?? "Unknown brand";
+          // colour_name = data['colour_name'] ?? "";
+          recommendedProducts = data['recommendations'] ?? [];
+          isLoading = false;
+        });
       } else {
-        throw Exception('Failed to load makeup products');
+        setState(() {
+          isLoading = false;
+          recommendedProducts = [];
+        });
+        throw Exception('Failed to fetch recommendations');
       }
     } catch (e) {
-      print('Error fetching data: $e');
-      return [];
+      setState(() {
+        isLoading = false;
+        recommendedProducts = [];
+      });
+      print("Error getting recommendations: $e");
     }
   }
 
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+  Future<void> _fetchData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['GET_RECOMMENDATION_ENDPOINT'];
+    final url = Uri.parse('$baseUrl$endpoint');
+    final response = await http.get(url, headers: {'Authorization': '$token'});
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        selectedCategory =
+            data['recommendations']; // Replace with your actual field name
+      });
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'YourSkin-ID',
+      theme: ThemeData(
+        primarySwatch: Colors.grey,
+        fontFamily: 'caveat',
+      ),
+      debugShowCheckedModeBanner: false, // Remove debug banner
+      home: HomePage(),
+    );
+  }
+}
+
+List<dynamic> _makeupProducts = [];
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+// Daftar kategori untuk filter
+  List<String> categories = [
+    'All',
+    'Foundation',
+    'Lipstick',
+    'Eyeliner',
+    'Mascara',
+    'Cushion',
+    'bronzer',
+    'eyeshadow',
+    'blush',
+    'lip_liner',
+    'nail_polish',
+  ];
+  // Menyimpan kategori yang dipilih
+  String selectedCategory = 'All';
+  String skinTone = "Light";
+  String skinDescription =
+      "Your skin has higher skin moisture, low skin elasticity, good sebum, low moisture, and uneven texture. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.";
+
+  Future<bool> _onWillPop() async {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Home()),
+      (Route<dynamic> route) => false,
+    );
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Navbar(),
+      endDrawer: Navbar(),
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => Home()),
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
@@ -56,53 +175,46 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
             fontWeight: FontWeight.w400,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            color: Colors.black,
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => NotificationScreen()),
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSkinIdentificationSection(),
-              SizedBox(height: 32),
-              _buildMakeupRecommendationSection(context),
-              SizedBox(height: 32),
-              _buildCommunityInspirationSection(),
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSkinIdentificationSection(skinTone, skinDescription),
+            SizedBox(height: 32),
+            _buildMakeupRecommendationSection(context),
+            SizedBox(height: 32),
+            _buildCommunityInspirationSection(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSkinIdentificationSection() {
+  Widget _buildSkinIdentificationSection(
+      String skinTone, String skinDescription) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Skin Identification',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+        // Title
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Skin Identification',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
         ),
         SizedBox(height: 16),
+
+        // Centered content
         Center(
           child: Column(
             children: [
+              // Subtitle
               Text(
                 'Your Skin Tone Is',
                 style: TextStyle(
@@ -111,27 +223,34 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 ),
               ),
               SizedBox(height: 16),
+
+              // Circle representing the skin tone
               Container(
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: Colors.orange[200],
+                  color: Color(0xFFF4C2C2),
                   shape: BoxShape.circle,
                 ),
               ),
               SizedBox(height: 16),
+
+              // Skin tone color palette
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SkinToneColor(color: Color(0xFFF4C2C2)),
-                  SkinToneColor(color: Color(0xFFE6A57E)),
-                  SkinToneColor(color: Color(0xFFD2B48C)),
-                  SkinToneColor(color: Color(0xFFC19A6B)),
-                  SkinToneColor(color: Color(0xFF8D5524)),
-                  SkinToneColor(color: Color(0xFF7D4B3E)),
+                  SkinToneColor(color: Color(0xFFFFDFC4)),
+                  SkinToneColor(color: Color(0xFFF0D5BE)),
+                  SkinToneColor(color: Color(0xFDD1A684)),
+                  SkinToneColor(color: Color(0xFAA67C52)),
+                  SkinToneColor(color: Color(0xF8825C3A)),
+                  SkinToneColor(color: Color(0xF44A312C)),
                 ],
               ),
+
               SizedBox(height: 16),
+
+              // Skin tone label
               Text(
                 skinTone,
                 style: TextStyle(
@@ -141,6 +260,8 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 ),
               ),
               SizedBox(height: 16),
+
+              // Skin description
               Text(
                 skinDescription,
                 style: TextStyle(
@@ -157,68 +278,205 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   }
 
   Widget _buildMakeupRecommendationSection(BuildContext context) {
+    List<dynamic> recommendedProducts = selectedCategory == 'All'
+        ? _makeupProducts
+        : _makeupProducts
+            .where((product) =>
+                product['product_type']?.toString().toLowerCase() ==
+                selectedCategory.toLowerCase())
+            .toList();
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Makeup Recommendation',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+        // Updated makeup section with proper styling
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+          width: double.infinity, // Mengisi lebar penuh layar
+          decoration: BoxDecoration(
+            color: Color(0xFF242424),
           ),
-        ),
-        SizedBox(height: 16),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FilterButton(label: 'All', isSelected: true, textColor: Colors.white),
-              SizedBox(width: 8.0),
-              FilterButton(label: 'Lipstick', textColor: Colors.white),
-              SizedBox(width: 8.0),
-              FilterButton(label: 'Eyeliner', textColor: Colors.white),
-              SizedBox(width: 8.0),
-              FilterButton(label: 'Mascara', textColor: Colors.white),
+              Text(
+                'Makeup Recommendation',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 16),
+              // Filter Buttons Section
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: categories.map((product_type) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: FilterButton(
+                        label: product_type,
+                        isSelected: selectedCategory ==
+                            product_type, // Check if this category is selected
+                        onTap: () => setState(() {
+                          selectedCategory =
+                              product_type; // Set the selected category
+                        }),
+                        textColor: Colors.black,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              SizedBox(height: 20),
+              // Display selected category products in GridView
+              recommendedProducts.isEmpty
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.all(16.0),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount:
+                            MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                        crossAxisSpacing: 16.0,
+                        mainAxisSpacing: 16.0,
+                      ),
+                      itemCount: min(recommendedProducts.length,
+                          6), // Menampilkan maksimal 6 item
+                      itemBuilder: (context, index) {
+                        final product = recommendedProducts[index];
+
+                        return Card(
+                          elevation: 4.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: GestureDetector(
+                            onTap: () {
+                              // Navigasi ke MakeupDetail dengan data produk
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      MakeupDetail(product: product),
+                                ),
+                              );
+                            },
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(height: 8),
+                                Container(
+                                  width: 70,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 4.0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(5),
+                                    child: Image.network(
+                                      product['image_link'] ?? '',
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        // Jika gambar gagal dimuat, tampilkan widget kosong
+                                        return SizedBox(
+                                          width: 70,
+                                          height: 50,
+                                          child: Center(
+                                            child: Text(
+                                              'No Image',
+                                              style: TextStyle(
+                                                  fontSize: 8,
+                                                  color: Colors.grey),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child; // Jika loading selesai, tampilkan gambar
+                                        }
+                                        return Center(
+                                          child:
+                                              CircularProgressIndicator(), // Loading indicator
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                    height:
+                                        8), // Jarak antara gambar dan teks nama produk
+                                Text(
+                                  product['product_type'] ?? 'Tipe Produk',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(
+                                    height:
+                                        4), // Jarak antara nama produk dan merek
+                                Text(
+                                  product['name'] ?? 'Nama Produk',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(
+                                    height:
+                                        4), // Jarak antara nama produk dan merek
+                                Text(
+                                  product['brand'] ?? 'Merek Produk',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 10,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              SizedBox(height: 16.0),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => ListProduct()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24.0),
+                    ),
+                  ),
+                  child: Text('Browse for more'),
+                ),
+              ),
             ],
           ),
-        ),
-        SizedBox(height: 16.0),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-            crossAxisSpacing: 16.0,
-            mainAxisSpacing: 16.0,
-          ),
-          itemCount: 4,
-          itemBuilder: (context, index) {
-            return ProductCard(
-              imageUrl: 'assets/image/makeup.jpg',
-              title: 'Nama Produk Tidak Ditemukan',
-              brand: 'Brand Tidak Ditemukan',
-            );
-          },
-        ),
-        SizedBox(height: 16.0),
-        Center(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => ListProduct()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
-              ),
-            ),
-            child: Text('Browse for more'),
-          ),
-        ),
+        )
       ],
     );
   }
@@ -268,161 +526,65 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   }
 }
 
-// Widget untuk SkinToneColor
-class SkinToneColor extends StatelessWidget {
-  final Color color;
-
-  const SkinToneColor({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 30,
-      height: 30,
-      margin: EdgeInsets.symmetric(horizontal: 4.0),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        border: Border.all(color: Colors.black26, width: 0.5),
-      ),
-    );
-  }
-}
-
-class SkinIdentificationCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFE8D4),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      width: 800,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Start of added content (from the second code)
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Color(0xFF2B2B2B),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Your Skin Tone Is',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Colors.white,
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildSkinToneColor(Color(0xFFF5E4D7)),
-                    _buildSkinToneColor(Color(0xFFE0C4A8)),
-                    _buildSkinToneColor(Color(0xFFC49A6C)),
-                    _buildSkinToneColor(Color(0xFFA66B3F)),
-                    _buildSkinToneColor(Color(0xFF7B3F1B)),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'White',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'This skin has higher skin moisture, low skin elasticity, good gloss, low melanin and erythema levels. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.',
-            style: TextStyle(
-              color: Color(0xFF2B2B2B),
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-Widget _buildSkinToneColor(Color color) {
-  return Container(
-    width: 32,
-    height: 32,
-    decoration: BoxDecoration(
-      color: color,
-      border: Border.all(color: Colors.white),
-    ),
-  );
-}
-
+// FilterButton widget
 class FilterButton extends StatelessWidget {
   final String label;
   final bool isSelected;
-  const FilterButton({
-    required this.label,
-    this.isSelected = false,
-    required Color textColor,
-  });
+  final VoidCallback onTap;
+
+  const FilterButton(
+      {required this.label,
+      required this.isSelected,
+      required this.onTap,
+      required Color textColor});
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected
-            ? const Color.fromARGB(255, 186, 190, 199)
-            : const Color.fromARGB(255, 255, 255, 255),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        backgroundColor: isSelected ? Colors.grey : Colors.white,
       ),
+      onPressed: onTap,
       child: Text(label),
     );
   }
 }
 
+// Assuming you have a list of products with 'brand' and 'name'
+String selectedCategory = 'All';
+
 class ProductCard extends StatelessWidget {
-  final String imageUrl;
+  // final String imageUrl;
   final String title;
   final String brand;
+  final String description;
+  final List<dynamic> productColors;
+  final int id;
 
   const ProductCard({
-    required this.imageUrl,
+    required this.id,
+    // required this.imageUrl,
     required this.title,
     required this.brand,
+    required this.description,
+    required this.productColors,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MakeupDetail(),
+            builder: (context) => ProductDetailPage(
+              id: id,
+              title: title,
+              brand: brand,
+              // imageUrl: imageUrl,
+              description: description,
+              productColors: productColors,
+            ),
           ),
         );
       },
@@ -432,17 +594,17 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+            // Expanded(
+            //   child: ClipRRect(
+            //     borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+            //     child: Image.network(
+            //       imageUrl,
+            //       fit: BoxFit.cover,
+            //     ),
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -471,6 +633,87 @@ class ProductCard extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProductDetailPage extends StatelessWidget {
+  final int id;
+  final String title;
+  final String brand;
+  // final String imageUrl;
+  final String description;
+  final List<dynamic> productColors;
+
+  const ProductDetailPage({
+    required this.id,
+    required this.title,
+    required this.brand,
+    // required this.imageUrl,
+    required this.description,
+    required this.productColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image.network(
+            //   imageUrl,
+            //   fit: BoxFit.cover,
+            //   errorBuilder: (context, error, stackTrace) {
+            //     return Image.asset('assets/image/makeup.jpg'); // Placeholder
+            //   },
+            //   width: double.infinity,
+            // ),
+            SizedBox(height: 16.0),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              "Brand: $brand",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              description.isNotEmpty
+                  ? description
+                  : "No description available.",
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              "Available Colors:",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Wrap(
+              spacing: 8.0,
+              children: productColors.map((color) {
+                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
+              }).toList(),
             ),
           ],
         ),

@@ -77,40 +77,43 @@ def register_user(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
+
+
 def login_user(request):
     email = request.data.get('email')
     password = request.data.get('password')
 
     if not email or not password:
-        return Response({"error":"Username dan password diperlukan"},status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({"error": "Username dan password diperlukan"}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        # pengguna = Pengguna.objects.filter(email=username_or_email).first() or Pengguna.objects.filter(username=username_or_email).first()
         pengguna = Pengguna.objects.filter(email=email).first()
         if pengguna is None:
-            return Response({'Error':'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'Error': 'Email tidak ditemukan'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Menggunakan check_password untuk memverifikasi hash password
         if not check_password(password, pengguna.password):
-            return Response({'Error':'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({'Error': 'Password salah'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Jika password benar, lanjutkan pembuatan token JWT
         header = {
-        "alg": "HS256",  # Algoritma untuk tanda tangan
-        "typ": "JWT"     # Jenis token
+            "alg": "HS256",
+            "typ": "JWT"
         }
-        
+
         payload = {
             'id': pengguna.user_id,
             'username': pengguna.username,
             'email': pengguna.email,
             'exp': datetime.utcnow() + timedelta(hours=1),
         }
-        
+
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256', headers=header)
-        # decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        # print(decoded_token)
-        
+
         pengguna.token = token
         pengguna.last_login = timezone.now()
         pengguna.save()
+
         return Response({
             'message': 'Login berhasil',
             'token': token,
@@ -120,9 +123,9 @@ def login_user(request):
                 'email': pengguna.email
             }
         }, status=status.HTTP_200_OK)
-    
+
     except Exception as e:
-        return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['PUT'])
 @token_required
@@ -130,11 +133,13 @@ def edit_profile(request):
     pengguna = request.user
     data = request.data
     try:
-        # Pembaruan data yg dikirim
+        print("Request data:", request.data)
+        print("Request files:", request.FILES)
+        
         if 'username' in data:
             pengguna.username = data['username']
+        
         if 'email' in data:
-            
             email = data['email']
             if Pengguna.objects.filter(email=email).exclude(pk=pengguna.pk).exists():
                 return Response (
@@ -143,54 +148,46 @@ def edit_profile(request):
                 },status=status.HTTP_400_BAD_REQUEST
                                  )
             pengguna.email = email
+        
         if 'jenis_kelamin' in data:
             pengguna.jenis_kelamin = data['jenis_kelamin']
-
-        if 'profile_picture' in request.FILES:
-            # Hapus foto profil lama jika ada
-            if pengguna.profile_picture:
-                pengguna.profile_picture.delete()
-            pengguna.profile_picture = request.FILES['profile_picture']
-            
-        pengguna.save()
         
+        if 'old_password' in data and 'new_password' in data:
+            old_password = data['old_password']
+            new_password = data['new_password']
+            
+            if not check_password(old_password, pengguna.password):
+                return Response({
+                    "error": "Password lama tidak sesuai."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            pengguna.password = make_password(new_password)
+        
+        if 'profile_picture' in request.FILES:
+            profile_picture = request.FILES['profile_picture']
+            pengguna.profile_picture = profile_picture
+        
+            MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+            if profile_picture.size > MAX_FILE_SIZE:
+                return Response({"error": "Ukuran gambar terlalu besar. Maksimal 5 MB."}, status=status.HTTP_400_BAD_REQUEST)
+
+        pengguna.save()
         return Response({
             'message':'Data pengguna berhasil diperbarui',
             'data': {
                 'username' : pengguna.username,
                 'email' : pengguna.email,
                 'jenis_kelamin' : pengguna.jenis_kelamin,
-                'profile_picture_url': request.build_absolute_uri(pengguna.profile_picture.url) if pengguna.profile_picture else None,
+                'profile_picture_url': pengguna.profile_picture.url if pengguna.profile_picture else None
             }
         }, status=status.HTTP_200_OK)
         
     except Pengguna.DoesNotExist:
-        print('An exception occurred')
+        print('An exception occurred in edit profile')
         return Response({"error":"Pengguna tidak ditemukan"}, status=status.HTTP_404_NOT_FOUND)
     
     except Exception as e:
         return Response({"error": str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['POST'])
-@token_required
-def change_password(request):
-    try:
-        pengguna = request.user
-        data = request.data
-        old_password = data.get('old_password')
-        new_password = data.get('new_password')
-
-        if not pengguna.check_password(old_password):
-            return Response({'error': 'Password lama salah'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Perbarui password
-        pengguna.set_password(new_password)
-        pengguna.save()
-        return Response({'message': 'Password berhasil diubah'}, status=status.HTTP_200_OK)
-    
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(['POST'])
 @token_required
@@ -211,6 +208,25 @@ def user_logout(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+@token_required
+def get_user_profile(request):
+    try:
+        pengguna = request.user
+        profile_picture_url = request.build_absolute_uri(pengguna.profile_picture.url) if pengguna.profile_picture else "https://www.example.com/default-profile-pic.jpg"
+        return Response({
+            'id': pengguna.user_id,
+            'username': pengguna.username,
+            'email': pengguna.email,
+            'jenis kelamin': pengguna.jenis_kelamin,
+            'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
+            'role': pengguna.role_id if pengguna.role_id else "Not Set",
+            'profile_picture': profile_picture_url,
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 @api_view(['GET'])
 @token_required
 def get_user_profile(request):

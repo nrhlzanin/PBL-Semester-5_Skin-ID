@@ -75,33 +75,15 @@ class Pengguna(models.Model):
     email = models.EmailField(max_length=100, unique=True)
     jenis_kelamin = models.CharField(max_length=100, null=True, blank=True, choices=[('pria','pria'),('wanita','wanita')])
     skintone = models.ForeignKey(SkinTone, on_delete=models.SET_NULL, null=True, blank=True, related_name='pengguna')
+    profile_picture = models.ImageField(
+        upload_to='profile_pictures/', null=True, blank=True
+    )
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='pengguna' )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     token = models.CharField(max_length=255, null=True, blank=True)
-    profile_picture = models.ImageField(null=True, blank=True, upload_to='profile_pictures/')  
-        # Reset password attributes
-    reset_otp = models.CharField(max_length=6, null=True, blank=True)
-    reset_otp_expiry = models.DateTimeField(null=True, blank=True)
-        
-    def set_reset_otp(self):
-        """
-        Generate a random 6-digit OTP and set expiry to 10 minutes from now.
-        """
-        import random
-        self.reset_otp = f"{random.randint(100000, 999999)}"
-        self.reset_otp_expiry = now() + timedelta(minutes=10)
-        self.save()
-
-    def is_reset_otp_valid(self, otp):
-        """
-        Check if the provided OTP matches and is still valid.
-        """
-        if self.reset_otp == otp and now() < self.reset_otp_expiry:
-            return True
-        return False
     
     def get_email_field_name(self):
         return "email"
@@ -118,7 +100,7 @@ class Product(models.Model):
     brand = models.CharField(max_length=255, null=True, blank=True)
     product_type = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    image_url = models.URLField(max_length=255, null=True, blank=True)
+    image_url = models.URLField(max_length=1000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
