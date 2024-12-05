@@ -228,7 +228,7 @@ def get_user_profile(request):
             'id': pengguna.user_id,
             'username': pengguna.username,
             'email': pengguna.email,
-            'jenis kelamin': pengguna.jenis_kelamin,
+            'jenis_kelamin': pengguna.jenis_kelamin,
             # 'skintone': pengguna.skintone_id if pengguna.skintone_id else "Not Set",
             'skintone':skintone_data,
             'role': pengguna.role_id if pengguna.role_id else "Not Set",

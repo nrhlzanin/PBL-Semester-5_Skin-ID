@@ -1,3 +1,4 @@
+import random
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_http_methods
@@ -12,20 +13,24 @@ from api.models import Pengguna, SkinTone, Product, ProductColor, Recommendation
 from api.views.user_views import token_required 
 from math import sqrt
 
+def is_valid_image_url(url):
+    try:
+        response = requests.head(url, timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+    
 @require_http_methods(["GET"])
 def fetch_filtered_makeup_products(request):
     api_url = "http://makeup-api.herokuapp.com/api/v1/products.json"
     product_type = request.GET.get("product_type")
     product_name = request.GET.get("name")
     product_id = request.GET.get("product_id")
-    # page = int(request.GET.get("page",1))
     try:
         response = requests.get(api_url)
         response.raise_for_status()
         
         makeup_data = response.json()
-        # makeup_data = makeup_data[:5]
-        # Untuk filter tiap kategori
         if product_type:
             makeup_data = [
                 product for product in makeup_data
@@ -42,14 +47,17 @@ def fetch_filtered_makeup_products(request):
         if product_id:
             makeup_data = [
                 product for product in makeup_data
-                if str(product.get("id")) == product_id  # Cocokkan ID sebagai string
+                if str(product.get("id")) == product_id
             ]
-
-        # paginator = Paginator(makeup_data, 10)  # 50 produk per halaman
-        # current_page = paginator.get_page(page)
         
+        if len(makeup_data) > 10:
+            makeup_data = random.sample(makeup_data, 100)
+            
         filtered_data = []
         for product in makeup_data:
+            image_link = product.get("image_link")
+            if image_link and not is_valid_image_url(image_link):
+                image_link = None
             filtered_product = {
                 "id": product.get("id"),
                 "brand": product.get("brand"),
@@ -57,14 +65,14 @@ def fetch_filtered_makeup_products(request):
                 "price": product.get("price"),
                 "price_sign": product.get("price_sign"),
                 "currency": product.get("currency"),
-                "image_link": product.get("image_link"),
+                # "image_link": product.get("Image_link"),
+                "image_link": image_link,
                 "description": product.get("description"),
                 "product_type": product.get("product_type"),
                 "product_colors": product.get("product_colors")
             }
             filtered_data.append(filtered_product)
-        
-        # filtered_data = filtered_data[:1]
+
         return JsonResponse(filtered_data, safe=False, status=200)        
     except requests.exceptions.RequestException as e:
         return JsonResponse({"error": str(e)}, status = 500)

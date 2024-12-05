@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http; // Import http package
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home.dart';
@@ -86,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
         primarySwatch: Colors.grey,
         fontFamily: 'caveat',
       ),
-      debugShowCheckedModeBanner: false, // Remove debug banner
+      debugShowCheckedModeBanner: false,
       home: HomePage(),
     );
   }
@@ -100,6 +101,59 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool hasSkintone = false;
+  String skinTone = "Unknown";
+  String skinDescription = "No description available";
+  Color skinToneColor = Colors.grey;
+
+  Future<void> _loadUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null || token.isEmpty) {
+        throw Exception('No token found. Please log in.');
+      }
+
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response =
+          await http.get(url, headers: {'Authorization': '$token'});
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final skintone = data['skintone'];
+        setState(() {
+          skinTone = skintone['skintone_name'] ?? '';
+          skinDescription = skintone['skintone_description'] ?? '';
+          final hex_color = skintone['hex_start'] ?? 'grey';
+
+          if (hex_color != null &&
+              hex_color.isNotEmpty &&
+              hex_color.startsWith('#')) {
+            try {
+              setState(() {
+                skinTone = skinTone;
+                skinDescription = skinDescription;
+                skinToneColor = Color(
+                    int.parse(hex_color.substring(1), radix: 16) + 0xFF000000);
+                hasSkintone = true;
+              });
+            } catch (e) {
+              print("Error parsing hex color: $e");
+            }
+          } else {
+            print("No Skintone Detected, can not show skinTone");
+            hasSkintone = false;
+          }
+        });
+      }
+    } catch (e) {
+      print("No Skintone Detected, can not show skinTone");
+    }
+  }
+
   // Daftar kategori untuk filter
   List<String> categories = [
     'All',
@@ -127,6 +181,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  @override
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'All'
         ? _makeupProducts
@@ -135,7 +195,7 @@ class _HomePageState extends State<HomePage> {
                 product['product_type']?.toString().toLowerCase() ==
                 selectedCategory.toLowerCase())
             .toList();
-// Filter produk yang memiliki gambar valid
+
     List<dynamic> validFilteredProducts = filteredProducts.where((product) {
       final imageUrl = product['image_link'] as String?;
       return imageUrl != null &&
@@ -166,7 +226,7 @@ class _HomePageState extends State<HomePage> {
                 'Check Your Skin Tone',
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 30,
+                  fontSize: 40,
                   fontFamily: 'Playfair Display',
                   fontWeight: FontWeight.w700,
                   height: 0,
@@ -176,29 +236,66 @@ class _HomePageState extends State<HomePage> {
             ),
             Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: CameraButton(),
-                ),
-                SizedBox(width: 5),
-                Text(
-                  'Use me!',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                SizedBox(width: 8.0),
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'Identify your skin tone using our AI for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 17), // Set color of the text
-                    ),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 8.0),
+                      Expanded(
+                        child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text.rich(
+                              TextSpan(
+                                text: 'Identify your skin tone using our ',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w400,
+                                    color:
+                                        Colors.black), // Gaya umum untuk teks
+                                children: <TextSpan>[
+                                  TextSpan(
+                                    text: 'AI',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  TextSpan(
+                                    text:
+                                        ' for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
+                                  ),
+                                ],
+                              ),
+                            )),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 6),
+                Container(
+                  width: 160,
+                  height: 160,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        right: 16,
+                        bottom: 0,
+                        child: Container(
+                          width: 90,
+                          height: 90,
+                          child: AvatarImage(
+                              imageUrl: "assets/image/avatar2.jpeg"),
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        child: Container(
+                          width: 90,
+                          height: 90,
+                          child: AvatarImage(
+                              imageUrl: "assets/image/avatar1.jpeg"),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -207,30 +304,163 @@ class _HomePageState extends State<HomePage> {
             Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-                  child: AvatarImage(imageUrl: "assets/image/avatar1.jpeg"),
+                  padding: const EdgeInsets.all(16.0),
+                  child: CameraButton(),
                 ),
-                SizedBox(width: 16.0),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: AvatarImage(imageUrl: "assets/image/avatar2.jpeg"),
+                Text(
+                  'Use me!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            SizedBox(height: 16.0),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  SkinToneColor(color: Color(0xFFFFDFC4)),
-                  SkinToneColor(color: Color(0xFFF0D5BE)),
-                  SkinToneColor(color: Color(0xFDD1A684)),
-                  SkinToneColor(color: Color(0xFAA67C52)),
-                  SkinToneColor(color: Color(0xF8825C3A)),
-                  SkinToneColor(color: Color(0xF44A312C)),
-                ],
+            if (hasSkintone)
+              Container(
+                padding: EdgeInsets.fromLTRB(24, 40, 24, 40),
+                decoration: BoxDecoration(
+                  color: skinToneColor,
+                ),
+                width: 800,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Start of added content (from the second code)
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF2B2B2B),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Your Skin Tone Is',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Container(
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 5,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: skinToneColor,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            skinTone,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Container(
+                            margin: const EdgeInsets.all(20.0),
+                            padding: const EdgeInsets.all(2.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.4),
+                                  blurRadius: 3,
+                                  spreadRadius: 2,
+                                  offset: Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Wrap(
+                              direction: Axis.horizontal,
+                              children: List.generate(6, (index) {
+                                // Map index to skin tone
+                                final tones = [
+                                  "very_light",
+                                  "light",
+                                  "medium",
+                                  "olive",
+                                  "brown",
+                                  "dark"
+                                ];
+                                final colors = [
+                                  Color(0xFFFFDFC4),
+                                  Color(0xFFF0D5BE),
+                                  Color(0xFFD1A684),
+                                  Color(0xFFA67C52),
+                                  Color(0xFF825C3A),
+                                  Color(0xFF4A312C),
+                                ];
+                                final isSelected =
+                                    tones[index] == skinTone.toLowerCase();
+
+                                return Stack(
+                                  children: [
+                                    Container(
+                                      width: isSelected ? 32 : 32,
+                                      height: isSelected ? 32 : 32,
+                                      margin: EdgeInsets.all(4.0),
+                                      decoration: BoxDecoration(
+                                        color: colors[index],
+                                        borderRadius: BorderRadius.horizontal(
+                                          left: index == 0
+                                              ? Radius.circular(16)
+                                              : Radius.zero,
+                                          right: index == 5
+                                              ? Radius.circular(16)
+                                              : Radius.zero,
+                                        ),
+                                        border: isSelected
+                                            ? Border.all(
+                                                color: Colors.black,
+                                                width: 2,
+                                              )
+                                            : null,
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Positioned(
+                                        top: -10,
+                                        left: 0,
+                                        right: 0,
+                                        child: Icon(
+                                          Icons.arrow_drop_up,
+                                          color: Colors.black,
+                                          size: 24,
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              }),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          // Skin description
+                          Text(
+                            skinDescription,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
             // Updated makeup section with proper styling
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
@@ -260,7 +490,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 15.0),
-                  // Filter Buttons Section
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -281,8 +510,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 20),
-
-                  // Display selected category products in GridView
                   validFilteredProducts.isEmpty
                       ? Center(
                           child: CircularProgressIndicator(
@@ -482,7 +709,7 @@ class CameraButton extends StatelessWidget {
         ),
       ),
       child: IconButton(
-        icon: Icon(Icons.camera_alt),
+        icon: Icon(Icons.face_retouching_natural),
         color: Colors.white,
         onPressed: () {
           Navigator.pushReplacement(
