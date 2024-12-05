@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/recomendation.dart';
@@ -258,7 +259,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => Home()),
+              MaterialPageRoute(builder: (context) => HomeScreen()),
               (Route<dynamic> route) => false,
             );
           },

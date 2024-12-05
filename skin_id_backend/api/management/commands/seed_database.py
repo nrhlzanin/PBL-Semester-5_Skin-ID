@@ -29,7 +29,7 @@ class Command(BaseCommand):
                     {
                         "skintone_id": "2",
                         "skintone_name": "light",
-                        "skintone_description": "Kulit cerah yang memancarkan keindahan alami. Namun, kulit ini cukup sensitif terhadap sinar matahari karena kadar melanin rendah hingga sedang yang kulit kamu miliki. Kulit kamu cenderung mudah terbakar oleh sinar UV namun dapat mengembangkan tan ringan setelah paparan matahari yang berkepanjangan. Penggunaan perlindungan matahari rutin sangat disarankan untuk mencegah kerusakan kulitmu okeey.",
+                        "skintone_description": "Kulit cerah yang memancarkan keindahan alami. Namun, kulit ini cukup sensitif terhadap sinar matahari karena kadar melanin rendah hingga sedang yang kulit kamu miliki. Kulit kamu cenderung mudah terbakar oleh sinar UV namun dapat mengembangkan tan ringan setelah paparan matahari yang berkepanjangan. Penggunaan perlindungan matahari rutin sangat disarankan untuk mencegah kerusakan kulitmu oke.",
                         "hex_range_start": "#F0D5BE",
                         "hex_range_end": "#FFD7B5",
                     },

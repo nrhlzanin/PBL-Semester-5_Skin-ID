@@ -174,7 +174,7 @@ class _HomePageState extends State<HomePage> {
   Future<bool> _onWillPop() async {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => Home()),
+      MaterialPageRoute(builder: (context) => HomeScreen()),
       (Route<dynamic> route) => false,
     );
     return false;

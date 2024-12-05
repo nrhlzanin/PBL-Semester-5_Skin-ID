@@ -77,7 +77,8 @@ class _LoginAccountState extends State<Login> {
         if (response.statusCode == 400) {
           if (errorMessage.contains('Password salah')) {
             _showErrorMessage('Password salah.');
-          } else if (errorMessage.contains('Username dan password diperlukan')) {
+          } else if (errorMessage
+              .contains('Username dan password diperlukan')) {
             _showErrorMessage('Email dan password diperlukan.');
           }
         } else if (response.statusCode == 404) {
@@ -107,7 +108,7 @@ class _LoginAccountState extends State<Login> {
     if (skintoneId != null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Home()),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } else {
       Navigator.pushReplacement(
@@ -299,7 +300,8 @@ class _LoginAccountState extends State<Login> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => CreateAccount()),
+                            MaterialPageRoute(
+                                builder: (context) => CreateAccount()),
                           );
                         },
                         child: RichText(

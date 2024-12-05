@@ -155,7 +155,7 @@ class _HomePageState extends State<HomePage> {
     if (skintoneId != null) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => Home()),  // Halaman Home jika skintone_id ada
+        MaterialPageRoute(builder: (context) => HomeScreen()),  // Halaman Home jika skintone_id ada
         (Route<dynamic> route) => false,
       );
     } else {
@@ -198,7 +198,7 @@ leading: IconButton(
               if (skintoneId != null) {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => Home()),  // Jika skintone_id ada
+                  MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id ada
                   (Route<dynamic> route) => false,
                 );
               } else {

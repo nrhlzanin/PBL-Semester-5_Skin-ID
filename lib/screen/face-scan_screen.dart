@@ -226,7 +226,7 @@ class _CameraPageState extends State<CameraPage> {
     if (skintoneId != null) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => Home()),  // Halaman Home jika skintone_id ada
+        MaterialPageRoute(builder: (context) => HomeScreen()),  // Halaman Home jika skintone_id ada
         (Route<dynamic> route) => false,
       );
     } else {
