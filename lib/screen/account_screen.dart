@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/edit_profil_screen.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -42,8 +43,7 @@ class _AccountScreenState extends State<AccountScreen> {
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
-      final response =
-          await http.get(url, headers: {'Authorization': '$token'});
+      final response = await http.get(url, headers: {'Authorization': '$token'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
