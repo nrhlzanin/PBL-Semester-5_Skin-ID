@@ -4,30 +4,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:skin_id/screen/login.dart';
-import 'package:skin_id/screen/home.dart';
 
 void main() async {
-  // await dotenv.load(fileName: ".env");
-  // print(dotenv.env);
   runApp(CreateAccount());
 }
-
-// JANGAN DIHAPUS GES
-// ===========================================================
-// class APIConfig {
-//   static final String baseUrl = dotenv.env['BASE_URL'].toString();
-//   static final String registerEndpoint =
-//       dotenv.env['REGISTER_ENDPOINT'].toString();
-
-//   static String getRegisterURL() {
-//     if (baseUrl.isEmpty || registerEndpoint.isEmpty) {
-//       print('$baseUrl$registerEndpoint');
-//       throw Exception('Environment variables are not initialized correctly');
-//     }
-//     return '$baseUrl$registerEndpoint';
-//   }
-// }
-// ===========================================================
 
 class CreateAccount extends StatefulWidget {
   @override
@@ -35,21 +15,19 @@ class CreateAccount extends StatefulWidget {
 }
 
 class _CreateAccountState extends State<CreateAccount> {
-    bool isObscured = true; // Declare isObscured at the class level to keep its state persistent
-    bool isObscured2 = true; // Declare isObscured at the class level to keep its state persistent
-  bool _isAccountCreated = false;
+  bool isObscured = true;
+  bool isObscured2 = true;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   String? _username(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter username';
-    } else if (value.length < 3 && value.length > 13) {
-      return 'username must between 3 ~ 12 characters';
+    } else if (value.length < 3 || value.length > 12) {
+      return 'Username must be between 3 ~ 12 characters';
     }
     return null;
   }
@@ -77,16 +55,13 @@ class _CreateAccountState extends State<CreateAccount> {
     if (value == null || value.isEmpty) {
       return 'Please confirm your password';
     } else if (value != _passwordController.text) {
-      return 'Password do not match';
+      return 'Passwords do not match';
     }
     return null;
   }
 
-  Future<void> registerUser(
-      String username, String email, String password) async {
+  Future<void> registerUser(String username, String email, String password) async {
     final confirmPassword = _confirmPasswordController.text.trim();
-    print('Button ditekan');
-    // print(APIConfig.getRegisterURL());
     if (username.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('All fields are required')),
@@ -103,7 +78,6 @@ class _CreateAccountState extends State<CreateAccount> {
     try {
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['REGISTER_ENDPOINT'];
-      print('Full URL: $baseUrl$endpoint');
       final response = await http.post(
         Uri.parse('$baseUrl$endpoint'),
         headers: {
@@ -115,7 +89,6 @@ class _CreateAccountState extends State<CreateAccount> {
           'password': password,
         }),
       );
-      // ===========================================================
 
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +106,7 @@ class _CreateAccountState extends State<CreateAccount> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occured: $e')),
+        SnackBar(content: Text('An error occurred: $e')),
       );
     }
   }
@@ -169,51 +142,50 @@ class _CreateAccountState extends State<CreateAccount> {
                 ),
               ),
             ),
-            if (!_isAccountCreated)
-              Center(
-                child: Container(
-                  padding: EdgeInsets.all(20),
-                  margin: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Create an Account',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+            Center(
+              child: Container(
+                padding: EdgeInsets.all(20),
+                margin: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Create an Account',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: _usernameController,
-                          decoration: InputDecoration(
-                            labelText: 'Username',
-                            hintText: 'Type your username',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: _username,
+                      ),
+                      SizedBox(height: 20),
+                      TextFormField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Username',
+                          hintText: 'Type your username',
+                          border: OutlineInputBorder(),
                         ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            hintText: 'Enter your email',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: _email,
+                        validator: _username,
+                      ),
+                      SizedBox(height: 20),
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          hintText: 'Enter your email',
+                          border: OutlineInputBorder(),
                         ),
-                        SizedBox(height: 20),
-                       TextFormField(
+                        validator: _email,
+                      ),
+                      SizedBox(height: 20),
+                      TextFormField(
                         controller: _passwordController,
-                        obscureText: isObscured, // Use isObscured for password
+                        obscureText: isObscured,
                         decoration: InputDecoration(
                           labelText: 'Password',
                           hintText: 'Enter your password',
@@ -224,19 +196,16 @@ class _CreateAccountState extends State<CreateAccount> {
                             ),
                             onPressed: () {
                               setState(() {
-                                isObscured = !isObscured; // Toggle visibility for password
-                                print("Password visibility toggled: $isObscured");
+                                isObscured = !isObscured;
                               });
                             },
                           ),
                         ),
-                      
                       ),
                       SizedBox(height: 20),
-                      // Confirm Password TextFormField with visibility toggle
                       TextFormField(
                         controller: _confirmPasswordController,
-                        obscureText: isObscured2, // Use isObscured2 for confirm password
+                        obscureText: isObscured2,
                         decoration: InputDecoration(
                           labelText: 'Confirm Password',
                           hintText: 'Re-enter your password',
@@ -247,50 +216,46 @@ class _CreateAccountState extends State<CreateAccount> {
                             ),
                             onPressed: () {
                               setState(() {
-                                isObscured2 = !isObscured2; // Toggle visibility for confirm password
-                                print("Confirm Password visibility toggled: $isObscured2");
+                                isObscured2 = !isObscured2;
                               });
                             },
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
-                          } else if (value != _passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
+                        validator: _confirmPassword,
                       ),
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            print('pressed');
-                            if (_formKey.currentState!.validate()) {
-                              final username = _usernameController.text.trim();
-                              final email = _emailController.text.trim();
-                              final password = _passwordController.text.trim();
-                              registerUser(username, email, password);
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Create account',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            final username = _usernameController.text.trim();
+                            final email = _emailController.text.trim();
+                            final password = _passwordController.text.trim();
+                            registerUser(username, email, password);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                
-                        SizedBox(height: 20),
-                        Text.rich(
+                        child: Center(
+                          child: Text(
+                            'Create account',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      MouseRegion(
+                        onEnter: (_) {
+                          print('Mouse entered');
+                        },
+                        onExit: (_) {
+                          print('Mouse exited');
+                        },
+                        child: Text.rich(
                           TextSpan(
                             text: 'Already have one? ',
                             children: [
@@ -315,11 +280,12 @@ class _CreateAccountState extends State<CreateAccount> {
                           ),
                           style: TextStyle(fontSize: 14),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              )
+              ),
+            ),
           ],
         ),
       ),

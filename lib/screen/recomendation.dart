@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, unused_element, avoid_print, unnecessary_null_in_if_null_operators, unnecessary_string_interpolations, prefer_interpolation_to_compose_strings, non_constant_identifier_names, prefer_const_constructors_in_immutables, deprecated_member_use
+
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -9,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 
 class Recomendation extends StatefulWidget {
@@ -158,153 +161,210 @@ Color parseColor(String hexColor) {
     }
   }
 
+  Future<int?> _getSkintoneId() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null || token.isEmpty) {
+        throw Exception('No token found. Please log in.');
+      }
+
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+
+      final response = await http.get(url, headers: {'Authorization': token});
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print("Response Data: $data");  // Log data untuk memeriksa struktur data
+        
+        // Mengakses skintone_id yang ada dalam objek skintone dan memastikan ia merupakan tipe int
+        final skintoneId = data['skintone']?['skintone_id'] ?? null;
+
+        print("Skintone ID: $skintoneId");  // Log untuk memeriksa nilai skintone_id
+
+        return skintoneId is int ? skintoneId : null;  // Mengembalikan skintone_id jika tipe int
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized access. Please login again.');
+      } else {
+        print("Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching skintone: $e");
+      return null;
+    }
+  }
+
+  // Fungsi untuk menangani aksi ketika kembali ditekan
+  Future<bool> _onWillPop() async {
+    int? skintoneId = await _getSkintoneId();
+
+    // Menentukan halaman berdasarkan skintone_id
+    if (skintoneId != null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => Home()),  // Halaman Home jika skintone_id ada
+        (Route<dynamic> route) => false,
+      );
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),  // Halaman HomeScreen jika skintone_id tidak ada
+        (Route<dynamic> route) => false,
+      );
+    }
+    return false;  // Menghentikan aksi kembali default
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Your Recommendations'),
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : recommendedProducts?.isEmpty ?? true
-              ? Center(child: Text('No products found'))
-              : GridView.builder(
-                  padding: EdgeInsets.all(16.0),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount:
-                        MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                    crossAxisSpacing: 16.0,
-                    mainAxisSpacing: 16.0,
-                    childAspectRatio: 0.75, // Rasio lebar-tinggi item
-                  ),
-                  itemCount: recommendedProducts?.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final product = recommendedProducts?[index];
+    return WillPopScope(
+      onWillPop: _onWillPop, // Menangani aksi tombol back
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () async {
+              int? skintoneId = await _getSkintoneId();
+              // Tentukan halaman tujuan berdasarkan skintone_id
+              if (skintoneId != null) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => Home()), // Jika skintone_id ada
+                  (Route<dynamic> route) => false,
+                );
+              } else {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()), // Jika skintone_id tidak ada
+                  (Route<dynamic> route) => false,
+                );
+              }
+            },
+          ),
+          title: Text('Your Recommendations'),
+        ),
+        body: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : (recommendedProducts?.isEmpty ?? true)
+                ? Center(child: Text('No products found'))
+                : GridView.builder(
+                    padding: EdgeInsets.all(16.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                      childAspectRatio: 0.75, // Rasio lebar-tinggi item
+                    ),
+                    itemCount: recommendedProducts?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final product = recommendedProducts?[index];
 
-                    if (recommendedProducts == null) {
-                      return SizedBox(); // Tampilkan widget kosong jika `product` null
-                    }
+                      if (recommendedProducts == null) {
+                        return SizedBox(); // Tampilkan widget kosong jika `product` null
+                      }
 
-                    return Card(
-                      elevation: 4.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: GestureDetector(
-                   onTap: () {
-  // Assuming the product has a 'product_colors' field that contains the list of color details
-  List<Map<String, dynamic>> productColors =
-      product['product_colors'] ?? []; // Access the colors field from the product
-
-  _showProductDetailDialog(
-      context, product, productColors); // Pass colors to the dialog
-},
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Container untuk gambar
-                            Expanded(
-                              flex:
-                                  3, // Bagian gambar mengambil lebih banyak ruang
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(8.0)),
-                                child: Image.network(
-                                  product['image_link'] ?? '',
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Center(
-                                      child: Icon(
-                                        Icons.broken_image,
-                                        size:
-                                            MediaQuery.of(context).size.width *
-                                                0.1,
-                                        color: Colors.grey,
-                                      ),
-                                    );
-                                  },
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                            // Container untuk teks
-                            Expanded(
-                              flex:
-                                  2, // Bagian teks lebih kecil dibanding gambar
-                              child: Padding(
-                                padding: EdgeInsets.all(
-                                    MediaQuery.of(context).size.width * 0.02),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      product['product_type'] ?? 'Tipe Produk',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            MediaQuery.of(context).size.width *
-                                                0.03,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.005),
-                                    Text(
-                                      product['product_name'] ?? 'Nama Produk',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            MediaQuery.of(context).size.width *
-                                                0.025,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.005),
-                                    Text(
-                                      product['brand'] ?? 'Merek Produk',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize:
-                                            MediaQuery.of(context).size.width *
-                                                0.025,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      (product['colour_name'] ?? ''),
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize:
-                                            MediaQuery.of(context).size.width *
-                                                0.025,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
+                      return Card(
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                        child: GestureDetector(
+                          onTap: () {
+                            // Assuming the product has a 'product_colors' field that contains the list of color details
+                            List<Map<String, dynamic>> productColors =
+                                product['product_colors'] ?? []; // Access the colors field from the product
+
+                            _showProductDetailDialog(
+                                context, product, productColors); // Pass colors to the dialog
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Container untuk gambar
+                              Expanded(
+                                flex: 3, // Bagian gambar mengambil lebih banyak ruang
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(8.0)),
+                                  child: Image.network(
+                                    product['image_link'] ?? '',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: MediaQuery.of(context).size.width * 0.1,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(child: CircularProgressIndicator());
+                                    },
+                                  ),
+                                ),
+                              ),
+                              // Container untuk teks
+                              Expanded(
+                                flex: 2, // Bagian teks lebih kecil dibanding gambar
+                                child: Padding(
+                                  padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.02),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['product_type'] ?? 'Tipe Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: MediaQuery.of(context).size.width * 0.03,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(height: MediaQuery.of(context).size.height * 0.005),
+                                      Text(
+                                        product['product_name'] ?? 'Nama Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: MediaQuery.of(context).size.width * 0.025,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(height: MediaQuery.of(context).size.height * 0.005),
+                                      Text(
+                                        product['brand'] ?? 'Merek Produk',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: MediaQuery.of(context).size.width * 0.025,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        product['colour_name'] ?? '',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: MediaQuery.of(context).size.width * 0.025,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+      ),
     );
   }
 }
