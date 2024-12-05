@@ -42,82 +42,86 @@ class _RecommendationState extends State<Recomendation> {
     skinDescription = widget.skinDescription;
     _getRecommendations();
   }
-void _showProductDetailDialog(BuildContext context,
-    Map<String, dynamic> product, List<Map<String, dynamic>> productColors) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(product['product_name'] ?? 'Unknown Product'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Product Image
-            Image.network(
-              product['image_link'] ?? '',
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(Icons.broken_image, size: 50, color: Colors.grey);
-              },
-            ),
-            SizedBox(height: 16),
-            // Product Details
-            Text(
-              'Brand: ${product['brand'] ?? 'Unknown Brand'}',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Color: ${product['colour_name'] ?? 'Unknown Color'}',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            // Display Color Circles for product colors
-            Column(
-              children: productColors.map((color) {
-                String colorHex = color['hex_value'] ?? 'FFFFFF'; // Default to white if hex is missing
-                String colorName = color['colour_name'] ?? 'Warna Tidak Dikenal'; // Default to 'Unknown Color'
 
-                return ColorCircle(
-                  color: parseColor(colorHex), // Parse hex color
-                  colorName: colorName, // Display color name
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 8),
-            // Additional details can be added here
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Close'),
+  void _showProductDetailDialog(BuildContext context,
+      Map<String, dynamic> product, List<Map<String, dynamic>> productColors) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(product['product_name'] ?? 'Unknown Product'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Product Image
+              Image.network(
+                product['image_link'] ?? '',
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.broken_image, size: 50, color: Colors.grey);
+                },
+              ),
+              SizedBox(height: 16),
+              // Product Details
+              Text(
+                'Brand: ${product['brand'] ?? 'Unknown Brand'}',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Color: ${product['colour_name'] ?? 'Unknown Color'}',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 8),
+              // Display Color Circles for product colors
+              Column(
+                children: productColors.map((color) {
+                  String colorHex = color['hex_value'] ??
+                      'FFFFFF'; // Default to white if hex is missing
+                  String colorName = color['colour_name'] ??
+                      'Warna Tidak Dikenal'; // Default to 'Unknown Color'
+
+                  return ColorCircle(
+                    color: parseColor(colorHex), // Parse hex color
+                    colorName: colorName, // Display color name
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 8),
+              // Additional details can be added here
+            ],
           ),
-        ],
-      );
-    },
-  );
-}
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
 // Fungsi untuk memparsing hex color
-Color parseColor(String hexColor) {
-  // Ensure the color string is prefixed with '0xFF' for proper parsing
-  if (hexColor.startsWith('#')) {
-    hexColor = '0xFF' + hexColor.substring(1); // Remove '#' and add '0xFF'
-  } else if (hexColor.length == 6) {
-    hexColor = '0xFF' + hexColor; // Ensure it's 8 digits with '0xFF' prefix
+  Color parseColor(String hexColor) {
+    // Ensure the color string is prefixed with '0xFF' for proper parsing
+    if (hexColor.startsWith('#')) {
+      hexColor = '0xFF' + hexColor.substring(1); // Remove '#' and add '0xFF'
+    } else if (hexColor.length == 6) {
+      hexColor = '0xFF' + hexColor; // Ensure it's 8 digits with '0xFF' prefix
+    }
+
+    try {
+      return Color(int.parse(hexColor, radix: 16)); // Parse hex color
+    } catch (e) {
+      return Colors.grey; // Return grey if parsing fails
+    }
   }
 
-  try {
-    return Color(int.parse(hexColor, radix: 16)); // Parse hex color
-  } catch (e) {
-    return Colors.grey; // Return grey if parsing fails
-  }
-}
   Future<void> _getRecommendations() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
@@ -191,14 +195,15 @@ Color parseColor(String hexColor) {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: GestureDetector(
-                   onTap: () {
-  // Assuming the product has a 'product_colors' field that contains the list of color details
-  List<Map<String, dynamic>> productColors =
-      product['product_colors'] ?? []; // Access the colors field from the product
+                        onTap: () {
+                          // Assuming the product has a 'product_colors' field that contains the list of color details
+                          List<Map<String, dynamic>> productColors = product[
+                                  'product_colors'] ??
+                              []; // Access the colors field from the product
 
-  _showProductDetailDialog(
-      context, product, productColors); // Pass colors to the dialog
-},
+                          _showProductDetailDialog(context, product,
+                              productColors); // Pass colors to the dialog
+                        },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
