@@ -181,7 +181,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                             children: [
                               ColorCircle(
                                 color:
-                                    parseColor(colorHex), // Memparse warna hex
+                                    parseColor(colorHex), colorName: '', // Memparse warna hex
                               ),
                               const SizedBox(
                                   height:
@@ -224,7 +224,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
 class ColorCircle extends StatelessWidget {
   final Color color;
 
-  const ColorCircle({required this.color, Key? key}) : super(key: key);
+  const ColorCircle({required this.color, Key? key, required String colorName}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
