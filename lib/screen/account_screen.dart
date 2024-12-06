@@ -1,6 +1,5 @@
-// ignore_for_file: avoid_print, unused_element, unused_local_variable, unnecessary_null_comparison, use_build_context_synchronously, unnecessary_string_interpolations
-
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/edit_profil_screen.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -18,6 +18,7 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   String username = "Loading...";
   String email = "Loading...";
+  String jenis_kelamin = "Loading...";
   String profilePictureUrl = '';
   String skinTone = "Unknown";
   String skinDescription = "No description available";
@@ -27,10 +28,9 @@ class _AccountScreenState extends State<AccountScreen> {
   void initState() {
     super.initState();
     _loadUserData();
-    _fetchSkinToneData(); // Fetch skin tone data on initialization
+    // _fetchSkinToneData(); // Fetch skin tone data on initialization
   }
 
-  // Fetch user profile data
   Future<void> _loadUserData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -47,10 +47,34 @@ class _AccountScreenState extends State<AccountScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        final skintone = data['skintone'];
+
         setState(() {
           username = data['username'] ?? "Unknown";
           email = data['email'] ?? "Unknown";
-          profilePictureUrl = data['profile_picture'] ?? 'default_profile.jpg';
+          jenis_kelamin = data['jenis_kelamin'] ?? "Unknown";
+
+          if (skintone != null && skintone.isNotEmpty) {
+            profilePictureUrl =
+                data['profile_picture'] ?? 'default_profile.jpg';
+            skinTone = skintone['skintone_name'] ?? '';
+            skinDescription = skintone['skintone_description'] ?? '';
+            final hexColor = skintone['hex_start'] ?? 'grey';
+
+            if (hexColor.startsWith('#')) {
+              try {
+                skinToneColor = Color(
+                    int.parse(hexColor.substring(1), radix: 16) + 0xFF000000);
+              } catch (e) {
+                print("Error parsing hex color: $e");
+              }
+            }
+          } else {
+            skinTone = 'Not Detected';
+            skinDescription =
+                'You can find out your Skin Tone by using our scan menu from Home';
+            profilePictureUrl = 'default_profile.jpg';
+          }
         });
       } else {
         throw Exception('Failed to fetch user profile.');
@@ -58,69 +82,14 @@ class _AccountScreenState extends State<AccountScreen> {
     } catch (e) {
       print("Error fetching user profile: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching user profile.')),
+        SnackBar(
+          content: Text(
+            'Skin tone not detected, you can find out your skin tone using our "Scan Feature" at home :D',
+          ),
+        ),
       );
     }
   }
-
-  // Fetch and update skin tone data from the user profile
-// Fetch and update skin tone data from the user profile
-  Future<void> _fetchSkinToneData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-
-      if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
-      }
-
-      final baseUrl = dotenv.env['BASE_URL'];
-      final endpoint = dotenv.env['SKIN_PREDICT_ENDPOINT']; // Use the correct endpoint
-      final url = Uri.parse('$baseUrl$endpoint');
-
-      // You may need to send data as a body for the update
-      final response = await http.post(
-        url,
-        headers: {
-          'Authorization': '$token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({}), // Provide necessary data here if required by the API
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        debugPrint(data.toString()); // Debugging to check the response structure
-
-        // Extract skintone_id, hex_range_start, and other data from the response
-        String skintoneId = data['skintone_id'].toString();
-        String hexRangeStart = data['hex_range_start']; // Get hex_range_start for skin color
-        String skinToneName = data['skintone_name'] ?? 'Unknown';
-        String skinDescriptionText = data['skintone_description'] ?? 'No description available';
-
-        // If hex_range_start exists, convert it to Color format for use
-        if (hexRangeStart != null && hexRangeStart.isNotEmpty && hexRangeStart.startsWith('#')) {
-          try {
-            setState(() {
-              skinTone = skinToneName;
-              skinDescription = skinDescriptionText;
-              skinToneColor = Color(int.parse(hexRangeStart.substring(1), radix: 16) + 0xFF000000);
-            });
-          } catch (e) {
-            print("Error parsing hex color: $e");
-          }
-        }
-      } else {
-        throw Exception('Failed to update skin tone data.');
-      }
-    } catch (e) {
-      print('Error fetching skin tone data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching skin tone data.')),
-      );
-    }
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +101,7 @@ class _AccountScreenState extends State<AccountScreen> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => Home()),
+              MaterialPageRoute(builder: (context) => HomeScreen()),
               (Route<dynamic> route) => false,
             );
           },
@@ -148,91 +117,303 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 20),
-            // Profile Information
-            ListTile(
-              leading: CircleAvatar(
-                radius: 50,
-                backgroundImage: NetworkImage(profilePictureUrl),
-              ),
-              title: Text(
-                username,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(email, style: TextStyle(fontSize: 18)),
-            ),
-            SizedBox(height: 20),
-            // Row for Edit Profile button
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center, // Center the Edit Profile button
-                children: [
-                  // Edit Profile Button
-                  ElevatedButton(
-                    onPressed: () async {
-                      final updated = await Navigator.push<bool>(
-                        context,
-                        MaterialPageRoute(builder: (context) => EditProfileScreen()),
-                      );
-                      if (updated == true) {
-                        _loadUserData(); // Reload user data
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                      backgroundColor: Colors.black,
-                    ),
-                    child: Text('Edit Profile'),
-                  ),
-                ],
+              padding: const EdgeInsets.all(20.0),
+              child: Text(
+                'Your Profile',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 30,
+                  fontFamily: 'Playfair Display',
+                  fontWeight: FontWeight.w700,
+                  height: 0,
+                  letterSpacing: 0.03,
+                ),
               ),
             ),
-            SizedBox(height: 24),
-            // Skin Tone Representation Section
             Center(
-              child: Column(
-                children: [
-                  // Subtitle
-                  Text(
-                    'Your Skin Tone Is',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 18,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            skinToneColor.withOpacity(0.5),
+                            skinToneColor.withOpacity(
+                                0.3), // Warna coklat muda dengan opasitas
+                            Colors.white.withOpacity(
+                                0.5) // Warna coklat muda dengan opasitas
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: skinToneColor.withOpacity(0.5),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 20,
+                            spreadRadius: 1,
+                            offset: Offset(0, 10), // Bayangan ke bawah
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(height: 10),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.4),
+                                        blurRadius: 3,
+                                        spreadRadius: 0,
+                                        offset: Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 50,
+                                    backgroundImage:
+                                        NetworkImage(profilePictureUrl),
+                                  ),
+                                ),
+                                SizedBox(width: 20),
+                                // Username + email
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        username,
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white),
+                                      ),
+                                      Text(
+                                        jenis_kelamin,
+                                        style: TextStyle(
+                                            fontSize: 14, color: Colors.white),
+                                      ),
+                                      SizedBox(height: 7),
+                                      Text(
+                                        email,
+                                        style: TextStyle(
+                                            fontSize: 14, color: Colors.white),
+                                      ),
+                                      TextButton(
+                                        onPressed: () async {
+                                          final updated =
+                                              await Navigator.push<bool>(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditProfileScreen(),
+                                            ),
+                                          );
+                                          if (updated == true) {
+                                            _loadUserData(); // Reload user data
+                                          }
+                                        },
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 0, vertical: 3),
+                                        ),
+                                        child: Text(
+                                          'Edit Profile',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            decoration: TextDecoration
+                                                .underline, // Garis bawah pada teks
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            Container(
+                              height: 3,
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.7),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                              ),
+                            ),
+                            // Skin Tone Representation Section
+                            SizedBox(height: 20),
+                            Container(
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Color(0xFF2B2B2B),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Your Skin Tone Is',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  SizedBox(height: 12),
+                                  Container(
+                                    width: 58,
+                                    height: 58,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.4),
+                                          blurRadius: 3,
+                                          spreadRadius: 2,
+                                          offset: Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: skinToneColor,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    skinTone,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 16),
+                                  Container(
+                                    margin: const EdgeInsets.all(20.0),
+                                    padding: const EdgeInsets.all(2.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(24),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.4),
+                                          blurRadius: 3,
+                                          spreadRadius: 2,
+                                          offset: Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Wrap(
+                                      direction: Axis.horizontal,
+                                      children: List.generate(6, (index) {
+                                        // Map index to skin tone
+                                        final tones = [
+                                          "very_light",
+                                          "light",
+                                          "medium",
+                                          "olive",
+                                          "brown",
+                                          "dark"
+                                        ];
+                                        final colors = [
+                                          Color(0xFFFFDFC4),
+                                          Color(0xFFF0D5BE),
+                                          Color(0xFFD1A684),
+                                          Color(0xFFA67C52),
+                                          Color(0xFF825C3A),
+                                          Color(0xFF4A312C),
+                                        ];
+                                        final isSelected = tones[index] ==
+                                            skinTone.toLowerCase();
+
+                                        return Stack(
+                                          children: [
+                                            Container(
+                                              width: isSelected ? 32 : 32,
+                                              height: isSelected ? 32 : 32,
+                                              margin: EdgeInsets.all(4.0),
+                                              decoration: BoxDecoration(
+                                                color: colors[index],
+                                                borderRadius:
+                                                    BorderRadius.horizontal(
+                                                  left: index == 0
+                                                      ? Radius.circular(16)
+                                                      : Radius.zero,
+                                                  right: index == 5
+                                                      ? Radius.circular(16)
+                                                      : Radius.zero,
+                                                ),
+                                                border: isSelected
+                                                    ? Border.all(
+                                                        color: Colors
+                                                            .black, // Border for the selected tone
+                                                        width: 2,
+                                                      )
+                                                    : null,
+                                              ),
+                                            ),
+                                            if (isSelected)
+                                              Positioned(
+                                                top: -10,
+                                                left: 0,
+                                                right: 0,
+                                                child: Icon(
+                                                  Icons.arrow_drop_up,
+                                                  color: Colors.black,
+                                                  size: 24,
+                                                ),
+                                              ),
+                                          ],
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                  SizedBox(height: 16),
+                                  // Skin description
+                                  Text(
+                                    skinDescription,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  SizedBox(height: 16),
-                  // Circle representing the skin tone
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: skinToneColor, // Dynamic skin tone color
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  // Skin tone label
-                  Text(
-                    skinTone,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange[800],
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  // Skin description
-                  Text(
-                    skinDescription,
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                ),
               ),
             ),
           ],

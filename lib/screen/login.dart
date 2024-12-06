@@ -1,9 +1,13 @@
+// ignore_for_file: use_build_context_synchronously, unnecessary_null_in_if_null_operators, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:skin_id/screen/home_screen.dart';
+import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/create_account.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -17,11 +21,11 @@ class _LoginAccountState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  bool _isPasswordVisible = false; // Untuk toggle visibilitas password
-  bool _isLoading = false; // Untuk state loading tombol login
-  String? _errorMessage; // Menyimpan pesan error jika ada
+  bool _isPasswordVisible = false;
+  bool _isLoading = false;
+  String? _errorMessage;
 
-  // Validasi input email
+  // Email validation
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Masukkan email Anda';
@@ -32,7 +36,7 @@ class _LoginAccountState extends State<Login> {
     return null;
   }
 
-  // Validasi input password
+  // Password validation
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Masukkan password Anda';
@@ -41,72 +45,103 @@ class _LoginAccountState extends State<Login> {
     }
     return null;
   }
-Future<void> loginUser(String email, String password) async {
-  setState(() {
-    _isLoading = true;
-    _errorMessage = null;
-  });
 
-  final baseUrl = dotenv.env['BASE_URL']; // URL base, e.g. 'http://your-api-url'
-  final endpoint = dotenv.env['LOGIN_ENDPOINT']; // e.g. '/api/login/'
-
-  try {
-    final response = await http.post(
-      Uri.parse('$baseUrl$endpoint'),
-      body: {'email': email, 'password': password},
-    );
-
-    // Handle response status code
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-
-      // If token exists, save it and navigate to the home screen
-      if (data.containsKey('token')) {
-        final token = data['token'];
-        await _saveTokenAndNavigate(token);
-      } else {
-        _showErrorMessage('Terjadi kesalahan saat memproses login.');
-      }
-    } else {
-      // Handle different error responses based on status code and error message
-      final data = jsonDecode(response.body);
-      final errorMessage = data['Error'] ?? 'Terjadi kesalahan tak dikenal';
-
-      if (response.statusCode == 400) {
-        if (errorMessage.contains('Password salah')) {
-          _showErrorMessage('Password salah.');
-        } else if (errorMessage.contains('Username dan password diperlukan')) {
-          _showErrorMessage('Email dan password diperlukan.');
-        }
-      } else if (response.statusCode == 404) {
-        if (errorMessage.contains('Email tidak ditemukan')) {
-          _showErrorMessage('Email Salah');
-        }
-      } else {
-        _showErrorMessage('Login gagal: $errorMessage');
-      }
-    }
-  } catch (e) {
-    _showErrorMessage('Terjadi kesalahan. Coba lagi nanti.');
-  } finally {
+  // Login user function
+  Future<void> loginUser(String email, String password) async {
     setState(() {
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
-  }
-}
 
-// Save token to SharedPreferences and navigate to HomeScreen
-  Future<void> _saveTokenAndNavigate(String token) async {
+    final baseUrl = dotenv.env['BASE_URL'];
+    final endpoint = dotenv.env['LOGIN_ENDPOINT'];
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl$endpoint'),
+        body: {'email': email, 'password': password},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data.containsKey('token')) {
+          final token = data['token'];
+          await _saveTokenAndCheckSkintone(token);
+        } else {
+          _showErrorMessage('Terjadi kesalahan saat memproses login.');
+        }
+      } else {
+        final data = jsonDecode(response.body);
+        final errorMessage = data['Error'] ?? 'Terjadi kesalahan tak dikenal';
+
+        if (response.statusCode == 400) {
+          if (errorMessage.contains('Password salah')) {
+            _showErrorMessage('Password salah.');
+          } else if (errorMessage
+              .contains('Username dan password diperlukan')) {
+            _showErrorMessage('Email dan password diperlukan.');
+          }
+        } else if (response.statusCode == 404) {
+          if (errorMessage.contains('Email tidak ditemukan')) {
+            _showErrorMessage('Email Salah');
+          }
+        } else {
+          _showErrorMessage('Login gagal: $errorMessage');
+        }
+      }
+    } catch (e) {
+      _showErrorMessage('Terjadi kesalahan. Coba lagi nanti.');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Save token to SharedPreferences and check skintone_id
+  Future<void> _saveTokenAndCheckSkintone(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
-    );
+    final skintoneId = await _getSkintoneId(token);
+
+    if (skintoneId != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    }
   }
 
-// Show error message
+  // Function to fetch skintone_id from API
+  Future<int?> _getSkintoneId(String token) async {
+    try {
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+
+      final response = await http.get(url, headers: {'Authorization': token});
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final skintoneId = data['skintone']?['skintone_id'] ?? null;
+        return skintoneId is int ? skintoneId : null;
+      } else {
+        _showErrorMessage('Gagal mendapatkan data profil.');
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching skintone: $e");
+      return null;
+    }
+  }
+
+  // Show error message
   void _showErrorMessage(String message) {
     setState(() {
       _errorMessage = message;
@@ -116,7 +151,7 @@ Future<void> loginUser(String email, String password) async {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  // Periksa token di SharedPreferences
+  // Check if token exists in SharedPreferences
   Future<void> checkToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
@@ -167,7 +202,7 @@ Future<void> loginUser(String email, String password) async {
                 ),
               ),
             ),
-            // Form Login
+            // Login Form
             Center(
               child: Container(
                 padding: const EdgeInsets.all(20),
@@ -258,35 +293,34 @@ Future<void> loginUser(String email, String password) async {
                             ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )
-                            : const Text(
-                                'Login',
-                                style: TextStyle(color: Colors.white),
-                              ),
+                            : const Text('Login'),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
                       GestureDetector(
                         onTap: () {
-                          print("Navigasi ke halaman buat akun");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CreateAccount()),
+                          );
                         },
                         child: RichText(
                           textAlign: TextAlign.center,
                           text: const TextSpan(
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                            ),
                             children: [
                               TextSpan(
-                                text: 'Create account,',
+                                text: 'Create account, ',
                                 style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
                               TextSpan(
-                                text: " If you don't have an account ",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 10,
-                                ),
+                                text: "If you don't have an account",
                               ),
                             ],
                           ),

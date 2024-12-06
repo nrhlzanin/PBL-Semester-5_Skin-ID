@@ -1,22 +1,17 @@
-// ignore_for_file: unused_import, equal_keys_in_map
-
 import 'package:flutter/material.dart';
-import 'package:skin_id/screen/face-scan_screen.dart';
-import 'package:skin_id/screen/home.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/home_screen.dart';
-import 'package:skin_id/screen/list_product.dart';
+import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/login.dart';
-import 'package:skin_id/screen/makeup_Section.dart';
-import 'package:skin_id/screen/makeup_detail.dart';
-import 'package:skin_id/screen/new_account_screen.dart';
+import 'package:skin_id/screen/skin_identification.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:skin_id/screen/recomendation.dart';
-import 'package:skin_id/screen/recomendation_copy.dart';
-import 'package:skin_id/screen/skin_identification.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-void main() async{
+
+void main() async {
+  // Load environment variables
   await dotenv.load(fileName: ".env");
+  
   runApp(MyApp());
 }
 
@@ -27,24 +22,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Verification App',
-      debugShowCheckedModeBanner: false, // Disables the debug banner
-      // home: NotificationScreen(), // Start with the CreateLogin screen
-      // home: SkinIdentificationPage(), // Start with the CreateLogin screen
-      // home: SkinIdentificationPage(), // Start with the CreateLogin screen
-      // home: Logout(), // Start with the CreateLogin screen
-      home: CreateLogin(), // Start with the CreateLogin screen
-      // home: MakeupDetail(product: {},), // Start with the CreateLogin screen
+      debugShowCheckedModeBanner: false, // Disable debug banner
+      home: CreateLogin(), // Default screen on app start
       routes: {
-        '/login': (context) => Login(), // Define the /login route
-        '/homescreen': (context) => HomeScreen(), // Define the /home route
-        '/home': (context) => Home(), // Define the Home screen route
-        '/skin-identification': (context) =>
-            SkinIdentificationPage(), // Define the skin identification
-        '/notifications': (context) =>
-            NotificationScreen(), // Define the Notification route
-        '/recomendation': (context) =>
-            Recomendation2(), // Define the skin identification
-        // Add other routes if needed
+        // Define your routes here for easy navigation
+        '/login': (context) => Login(),
+        '/homescreen': (context) => HomeScreen(),
+        '/home': (context) => Home(),
+        '/skin-identification': (context) => SkinIdentificationPage(),
+        '/notifications': (context) => NotificationScreen(),
+        '/recomendation': (context) => Recomendation(),
+        // You can add more routes as needed
       },
     );
   }

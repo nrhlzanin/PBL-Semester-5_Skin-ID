@@ -1,8 +1,12 @@
-// ignore_for_file: deprecated_member_use, depend_on_referenced_packages, unnecessary_import
+// ignore_for_file: avoid_print, use_build_context_synchronously, deprecated_member_use
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:skin_id/button/navbar.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   @override
@@ -10,126 +14,106 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  final List<Map<String, String>> notifications = [
-    {'title': 'Dermina just added a new product you might be interested in'},
-    {'title': 'Herniawan liked your video'},
-    {'title': 'ZealinaaA liked your video'},
-    {'title': 'Thoriq_123 followed you'},
-  ];
+  // Fungsi untuk memeriksa status pembaruan skintone dan menentukan halaman tujuan
+  Future<int?> _getSkintoneId() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
 
+      if (token == null || token.isEmpty) {
+        throw Exception('No token found. Please log in.');
+      }
+
+      final baseUrl = dotenv.env['BASE_URL'];
+      final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
+      final url = Uri.parse('$baseUrl$endpoint');
+
+      final response = await http.get(url, headers: {'Authorization': token});
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print("Response Data: $data");  // Log data untuk memeriksa struktur data
+        
+        // Mengakses skintone_id yang ada dalam objek skintone dan memastikan ia merupakan tipe int
+        final skintoneId = data['skintone']?['skintone_id'] ?? null;
+
+        print("Skintone ID: $skintoneId");  // Log untuk memeriksa nilai skintone_id
+
+        return skintoneId is int ? skintoneId : null;  // Mengembalikan skintone_id jika tipe int
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized access. Please login again.');
+      } else {
+        print("Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching skintone: $e");
+      return null;
+    }
+  }
+
+  // Fungsi untuk menangani aksi ketika kembali ditekan
   Future<bool> _onWillPop() async {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => Home()),
-      (Route<dynamic> route) => false,
-    );
-    return false;
+    int? skintoneId = await _getSkintoneId();
+
+    // Menentukan halaman berdasarkan skintone_id
+    if (skintoneId != null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => Home()),  // Halaman Home jika skintone_id ada
+        (Route<dynamic> route) => false,
+      );
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),  // Halaman HomeScreen jika skintone_id tidak ada
+        (Route<dynamic> route) => false,
+      );
+    }
+    return false;  // Menghentikan aksi kembali default
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: _onWillPop,
+      onWillPop: _onWillPop,  // Menangani aksi tombol back
       child: Scaffold(
-        appBar: _buildAppBar(),
-        body: _buildBody(),
-      ),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => Home()),
-            (Route<dynamic> route) => false,
-          );
-        },
-      ),
-      backgroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: true,
-      title: Text(
-        'Notification',
-        style: TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.search, color: Colors.black),
-          onPressed: () {
-            // Tambahkan fungsionalitas pencarian jika diperlukan
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBody() {
-    return Container(
-      color: Colors.white,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(10),
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          return _buildNotificationCard(notifications[index]);
-        },
-      ),
-    );
-  }
-
-  Widget _buildNotificationCard(Map<String, String> notification) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 3),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () async {
+              int? skintoneId = await _getSkintoneId();
+              // Tentukan halaman tujuan berdasarkan skintone_id
+              if (skintoneId != null) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id ada
+                  (Route<dynamic> route) => false,
+                );
+              } else {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id tidak ada
+                  (Route<dynamic> route) => false,
+                );
+              }
+            },
           ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildNotificationIcon(),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              notification['title'] ?? '',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            'Notification',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificationIcon() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        Icons.notifications,
-        color: Colors.black,
-        size: 20,
+        ),
+        body: Center(
+          child: Text("Notification Screen Content Here"),
+        ),
       ),
     );
   }
