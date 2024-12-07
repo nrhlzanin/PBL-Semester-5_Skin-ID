@@ -73,8 +73,8 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Skintones berhasil ditambahkan"))
 
         pengguna_data = [
-            {'username': 'user','email': 'user@example.com','password': '123456', 'jenis_kelamin': 'pria', 'role_id':'1','skintone_id':'3',},
-            {'username': 'user2','email': 'user2@mail.com','password': '123456', 'jenis_kelamin': 'pria', 'role_id':'1','skintone_id':'2',},
+            {'username': 'user','email': 'user@gmail.com','password': '123456', 'jenis_kelamin': 'pria', 'role_id':'1','skintone_id':'3',},
+            {'username': 'user2','email': 'user2@mail.com','password': '123456', 'jenis_kelamin': '', 'role_id':'1','skintone_id':'',},
             {'username': 'user3','email': 'user3@gmail.com','password': '123456', 'jenis_kelamin': '', 'role_id':'1','skintone_id':'',},
         ]
         

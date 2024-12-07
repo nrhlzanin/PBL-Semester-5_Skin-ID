@@ -272,7 +272,7 @@ class _NavbarState extends State<Navbar> {
                         if (skintoneId != null) {
                           Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(builder: (context) => Home()),  // Jika skintone_id ada
+                            MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id ada
                             (Route<dynamic> route) => false,
                           );
                         } else {

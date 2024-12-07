@@ -171,7 +171,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                           .map<Widget>((color) {
                         final colorHex = color['hex_value'] ??
                             ''; // Mengambil hex value dengan default string kosong
-                        final colorName = color['colour_name'] ??
+                        final colorName = color['color_name'] ??
                             'Warna Tidak Dikenal'; // Mengambil nama warna, jika null gunakan default 'Warna Tidak Dikenal'
 
                         // Memparsing warna hex dan menampilkan warna serta nama warna

@@ -403,7 +403,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                       color: Colors.white,
                                       fontSize: 14,
                                     ),
-                                    textAlign: TextAlign.center,
+                                    textAlign: TextAlign.justify,
                                   ),
                                 ],
                               ),
