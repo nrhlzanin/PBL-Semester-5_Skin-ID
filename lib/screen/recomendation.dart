@@ -182,18 +182,22 @@ class _RecommendationState extends State<Recomendation> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Response Data: $data");  // Log data untuk memeriksa struktur data
-        
+        print("Response Data: $data"); // Log data untuk memeriksa struktur data
+
         // Mengakses skintone_id yang ada dalam objek skintone dan memastikan ia merupakan tipe int
         final skintoneId = data['skintone']?['skintone_id'] ?? null;
 
-        print("Skintone ID: $skintoneId");  // Log untuk memeriksa nilai skintone_id
+        print(
+            "Skintone ID: $skintoneId"); // Log untuk memeriksa nilai skintone_id
 
-        return skintoneId is int ? skintoneId : null;  // Mengembalikan skintone_id jika tipe int
+        return skintoneId is int
+            ? skintoneId
+            : null; // Mengembalikan skintone_id jika tipe int
       } else if (response.statusCode == 401) {
         throw Exception('Unauthorized access. Please login again.');
       } else {
-        print("Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
+        print(
+            "Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
         return null;
       }
     } catch (e) {
@@ -210,17 +214,20 @@ class _RecommendationState extends State<Recomendation> {
     if (skintoneId != null) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => Home()),  // Halaman Home jika skintone_id ada
+        MaterialPageRoute(
+            builder: (context) => HomeScreen()), // Halaman Home jika skintone_id ada
         (Route<dynamic> route) => false,
       );
     } else {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),  // Halaman HomeScreen jika skintone_id tidak ada
+        MaterialPageRoute(
+            builder: (context) =>
+                HomeScreen()), // Halaman HomeScreen jika skintone_id tidak ada
         (Route<dynamic> route) => false,
       );
     }
-    return false;  // Menghentikan aksi kembali default
+    return false; // Menghentikan aksi kembali default
   }
 
   @override
@@ -237,13 +244,17 @@ class _RecommendationState extends State<Recomendation> {
               if (skintoneId != null) {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()), // Jika skintone_id ada
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          HomeScreen()), // Jika skintone_id ada
                   (Route<dynamic> route) => false,
                 );
               } else {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()), // Jika skintone_id tidak ada
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          HomeScreen()), // Jika skintone_id tidak ada
                   (Route<dynamic> route) => false,
                 );
               }
@@ -258,7 +269,8 @@ class _RecommendationState extends State<Recomendation> {
                 : GridView.builder(
                     padding: EdgeInsets.all(16.0),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                      crossAxisCount:
+                          MediaQuery.of(context).size.width > 600 ? 3 : 2,
                       crossAxisSpacing: 16.0,
                       mainAxisSpacing: 16.0,
                       childAspectRatio: 0.75, // Rasio lebar-tinggi item
@@ -279,20 +291,23 @@ class _RecommendationState extends State<Recomendation> {
                         child: GestureDetector(
                           onTap: () {
                             // Assuming the product has a 'product_colors' field that contains the list of color details
-                            List<Map<String, dynamic>> productColors =
-                                product['product_colors'] ?? []; // Access the colors field from the product
+                            List<Map<String, dynamic>> productColors = product[
+                                    'product_colors'] ??
+                                []; // Access the colors field from the product
 
-                            _showProductDetailDialog(
-                                context, product, productColors); // Pass colors to the dialog
+                            _showProductDetailDialog(context, product,
+                                productColors); // Pass colors to the dialog
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // Container untuk gambar
                               Expanded(
-                                flex: 3, // Bagian gambar mengambil lebih banyak ruang
+                                flex:
+                                    3, // Bagian gambar mengambil lebih banyak ruang
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(8.0)),
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(8.0)),
                                   child: Image.network(
                                     product['image_link'] ?? '',
                                     fit: BoxFit.cover,
@@ -300,51 +315,78 @@ class _RecommendationState extends State<Recomendation> {
                                       return Center(
                                         child: Icon(
                                           Icons.broken_image,
-                                          size: MediaQuery.of(context).size.width * 0.1,
+                                          size: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.1,
                                           color: Colors.grey,
                                         ),
                                       );
                                     },
-                                    loadingBuilder: (context, child, loadingProgress) {
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
                                       if (loadingProgress == null) return child;
-                                      return Center(child: CircularProgressIndicator());
+                                      return Center(
+                                          child: CircularProgressIndicator());
                                     },
                                   ),
                                 ),
                               ),
                               // Container untuk teks
                               Expanded(
-                                flex: 2, // Bagian teks lebih kecil dibanding gambar
+                                flex:
+                                    2, // Bagian teks lebih kecil dibanding gambar
                                 child: Padding(
-                                  padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.02),
+                                  padding: EdgeInsets.all(
+                                      MediaQuery.of(context).size.width * 0.02),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        product['product_type'] ?? 'Tipe Produk',
+                                        product['product_type'] ??
+                                            'Tipe Produk',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: MediaQuery.of(context).size.width * 0.03,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.03,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      SizedBox(height: MediaQuery.of(context).size.height * 0.005),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.005),
                                       Text(
-                                        product['product_name'] ?? 'Nama Produk',
+                                        product['product_name'] ??
+                                            'Nama Produk',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: MediaQuery.of(context).size.width * 0.025,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.025,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      SizedBox(height: MediaQuery.of(context).size.height * 0.005),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.005),
                                       Text(
                                         product['brand'] ?? 'Merek Produk',
                                         style: TextStyle(
                                           color: Colors.grey,
-                                          fontSize: MediaQuery.of(context).size.width * 0.025,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.025,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -353,7 +395,10 @@ class _RecommendationState extends State<Recomendation> {
                                         product['colour_name'] ?? '',
                                         style: TextStyle(
                                           color: Colors.grey,
-                                          fontSize: MediaQuery.of(context).size.width * 0.025,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.025,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -395,213 +440,6 @@ class FilterButton extends StatelessWidget {
 }
 
 String selectedCategory = 'All';
-
-class ProductCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String brand;
-  final String description;
-  final List<dynamic> productColors;
-  final int id;
-
-  const ProductCard({
-    required this.id,
-    required this.imageUrl,
-    required this.title,
-    required this.brand,
-    required this.description,
-    required this.productColors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (imageUrl.isEmpty || !Uri.tryParse(imageUrl)!.isAbsolute == true) {
-      // Jangan tampilkan jika gambar tidak valid
-      return SizedBox.shrink();
-    }
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailPage(
-              id: id,
-              title: title,
-              brand: brand,
-              imageUrl: imageUrl,
-              description: description,
-              productColors: productColors,
-            ),
-          ),
-        );
-      },
-      child: Card(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Gambar produk
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return SizedBox.shrink(); // Jangan tampilkan jika error
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    brand,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProductList extends StatelessWidget {
-  final List<Map<String, dynamic>> products;
-
-  const ProductList({required this.products});
-
-  @override
-  Widget build(BuildContext context) {
-    // Filter produk yang memiliki gambar valid
-    final recommendedProducts = products.where((product) {
-      final imageUrl = product['image_link'] as String;
-      return imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.isAbsolute == true;
-    }).toList();
-
-    return ListView.builder(
-      itemCount: recommendedProducts.length,
-      itemBuilder: (context, index) {
-        final product = recommendedProducts[index];
-        return ProductCard(
-          id: product['id'],
-          imageUrl: product['image_link'],
-          title: product['title'],
-          brand: product['brand'],
-          description: product['description'],
-          productColors: product['colour_name'],
-        );
-      },
-    );
-  }
-}
-
-class ProductDetailPage extends StatelessWidget {
-  final int id;
-  final String title;
-  final String brand;
-  // final String imageUrl;
-  final String description;
-  final List<dynamic> productColors;
-
-  const ProductDetailPage({
-    required this.id,
-    required this.title,
-    required this.brand,
-    // required this.imageUrl,
-    required this.description,
-    required this.productColors,
-    required String imageUrl,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image.network(
-            //   imageUrl,
-            //   fit: BoxFit.cover,
-            //   errorBuilder: (context, error, stackTrace) {
-            //     return Image.asset('assets/image/makeup.jpg'); // Placeholder
-            //   },
-            //   width: double.infinity,
-            // ),
-            SizedBox(height: 16.0),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              "Brand: $brand",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              description.isNotEmpty
-                  ? description
-                  : "No description available.",
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              "Available Colors:",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Wrap(
-              spacing: 8.0,
-              children: productColors.map((color) {
-                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class ColorCircle extends StatelessWidget {
   final Color color;

@@ -47,7 +47,7 @@ class SkinTone(models.Model):
 
     skintone_id = models.AutoField(primary_key=True)
     skintone_name = models.CharField(max_length=20, null=True, blank=True)
-    skintone_description = models.CharField(max_length=255, null=True, blank=True)
+    skintone_description = models.CharField(max_length=1000, null=True, blank=True)
     hex_range_start = models.CharField(max_length=7, null=True, blank=True)  # HEX mulai
     hex_range_end = models.CharField(max_length=7, null=True, blank=True)  # HEX akhir
     created_at = models.DateTimeField(auto_now_add=True)
@@ -96,11 +96,14 @@ class Pengguna(models.Model):
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
     product_name = models.CharField(max_length=100)
-    # brand_category = models.ForeignKey(BrandCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     brand = models.CharField(max_length=255, null=True, blank=True)
     product_type = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     image_url = models.URLField(max_length=1000, null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Harga dengan 2 desimal
+    price_sign = models.CharField(max_length=10, null=True, blank=True)  # $, €, dll
+    currency = models.CharField(max_length=10, null=True, blank=True)  # USD, IDR, dll
+    product_link = models.URLField(max_length=1000, null=True, blank=True)  # Link produk
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -115,7 +118,7 @@ class ProductColor(models.Model):
     color_name = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
-        return f"{self.product.product_name} - {self.colour_name}"
+        return f"{self.product.product_name} - {self.color_name}"
     
     class Meta:
         db_table = 'ProductColor'
@@ -125,7 +128,6 @@ class Recommendation(models.Model):
     user = models.ForeignKey(Pengguna, on_delete=models.CASCADE, related_name='makeup_recommendations')
     skintone = models.ForeignKey(SkinTone, on_delete=models.CASCADE, related_name='makeup_recommendations')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='makeup_recommendations')
-    color = models.ForeignKey(ProductColor, on_delete=models.CASCADE, related_name='makeup_recommendations', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
