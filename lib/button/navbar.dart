@@ -266,22 +266,11 @@ class _NavbarState extends State<Navbar> {
                   ListTile(
                     leading: Icon(Icons.home, color: Colors.white),
                     title: Text('Home', style: TextStyle(color: Colors.white)),
-                    onTap: () async {
-                      int? skintoneId = await _getSkintoneId();
-                        // Tentukan halaman tujuan berdasarkan skintone_id
-                        if (skintoneId != null) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id ada
-                            (Route<dynamic> route) => false,
-                          );
-                        } else {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id tidak ada
-                            (Route<dynamic> route) => false,
-                          );
-                        }
+                   onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                      );
                     },
                   ),
                   // Akun Menu

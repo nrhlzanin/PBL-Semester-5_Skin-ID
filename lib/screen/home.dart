@@ -110,6 +110,7 @@ class _HomePageState extends State<HomePage> {
           Uri.tryParse(imageUrl)?.isAbsolute == true;
     }).toList();
 
+
     return Scaffold(
       endDrawer: Navbar(),
       appBar: AppBar(
@@ -257,7 +258,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 20),
-                  // Display selected category products in GridView
 
                   // Display selected category products in GridView
                   validFilteredProducts.isEmpty
@@ -410,6 +410,7 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
+
                   SizedBox(height: 16.0),
                   // Browse Button
                   Center(

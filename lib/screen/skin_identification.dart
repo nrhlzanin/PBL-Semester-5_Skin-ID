@@ -9,7 +9,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/home.dart';
-import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/recomendation.dart';
@@ -43,7 +42,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   String hex_color = '';
   String colour_name = '';
   String price = '';
-
+  bool hasSkintone = false;
   String skinDescription = "No description available";
   // // Daftar kategori untuk filter
   // List<String> categories = [
@@ -259,7 +258,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
+              MaterialPageRoute(builder: (context) => Home()),
               (Route<dynamic> route) => false,
             );
           },
@@ -289,66 +288,128 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
     );
   }
 
-  Widget _buildSkinIdentificationSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+Widget _buildSkinIdentificationSection() {
+  return Padding(
+    padding: const EdgeInsets.all(16.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text('Skin Identification',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        SizedBox(height: 16),
-        // Skin Tone Representation Section
-        Container(
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Color(0xFF2B2B2B),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            children: [
-              Text(
-                'Your Skin Tone Is',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 16),
-              // Circle representing the skin tone
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: skinToneColor, // Dynamic skin tone color
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(height: 16),
-              // Skin tone Name
-              Text(
-                skinTone,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 16),
-              // Skin description
-              Text(
-                skinDescription,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+        Text(
+          'Skin Identification',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        SizedBox(height: 16),
+      
+          Container(
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Color.fromARGB(0, 0, 255, 255),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Your Skin Tone Is',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 12),
+                CircleAvatar(
+                  radius: 34,
+                  backgroundColor: Colors.white,
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: skinToneColor,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  skinTone,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.4),
+                        blurRadius: 3,
+                        spreadRadius: 2,
+                        offset: Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(6, (index) {
+                      final tones = [
+                        "very_light",
+                        "light",
+                        "medium",
+                        "olive",
+                        "brown",
+                        "dark"
+                      ];
+                      final colors = [
+                        Color(0xFFFFDFC4),
+                        Color(0xFFF0D5BE),
+                        Color(0xFFD1A684),
+                        Color(0xFFA67C52),
+                        Color(0xFF825C3A),
+                        Color(0xFF4A312C),
+                      ];
+                      final isSelected = tones[index] == skinTone.toLowerCase();
+
+                      return Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: colors[index],
+                          shape: BoxShape.circle,
+                          border: isSelected
+                              ? Border.all(color: Colors.black, width: 2)
+                              : null,
+                        ),
+                        child: isSelected
+                            ? Icon(Icons.check, size: 20, color: Colors.white)
+                            : null,
+                      );
+                    }),
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  skinDescription,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          )
+       
       ],
-    );
-  }
+    ),
+  );
+}
+
 
   List<dynamic> _makeupProducts = [];
   Widget _buildMakeupRecommendationSection(BuildContext context) {
@@ -372,7 +433,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
             : recommendedProducts?.isEmpty ?? true
                 ? Center(child: Text('No products found'))
                 : Container(
-                    
+                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
               width: double.infinity, // Mengisi lebar penuh layar
                decoration: BoxDecoration(
                 color: Color(0xFF242424),
@@ -428,6 +489,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                                         fit: BoxFit.cover,
                                         errorBuilder:
                                             (context, error, stackTrace) {
+                                              
                                           return Center(
                                             child: Icon(
                                               Icons.broken_image,
@@ -534,8 +596,8 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                         );
                       },
                     ),
-                  ),
 
+                  ),
         SizedBox(height: 16.0),
         Center(
           child: ElevatedButton(
