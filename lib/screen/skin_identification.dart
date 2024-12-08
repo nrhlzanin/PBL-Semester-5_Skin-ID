@@ -9,8 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/detail_recom.dart';
+import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
-// import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/recomendation.dart';
@@ -248,8 +248,8 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+       
+        
           child: Column(
             children: [
               _buildSkinIdentificationSection(),
@@ -257,7 +257,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               _buildMakeupRecommendationSection(context),
             ],
           ),
-        ),
+        
       ),
     );
   }
@@ -271,8 +271,12 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           Text(
             'Identifikasi Kulit',
             style: TextStyle(
+              color: Colors.black,
               fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontFamily: 'Playfair Display',
+              fontWeight: FontWeight.w700,
+              height: 0,
+              letterSpacing: 0.03,
             ),
           ),
           SizedBox(height: 16),
@@ -290,7 +294,10 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,
+                    fontFamily: 'Playfair Display',
                     fontWeight: FontWeight.w700,
+                    height: 0,
+                    letterSpacing: 0.03,
                   ),
                 ),
                 SizedBox(height: 12),
@@ -385,167 +392,199 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   List<dynamic> _makeupProducts = [];
   Widget _buildMakeupRecommendationSection(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Rekomendasi Makeup',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+        Container(
+             width: double.infinity, // Mengisi lebar penuh layar
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+          decoration: BoxDecoration(
+            color: Color(0xFF242424),
           ),
-        ),
-        SizedBox(height: 16),
-        // Filter Buttons Section
-
-        recommendedProducts!.isEmpty
-            ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+  
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+             
+                Text(
+                  'Rekomendasi Makeup',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontFamily: 'Playfair Display',
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.03,
+                  ),
                 ),
-              )
-            : GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.all(16.0),
-
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount:
-                      MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.6, // Mengatur rasio lebar-tinggi item
-                ),
-                itemCount:
-                    min(recommendedProducts!.length, 6), // Maksimal 6 item
-                itemBuilder: (context, index) {
-                  final product = recommendedProducts?[index];
-
-                  return Card(
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+              
+              SizedBox(height: 16),
+              if (isLoading)
+                Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              else if (recommendedProducts?.isEmpty ?? true)
+                Center(
+                  child: Text(
+                    "Tidak ada produk yang direkomendasikan",
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
+                  ),
+                )
+              else
+  
+                   GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(16.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                      childAspectRatio: 0.6,
                     ),
-                    child: GestureDetector(
-                      onTap: () {
-                        // Navigasi ke MakeupDetail dengan data produk
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailRecom(product: product),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Container untuk gambar
-                          Expanded(
-                            flex:
-                                3, // Bagian gambar mengambil lebih banyak ruang
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(8.0)),
-                              child: Image.network(
-                                product['image_link'] ?? '',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Center(
-                                    child: Icon(
-                                      Icons.broken_image,
-                                      size: MediaQuery.of(context).size.width *
-                                          0.1,
-                                      color: Colors.grey,
-                                    ),
-                                  );
-                                },
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                },
+                    itemCount: (recommendedProducts?.length ?? 0).clamp(0, 6),
+                    itemBuilder: (context, index) {
+                      final product = recommendedProducts?[index];
+
+                      return Card(
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailRecom(product: product),
                               ),
-                            ),
-                          ),
-                          // Container untuk teks
-                          Expanded(
-                            flex: 2, // Bagian teks lebih kecil dibanding gambar
-                            child: Padding(
-                              padding: EdgeInsets.all(
-                                  MediaQuery.of(context).size.width * 0.02),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product['product_type'] ?? 'Tipe Produk',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(8.0)),
+                                  child: Image.network(
+                                    product['image_link'] ?? '',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.1,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                      MediaQuery.of(context).size.width * 0.02),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['product_type'] ??
+                                            'Tipe Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.03,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
                                               0.005),
-                                  Text(
-                                    product['product_name'] ?? 'Nama Produk',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                                      Text(
+                                        product['product_name'] ??
+                                            'Nama Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
                                               0.005),
-                                  Text(
-                                    product['brand'] ?? 'Merek Produk',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                                      Text(
+                                        product['brand'] ?? 'Merek Produk',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      );
+                    },
+                  ),
+                
+              SizedBox(height: 16.0),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Recomendation()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24.0),
                     ),
-                  );
-                },
+                  ),
+                  child: Text(
+                    'Telusuri lebih banyak',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
               ),
-
-        SizedBox(height: 16.0),
-        Center(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Recomendation()),
-              );
-            },
-            child: Text('Telusuri lebih banyak'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
-              ),
-            ),
+              SizedBox(height: 10.0),
+            ],
           ),
         ),
       ],
