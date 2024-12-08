@@ -293,7 +293,7 @@ class _LoginAccountState extends State<Login> {
                             ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )
-                            : const Text('Login'),
+                            : const Text('Login' ,style: TextStyle(color: Colors.white),),
                       ),
                       const SizedBox(height: 20),
                       GestureDetector(
