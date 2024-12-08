@@ -18,7 +18,7 @@ class DetailRecom extends StatefulWidget {
 }
 
 class _DetailRecom extends State<DetailRecom> {
-    String? skinToneResult;
+  String? skinToneResult;
   List<dynamic>? recommendedProducts = [];
   bool isLoading = true;
   Color skinToneColor = Colors.grey; // Default color placeholder
@@ -53,7 +53,8 @@ class _DetailRecom extends State<DetailRecom> {
       return [];
     }
   }
-   Future<void> _getRecommendations() async {
+
+  Future<void> _getRecommendations() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
@@ -143,7 +144,7 @@ class _DetailRecom extends State<DetailRecom> {
               fontWeight: FontWeight.w400,
             ),
           ),
-          
+
           backgroundColor: Colors.black, // Set app bar background to black
           iconTheme:
               IconThemeData(color: Colors.white), // Set icon color to white
@@ -153,7 +154,6 @@ class _DetailRecom extends State<DetailRecom> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
               // Product Image
               Center(
                 child: ClipRRect(
@@ -198,75 +198,67 @@ class _DetailRecom extends State<DetailRecom> {
               ),
               const SizedBox(height: 16.0),
               // Product Price
-            Text(
-  'Price: \$${product['price'] ?? 'N/A'}', // Product price
-  style: const TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-    color: Colors.white, // White color for price
-  ),
-),
-const SizedBox(height: 16.0),
+              Text(
+                'Price: \$${product['price'] ?? 'N/A'}', // Product price
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white, // White color for price
+                ),
+              ),
+              const SizedBox(height: 16.0),
 
 // Warna Produk
-if (product['product_colors'] != null && product['product_colors'] is List)
-  Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'Warna Tersedia:',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white, // Warna putih untuk header
-        ),
-      ),
-      const SizedBox(height: 8.0),
-      Wrap(
-        children: (product['product_colors'] as List<dynamic>).map<Widget>((color) {
-          // Mengambil nilai hex dan nama warna dari hasil rekomendasi
-          final colorHex = color['hex_value'] ?? '#FFFFFF';
-          final colorName = color['colour_name'] ?? 'Warna Tidak Dikenal';
+              if (product['product_colors'] != null &&
+                  product['product_colors'] is List)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Warna Tersedia:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // Warna putih untuk header
+                      ),
+                    ),
+                    const SizedBox(height: 8.0),
+                    Wrap(
+                      children: (product['product_colors'] as List<dynamic>)
+                          .map<Widget>((color) {
+                        // Mengambil nilai hex dan nama warna dari hasil rekomendasi
+                        final colorHex = color['hex_value'] ?? '#FFFFFF';
+                        final colorName =
+                            color['colour_name'] ?? 'Warna Tidak Dikenal';
 
-          return Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Column(
-              children: [
-                ColorCircle(
-                  color: parseColor(colorHex),
-                  colorName: colorName,
+                        return Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Column(
+                            children: [
+                              ColorCircle(
+                                color: parseColor(colorHex),
+                                colorName: colorName,
+                              ),
+                              const SizedBox(height: 4.0),
+                              Text(
+                                colorName,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4.0),
-                Text(
-                  colorName,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    ],
-  ),
-const SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
 
-
-              // // Back Button
-              // TextButton.icon(
-              //   onPressed: () {
-              //     Navigator.pop(context); // Kembali ke halaman sebelumnya
-              //   },
-              //   icon: const Icon(Icons.arrow_back, color: Colors.white),
-              //   label:
-              //       const Text('Back', style: TextStyle(color: Colors.white)),
-              // ),
             ],
           ),
         ),
-        
       ),
     );
   }
@@ -275,7 +267,8 @@ const SizedBox(height: 16.0),
 class ColorCircle extends StatelessWidget {
   final Color color;
 
-  const ColorCircle({required this.color, Key? key, required String colorName}) : super(key: key);
+  const ColorCircle({required this.color, Key? key, required String colorName})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

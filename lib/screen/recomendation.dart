@@ -37,6 +37,7 @@ class _RecommendationState extends State<Recomendation> {
   String hex_color = '';
   String colour_name = '';
   String price = '';
+  String product_colors = '';
 
   @override
   void initState() {
@@ -145,6 +146,8 @@ class _RecommendationState extends State<Recomendation> {
           imageUrl = data['image_link'] ?? "No image";
           product_name = data['product_name'] ?? "Unknown";
           brand = data['brand'] ?? "Unknown brand";
+          price = data['price'] ?? "N/A";
+          product_colors = data['product_colors'] ?? "Unknown";
           colour_name = data['colour_name'] ?? "";
           recommendedProducts = data['recommendations'] ?? [];
           isLoading = false;
