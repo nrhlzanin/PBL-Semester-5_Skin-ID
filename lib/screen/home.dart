@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last
+// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last, curly_braces_in_flow_control_structures, prefer_const_constructors_in_immutables, unused_element
 
 import 'dart:convert';
 import 'dart:math';
@@ -36,10 +36,10 @@ class _HomeState extends State<Home> {
         final List<dynamic> data = json.decode(response.body);
         return data;
       } else {
-        throw Exception('Failed to load makeup products');
+        throw Exception('Gagal memuat produk makeup');
       }
     } catch (e) {
-      print('Error fetching data: $e');
+      print('Terjadi kesalahan saat mengambil data: $e');
       return [];
     }
   }
@@ -78,7 +78,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Daftar kategori untuk filter
   List<String> categories = [
-    'All',
+    'Semua',
     'Foundation',
     'Lipstick',
     'Eyeliner',
@@ -91,11 +91,11 @@ class _HomePageState extends State<HomePage> {
     'nail_polish',
   ];
   // Menyimpan kategori yang dipilih
-  String selectedCategory = 'All';
+  String selectedCategory = 'Semua';
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> filteredProducts = selectedCategory == 'All'
+    List<dynamic> filteredProducts = selectedCategory == 'Semua'
         ? _makeupProducts
         : _makeupProducts
             .where((product) =>
@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                'Check Your Skin Tone',
+                'Periksa Warna Kulit Anda',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 30,
@@ -150,7 +150,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(width: 5),
                 Text(
-                  'Use me!',
+                  'Gunakan saya!',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -162,7 +162,7 @@ class _HomePageState extends State<HomePage> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      'Identify your skin tone using our AI for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
+                      'Kenali warna kulit Anda menggunakan AI kami untuk lebih memahami kulit Anda. Lebih banyak preferensi tata rias dan rekomendasi konten berdasarkan warna kulit Anda.',
                       style: TextStyle(
                           color: Colors.black,
                           fontSize: 17), // Set color of the text
@@ -231,7 +231,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   SizedBox(height: 15.0),
                   Text(
-                    'Find makeup that suits you with choices from many brands around the world.',
+                    'Temukan riasan yang cocok untuk Anda dengan pilihan dari berbagai merek di seluruh dunia.',
                     style: TextStyle(
                       color: Colors.white,
                     ),
@@ -423,7 +423,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                      child: Text('Browse for more'),
+                      child: Text('Temukan lebih banyak'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             const Color.fromARGB(255, 255, 255, 255),
@@ -530,7 +530,7 @@ class FilterButton extends StatelessWidget {
 }
 
 // Assuming you have a list of products with 'brand' and 'name'
-String selectedCategory = 'All';
+String selectedCategory = 'Semua';
 
 class ProductCard extends StatelessWidget {
   // final String imageUrl;
@@ -648,14 +648,6 @@ class ProductDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image.network(
-            //   imageUrl,
-            //   fit: BoxFit.cover,
-            //   errorBuilder: (context, error, stackTrace) {
-            //     return Image.asset('assets/image/makeup.jpg'); // Placeholder
-            //   },
-            //   width: double.infinity,
-            // ),
             SizedBox(height: 16.0),
             Text(
               title,
@@ -676,12 +668,12 @@ class ProductDetailPage extends StatelessWidget {
             Text(
               description.isNotEmpty
                   ? description
-                  : "No description available.",
+                  : "Tidak ada deskripsi tersedia.",
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 16.0),
             Text(
-              "Available Colors:",
+              "Warna yang tersedia:",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -748,7 +740,7 @@ class SkinIdentificationCard extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'Your Skin Tone Is',
+                  'Warna Kulit Anda Adalah',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -785,7 +777,7 @@ class SkinIdentificationCard extends StatelessWidget {
           ),
           SizedBox(height: 16),
           Text(
-            'This skin has higher skin moisture, low skin elasticity, good gloss, low melanin and erythema levels. This skin type is more sensitive to UV rays and tends to experience more severe photo-aging.',
+            'Kulit jenis ini memiliki tingkat kelembapan yang lebih tinggi, elastisitas kulit yang rendah, kilap yang baik, kadar melanin dan eritema yang rendah. Jenis kulit ini lebih sensitif terhadap sinar UV dan cenderung mengalami penuaan dini yang lebih parah.',
             style: TextStyle(
               color: Color(0xFF2B2B2B),
               fontSize: 12,

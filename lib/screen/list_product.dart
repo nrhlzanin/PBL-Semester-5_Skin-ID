@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print, unnecessary_null_in_if_null_operators
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print, unnecessary_null_in_if_null_operators, curly_braces_in_flow_control_structures, prefer_const_constructors_in_immutables
 
 import 'dart:convert';
 import 'dart:math';
@@ -33,10 +33,10 @@ class _ListProductState extends State<ListProduct> {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        return Future.error('Failed to load makeup products');
+        return Future.error('Gagal memuat produk makeup');
       }
     } catch (e) {
-      return Future.error('Error fetching data: $e');
+      return Future.error('Terjadi kesalahan saat mengambil data: $e');
     }
   }
 
@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> filteredProducts = selectedCategory == 'All'
+    List<dynamic> filteredProducts = selectedCategory == 'Semua'
         ? _makeupProducts
         : _makeupProducts
             .where((product) =>
