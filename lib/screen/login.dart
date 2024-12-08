@@ -217,7 +217,7 @@ class _LoginAccountState extends State<Login> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'Welcome Back!',
+                        'Selamat Datang Kembali!',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -240,7 +240,7 @@ class _LoginAccountState extends State<Login> {
                         controller: _passwordController,
                         obscureText: !_isPasswordVisible,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'Kata Sandi',
                           hintText: 'Masukkan password Anda',
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
@@ -313,14 +313,14 @@ class _LoginAccountState extends State<Login> {
                             ),
                             children: [
                               TextSpan(
-                                text: 'Create account, ',
+                                text: 'Buat Akun, ',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
                               TextSpan(
-                                text: "If you don't have an account",
+                                text: "Jika kamu belum memiliki akun",
                               ),
                             ],
                           ),

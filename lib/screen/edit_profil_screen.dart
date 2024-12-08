@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print, unnecessary_string_interpolations
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -58,9 +60,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         throw Exception('Failed to load user data.');
       }
     } catch (e) {
-      print("Error fetching profile: $e");
+      print("Terjadi kesalahan saat mengambil profil: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading profile.')),
+        SnackBar(content: Text('Terjadi kesalahan saat memuat profil.')),
       );
     }
   }
@@ -75,9 +77,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
       }
     } catch (e) {
-      print("Error picking image: $e");
+      print("Kesalahan saat memilih gambar: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error selecting image.')),
+        SnackBar(content: Text('Terjadi kesalahan saat memilih gambar.')),
       );
     }
   }
@@ -113,7 +115,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           'profile_picture',
           _selectedImage!.path,
         ));
-        print("Selected Image Path: ${_selectedImage!.path}");
+        print("Pilih jalur gambar: ${_selectedImage!.path}");
       }
 
       final response = await request.send();
@@ -125,17 +127,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           profilePictureUrl = updatedData['data']['profile_picture'] ?? '';
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Profile updated successfully.')),
+          SnackBar(content: Text('Profil berhasil diperbarui.')),
         );
         Navigator.pop(context, true);
       } else {
         final errorData = json.decode(responseBody);
-        throw Exception(errorData['error'] ?? 'Failed to update profile.');
+        throw Exception(errorData['Terjadi Kesalahan'] ?? 'Gagal memperbarui profil.');
       }
     } catch (e) {
-      print("Error saving changes: $e");
+      print("Terjadi kesalahan saat menyimpan perubahan: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving changes.')),
+        SnackBar(content: Text('Terjadi kesalahan saat menyimpan perubahan.')),
       );
     } finally {
       setState(() {
@@ -169,7 +171,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             SizedBox(height: 20),
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: InputDecoration(labelText: 'Nama Pengguna'),
             ),
             TextField(
               controller: _emailController,
@@ -179,7 +181,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _oldPasswordController,
               obscureText: !_passwordVisible,
               decoration: InputDecoration(
-                labelText: 'Old Password',
+                labelText: 'Kata sandi lama',
                 suffixIcon: IconButton(
                   icon: Icon(
                     _passwordVisible ? Icons.visibility : Icons.visibility_off,
@@ -196,7 +198,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _newPasswordController,
               obscureText: !_passwordVisible,
               decoration: InputDecoration(
-                labelText: 'New Password',
+                labelText: 'Kata sandi baru',
               ),
             ),
             SizedBox(height: 20),
@@ -204,7 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onPressed: _isLoading ? null : _saveChanges,
               child: _isLoading
                   ? CircularProgressIndicator(color: Colors.white)
-                  : Text('Save Changes'),
+                  : Text('Simpan'),
             ),
           ],
         ),

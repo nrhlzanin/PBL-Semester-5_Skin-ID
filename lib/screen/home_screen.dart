@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last
+// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last, unnecessary_string_interpolations, non_constant_identifier_names, sized_box_for_whitespace, curly_braces_in_flow_control_structures, unused_element
 
 import 'dart:convert';
 import 'dart:math';
@@ -38,10 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
         final List<dynamic> data = json.decode(response.body);
         return data;
       } else {
-        throw Exception('Failed to load makeup products');
+        throw Exception('Gagal memuat produk makeup');
       }
     } catch (e) {
-      print('Error fetching data: $e');
+      print('Terjadi kesalahan saat mengambil data: $e');
       return [];
     }
   }
@@ -102,8 +102,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool hasSkintone = false;
-  String skinTone = "Unknown";
-  String skinDescription = "No description available";
+  String skinTone = "Tidak diketahui";
+  String skinDescription = "Deskripsi tidak tersedia";
   Color skinToneColor = Colors.grey;
 
   Future<void> _loadUserData() async {
@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('No token ditemukan. Silakan masuk.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -141,22 +141,22 @@ class _HomePageState extends State<HomePage> {
                 hasSkintone = true;
               });
             } catch (e) {
-              print("Error parsing hex color: $e");
+              print("Terjadi kesalahan saat mengurai warna heksadesimal: $e");
             }
           } else {
-            print("No Skintone Detected, can not show skinTone");
+            print("Tidak Ada Warna Kulit yang Terdeteksi, tidak dapat menampilkan Warna Kulit");
             hasSkintone = false;
           }
         });
       }
     } catch (e) {
-      print("No Skintone Detected, can not show skinTone");
+      print("Tidak Ada Warna Kulit yang Terdeteksi, tidak dapat menampilkan Warna Kulit");
     }
   }
 
   // Daftar kategori untuk filter
   List<String> categories = [
-    'All',
+    'Semua',
     'Foundation',
     'Lipstick',
     'Eyeliner',
@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage> {
     'nail_polish',
   ];
   // Menyimpan kategori yang dipilih
-  String selectedCategory = 'All';
+  String selectedCategory = 'Semua';
 
   Future<bool> _onWillPop() async {
     Navigator.pushAndRemoveUntil(
@@ -188,7 +188,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> filteredProducts = selectedCategory == 'All'
+    List<dynamic> filteredProducts = selectedCategory == 'Semua'
         ? _makeupProducts
         : _makeupProducts
             .where((product) =>
@@ -223,7 +223,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                'Check Your Skin Tone',
+                'Periksa Warna Kulit Anda',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 40,
@@ -245,7 +245,7 @@ class _HomePageState extends State<HomePage> {
                             padding: const EdgeInsets.all(16.0),
                             child: Text.rich(
                               TextSpan(
-                                text: 'Identify your skin tone using our ',
+                                text: 'Identifikasi warna kulit Anda menggunakan ',
                                 style: TextStyle(
                                     fontSize: 14,
                                     fontFamily: 'Montserrat',
@@ -260,7 +260,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   TextSpan(
                                     text:
-                                        ' for a better understanding of your skin. More makeup preferences and content recommendations based on your skin tone.',
+                                        ' untuk lebih memahami kulit Anda. Lebih banyak preferensi makeup dan rekomendasi konten berdasarkan warna kulit Anda.',
                                   ),
                                 ],
                               ),
@@ -308,7 +308,7 @@ class _HomePageState extends State<HomePage> {
                   child: CameraButton(),
                 ),
                 Text(
-                  'Use me!',
+                  'Gunakan saya!',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -334,7 +334,7 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         children: [
                           Text(
-                            'Your Skin Tone Is',
+                            'Warna Kulit Anda Adalah',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -484,7 +484,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   SizedBox(height: 15.0),
                   Text(
-                    'Find makeup that suits you with choices from many brands around the world.',
+                    'Temukan makeup yang cocok untuk Anda dengan pilihan dari berbagai merek di seluruh dunia.',
                     style: TextStyle(
                       color: Colors.white,
                     ),
@@ -673,7 +673,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                      child: Text('Browse for more'),
+                      child: Text('Telusuri lebih banyak'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             const Color.fromARGB(255, 255, 255, 255),
@@ -778,4 +778,4 @@ class FilterButton extends StatelessWidget {
     );
   }
 }
-String selectedCategory = 'All';
+String selectedCategory = 'Semua';

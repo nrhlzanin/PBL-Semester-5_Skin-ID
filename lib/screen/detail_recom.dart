@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters, non_constant_identifier_names, unused_field, unused_element, avoid_print, unnecessary_string_interpolations
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,8 +24,7 @@ class _DetailRecom extends State<DetailRecom> {
   List<dynamic>? recommendedProducts = [];
   bool isLoading = true;
   Color skinToneColor = Colors.grey; // Default color placeholder
-  String skinTone = "Unknown";
-  // bool isLoading = true;
+  String skinTone = "Tidak diketahui";
   String product_name = '';
   String brand = '';
   String product_type = '';
@@ -33,7 +34,7 @@ class _DetailRecom extends State<DetailRecom> {
   String colour_name = '';
   String price = '';
   bool hasSkintone = false;
-  String skinDescription = "No description available";
+  String skinDescription = "Tidak ada deskripsi tersedia";
   List<dynamic> _makeupProducts = [];
 
   // Fetch makeup products from the API
@@ -44,12 +45,13 @@ class _DetailRecom extends State<DetailRecom> {
       final response = await http.get(Uri.parse('$baseUrl$endpoint'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        print("Makeup Products fetched: $data");  // Debugging line
         return data;
       } else {
-        throw Exception('Failed to load makeup products');
+        throw Exception('Gagal memuat produk makeup');
       }
     } catch (e) {
-      print('Error fetching data: $e');
+      print('Terjadi kesalahan saat mengambil data: $e');
       return [];
     }
   }
@@ -59,21 +61,22 @@ class _DetailRecom extends State<DetailRecom> {
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      throw Exception('User is not logged in or token is missing.');
+      throw Exception('Pengguna tidak masuk atau token hilang.');
     }
+
     try {
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['GET_RECOMMENDATION_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
-      final response =
-          await http.get(url, headers: {'Authorization': '$token'});
+      final response = await http.get(url, headers: {'Authorization': '$token'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print("Recommendations fetched: $data");  // Debugging line
         setState(() {
-          imageUrl = data['image_link'] ?? "No image";
-          product_name = data['product_name'] ?? "Unknown";
-          brand = data['brand'] ?? "Unknown brand";
+          imageUrl = data['image_link'] ?? "Tidak ada gambar";
+          product_name = data['product_name'] ?? "Tidak dikenal";
+          brand = data['brand'] ?? "Merek tidak dikenal";
           colour_name = data['colour_name'] ?? "";
           recommendedProducts = data['recommendations'] ?? [];
           isLoading = false;
@@ -83,14 +86,14 @@ class _DetailRecom extends State<DetailRecom> {
           isLoading = false;
           recommendedProducts = [];
         });
-        throw Exception('Failed to fetch recommendations');
+        throw Exception('Gagal mengambil rekomendasi');
       }
     } catch (e) {
       setState(() {
         isLoading = false;
         recommendedProducts = [];
       });
-      print("Error getting recommendations: $e");
+      print("Terjadi kesalahan saat menerima rekomendasi: $e");
     }
   }
 
@@ -100,13 +103,14 @@ class _DetailRecom extends State<DetailRecom> {
     fetchMakeupProducts().then((product) {
       setState(() {
         _makeupProducts = product;
+        print("_makeupProducts: $_makeupProducts");  // Debugging line
       });
     });
+    _getRecommendations();  // Added to fetch recommendations at the start
   }
 
   // Fungsi untuk memparsing hex color
   Color parseColor(String hexColor) {
-    // Jika kode warna diawali dengan '#', kita hapus '#' dan tambahkan '0xFF' di depannya
     if (hexColor.startsWith('#')) {
       hexColor = hexColor.replaceFirst('#', '0xFF');
     }
@@ -116,6 +120,15 @@ class _DetailRecom extends State<DetailRecom> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product; // Akses data produk
+
+    // Debugging output if product is missing or invalid
+    print("Product data: $product");  // Debugging line
+    
+    if (product == null || product.isEmpty) {
+      print("Data produk tidak ditemukan.");
+    } else if (product['name'] == null) {
+      print("Nama produk tidak ditemukan.");
+    }
 
     return MaterialApp(
       title: 'YourSkin-ID',
@@ -129,25 +142,21 @@ class _DetailRecom extends State<DetailRecom> {
         backgroundColor: Colors.black, // Set Scaffold background to black
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white), // Tombol kembali
+            icon: Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
-              Navigator.pop(
-                  context); // Menutup halaman dan kembali ke halaman sebelumnya
+              Navigator.pop(context);
             },
           ),
-
           title: Text(
-            product['name'] ?? 'Product Detail',
+            product['name'] ?? 'Detail Produk',
             style: GoogleFonts.caveat(
-              color: Colors.white, // Set text color to white
+              color: Colors.white,
               fontSize: 28,
               fontWeight: FontWeight.w400,
             ),
           ),
-
-          backgroundColor: Colors.black, // Set app bar background to black
-          iconTheme:
-              IconThemeData(color: Colors.white), // Set icon color to white
+          backgroundColor: Colors.black,
+          iconTheme: IconThemeData(color: Colors.white),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -159,8 +168,7 @@ class _DetailRecom extends State<DetailRecom> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16.0),
                   child: Image.network(
-                    product['image_link'] ??
-                        'https://via.placeholder.com/300', // Placeholder if image link is empty
+                    product['image_link'] ?? 'https://via.placeholder.com/300',
                     height: 300,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -170,47 +178,44 @@ class _DetailRecom extends State<DetailRecom> {
               const SizedBox(height: 16.0),
               // Product Name
               Text(
-                product['name'] ?? 'Unknown Product',
+                product['product_name'] ?? 'Produk Tidak Dikenal',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // Set text color to white
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8.0),
               // Brand
               Text(
-                product['brand'] ?? 'Unknown Brand',
+                product['brand'] ?? 'Merek Tidak Dikenal',
                 style: const TextStyle(
                   fontSize: 18,
-                  color: Colors.grey, // Light gray for brand text
+                  color: Colors.grey,
                 ),
               ),
               const SizedBox(height: 16.0),
               // Product Description
               Text(
-                product['description'] ??
-                    'No description available', // Product description
+                product['description'] ?? 'Tidak ada deskripsi tersedia',
                 style: const TextStyle(
                   fontSize: 16,
-                  color: Colors.white, // White color for description
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 16.0),
               // Product Price
               Text(
-                'Price: \$${product['price'] ?? 'N/A'}', // Product price
+                'Price: ${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // White color for price
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 16.0),
-
-// Warna Produk
-              if (product['product_colors'] != null &&
-                  product['product_colors'] is List)
+              // Warna Produk
+              if (product['product_colors'] != null && product['product_colors'] is List)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -219,17 +224,15 @@ class _DetailRecom extends State<DetailRecom> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white, // Warna putih untuk header
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 8.0),
                     Wrap(
                       children: (product['product_colors'] as List<dynamic>)
                           .map<Widget>((color) {
-                        // Mengambil nilai hex dan nama warna dari hasil rekomendasi
-                        final colorHex = color['hex_value'] ?? '#FFFFFF';
-                        final colorName =
-                            color['colour_name'] ?? 'Warna Tidak Dikenal';
+                        final colorHex = color['hex_color'] ?? '#FFFFFF';
+                        final colorName = color['colour_name'] ?? 'Warna Tidak Dikenal';
 
                         return Padding(
                           padding: const EdgeInsets.all(4.0),
@@ -254,8 +257,6 @@ class _DetailRecom extends State<DetailRecom> {
                     ),
                   ],
                 ),
-              const SizedBox(height: 16.0),
-
             ],
           ),
         ),
@@ -266,8 +267,9 @@ class _DetailRecom extends State<DetailRecom> {
 
 class ColorCircle extends StatelessWidget {
   final Color color;
+  final String colorName;
 
-  const ColorCircle({required this.color, Key? key, required String colorName})
+  const ColorCircle({required this.color, required this.colorName, Key? key})
       : super(key: key);
 
   @override
