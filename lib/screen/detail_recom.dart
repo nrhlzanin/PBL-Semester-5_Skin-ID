@@ -1,4 +1,4 @@
-// ignore_for_file: use_super_parameters, non_constant_identifier_names, unused_field, unused_element, avoid_print, unnecessary_string_interpolations
+// ignore_for_file: avoid_print, unnecessary_string_interpolations, non_constant_identifier_names, use_super_parameters
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';  // Import url_launcher
 
 void main() {
   runApp(DetailRecom(product: {}));
@@ -117,6 +118,15 @@ class _DetailRecom extends State<DetailRecom> {
     return Color(int.parse(hexColor));
   }
 
+  // Fungsi untuk membuka URL
+  Future<void> _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url); // Membuka URL
+    } else {
+      throw 'URL tidak dapat diluncurkan $url'; // Menangani jika URL tidak bisa dibuka
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final product = widget.product; // Akses data produk
@@ -204,9 +214,25 @@ class _DetailRecom extends State<DetailRecom> {
                 ),
               ),
               const SizedBox(height: 16.0),
+              if (product['product_link'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: GestureDetector(
+                    onTap: () => _launchURL(product['product_link']),
+                    child: Text(
+                      'Link Produk',
+                      style: TextStyle(
+                        fontSize: 16,  // Sesuaikan ukuran font agar konsisten
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16.0),
               // Product Price
               Text(
-                'Price: ${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
+                'Price: ${product['price'] ?? 'N/A'}', 
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -230,56 +256,20 @@ class _DetailRecom extends State<DetailRecom> {
                     const SizedBox(height: 8.0),
                     Wrap(
                       children: (product['product_colors'] as List<dynamic>)
-                          .map<Widget>((color) {
-                        final colorHex = color['hex_color'] ?? '#FFFFFF';
-                        final colorName = color['colour_name'] ?? 'Warna Tidak Dikenal';
-
-                        return Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Column(
-                            children: [
-                              ColorCircle(
-                                color: parseColor(colorHex),
-                                colorName: colorName,
-                              ),
-                              const SizedBox(height: 4.0),
-                              Text(
-                                colorName,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
+                          .map<Widget>((color) => Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: CircleAvatar(
+                                  backgroundColor: parseColor(color['hex_color'] ?? '#000000'),
+                                  radius: 16,
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
+                              ))
+                          .toList(),
                     ),
                   ],
                 ),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class ColorCircle extends StatelessWidget {
-  final Color color;
-  final String colorName;
-
-  const ColorCircle({required this.color, required this.colorName, Key? key})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
       ),
     );
   }

@@ -1,8 +1,11 @@
+// ignore_for_file: avoid_print, unused_field, use_super_parameters
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(MakeupDetail(product: {}));
@@ -29,10 +32,10 @@ class _MakeUpDetailState extends State<MakeupDetail> {
         final List<dynamic> data = json.decode(response.body);
         return data;
       } else {
-        throw Exception('Failed to load makeup products');
+        throw Exception('Gagal memuat produk makeup');
       }
     } catch (e) {
-      print('Error fetching data: $e');
+      print('Terjadi kesalahan saat mengambil data: $e');
       return [];
     }
   }
@@ -54,6 +57,15 @@ class _MakeUpDetailState extends State<MakeupDetail> {
       hexColor = hexColor.replaceFirst('#', '0xFF');
     }
     return Color(int.parse(hexColor));
+  }
+
+  // Fungsi untuk membuka URL
+  Future<void> _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url); // Membuka URL
+    } else {
+      throw 'URL tidak dapat diluncurkan $url'; // Menangani jika URL tidak bisa dibuka
+    }
   }
 
   @override
@@ -114,7 +126,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
               const SizedBox(height: 16.0),
               // Product Name
               Text(
-                product['name'] ?? 'Unknown Product',
+                product['name'] ?? 'Produk Tidak Dikenal',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -124,7 +136,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
               const SizedBox(height: 8.0),
               // Brand
               Text(
-                product['brand'] ?? 'Unknown Brand',
+                product['brand'] ?? 'Brand Tidak Dikenali',
                 style: const TextStyle(
                   fontSize: 18,
                   color: Colors.grey, // Light gray for brand text
@@ -134,12 +146,28 @@ class _MakeUpDetailState extends State<MakeupDetail> {
               // Product Description
               Text(
                 product['description'] ??
-                    'No description available', // Product description
+                    'Tidak ada deskripsi tersedia', // Product description
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white, // White color for description
                 ),
               ),
+                            const SizedBox(height: 16.0),
+              if (product['product_link'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: GestureDetector(
+                    onTap: () => _launchURL(product['product_link']),
+                    child: Text(
+                      'Link Produk',
+                      style: TextStyle(
+                        fontSize: 16,  // Sesuaikan ukuran font agar konsisten
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 16.0),
               // Product Price
               Text(
@@ -202,16 +230,6 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                   ],
                 ),
               const SizedBox(height: 16.0),
-
-              // // Back Button
-              // TextButton.icon(
-              //   onPressed: () {
-              //     Navigator.pop(context); // Kembali ke halaman sebelumnya
-              //   },
-              //   icon: const Icon(Icons.arrow_back, color: Colors.white),
-              //   label:
-              //       const Text('Back', style: TextStyle(color: Colors.white)),
-              // ),
             ],
           ),
         ),
