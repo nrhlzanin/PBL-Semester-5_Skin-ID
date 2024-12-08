@@ -247,6 +247,7 @@ def get_recommendations(request):
             "user_skintone": rec.skintone.skintone_name,
             "product_name": rec.product.product_name,
             "brand": rec.product.brand,
+            "price": rec.product.price,
             "image_link": rec.product.image_url,
             "product_link": rec.product.product_link,
             "description": rec.product.description,

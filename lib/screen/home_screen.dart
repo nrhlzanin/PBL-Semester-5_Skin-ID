@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last, unnecessary_string_interpolations, non_constant_identifier_names, sized_box_for_whitespace, curly_braces_in_flow_control_structures
+// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last, unnecessary_string_interpolations, non_constant_identifier_names, sized_box_for_whitespace, curly_braces_in_flow_control_structures, unused_element
 
 import 'dart:convert';
 import 'dart:math';
@@ -188,7 +188,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> filteredProducts = selectedCategory == 'All'
+    List<dynamic> filteredProducts = selectedCategory == 'Semua'
         ? _makeupProducts
         : _makeupProducts
             .where((product) =>
