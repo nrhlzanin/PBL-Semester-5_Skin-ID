@@ -9,7 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/detail_recom.dart';
-import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
+// import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/recomendation.dart';
@@ -100,7 +101,8 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
     } catch (e) {
       print("Terjadi kesalahan saat mengambil profil pengguna: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan saat mengambil profil pengguna.')),
+        SnackBar(
+            content: Text('Terjadi kesalahan saat mengambil profil pengguna.')),
       );
     }
   }
@@ -230,7 +232,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => Home()),
+              MaterialPageRoute(builder: (context) => HomeScreen()),
               (Route<dynamic> route) => false,
             );
           },
@@ -430,8 +432,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                              DetailRecom(product: product),
+                            builder: (context) => DetailRecom(product: product),
                           ),
                         );
                       },
@@ -535,8 +536,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => Recomendation()),
+                MaterialPageRoute(builder: (context) => Recomendation()),
               );
             },
             child: Text('Telusuri lebih banyak'),
