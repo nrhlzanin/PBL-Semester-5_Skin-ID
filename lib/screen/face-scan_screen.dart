@@ -48,16 +48,16 @@ class _CameraPageState extends State<CameraPage> {
           _isCameraInitialized = true;
         });
       } else {
-        print("No sufficient cameras available");
+        print("Tidak ada kamera yang tersedia");
       }
     } catch (e) {
-      print("Error initializing camera: $e");
+      print("Kesalahan saat menginisialisasi kamera: $e");
     }
   }
 
   Future<void> _captureAndPredict() async {
     try {
-      print("Capturing image...");
+      print("Menangkap gambar...");
       final picture = await _controller!.takePicture();
       final imageBytes = await picture.readAsBytes();
 
@@ -65,33 +65,33 @@ class _CameraPageState extends State<CameraPage> {
         _imageBytes = imageBytes;
       });
 
-      print("Sending image to server...");
+      print("Mengirim gambar ke server...");
       final response = await _sendImageToServer(imageBytes);
 
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
+      print("Status respons: ${response.statusCode}");
+      print("Isi respons: ${response.body}");
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        print("Decoded response data: $responseData");
+        print("Data respons yang didekode: $responseData");
         setState(() {
           skinToneResult =
               responseData['skintone_name']; // Menyimpan hasil skin_tone
         });
         _getRecommendations();
       } else {
-        print("Failed to get prediction. Status code: ${response.statusCode}");
+        print("Gagal mendapatkan prediksi. Kode status: ${response.statusCode}");
         setState(() {
-          skinToneResult = "Failed to get prediction";
+          skinToneResult = "Gagal mendapatkan prediksi";
         });
       }
     } catch (e) {
-      print("Error capturing and predicting: $e");
+      print("Kesalahan dalam menangkap dan memprediksi: $e");
       setState(() {
-        skinToneResult = "Error occurred while predicting skin tone.";
+        skinToneResult = "Terjadi kesalahan saat memprediksi warna kulit.";
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: Unable to process the image")),
+        SnackBar(content: Text("Kesalahan: Tidak dapat memproses gambar")),
       );
     }
   }
@@ -100,7 +100,7 @@ class _CameraPageState extends State<CameraPage> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
-    if (token == null) throw Exception('User is not logged in.');
+    if (token == null) throw Exception('Pengguna tidak masuk.');
 
     try {
       final baseUrl = dotenv.env['BASE_URL'];
@@ -118,13 +118,13 @@ class _CameraPageState extends State<CameraPage> {
 
       request.headers.addAll({'Authorization': '$token'});
 
-      print("Headers: ${request.headers}");
-      print("Sending request to server...");
+      print("Judul: ${request.headers}");
+      print("Mengirim permintaan ke server...");
 
       final streamedResponse = await request.send();
       return await http.Response.fromStream(streamedResponse);
     } catch (e) {
-      print("Error sending image to server: $e");
+      print("Terjadi kesalahan saat mengirim gambar ke server:$e");
       rethrow;
     }
   }
@@ -133,7 +133,7 @@ class _CameraPageState extends State<CameraPage> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
-    if (token == null) throw Exception('User is not logged in.');
+    if (token == null) throw Exception('Pengguna tidak masuk.');
 
     try {
       final baseUrl = dotenv.env['BASE_URL'];
@@ -159,10 +159,10 @@ class _CameraPageState extends State<CameraPage> {
           recommendedProducts = [];
           hasRecommendations = false;
         });
-        print("Failed to fetch recommendations: ${response.body}");
+        print("Gagal mengambil rekomendasi: ${response.body}");
       }
     } catch (e) {
-      print("Error getting recommendations: $e");
+      print("Terjadi kesalahan saat mendapatkan rekomendasi: $e");
       setState(() {
         recommendedProducts = [];
       });
@@ -187,7 +187,7 @@ class _CameraPageState extends State<CameraPage> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Token tidak ditemukan. Silakan masuk.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -198,7 +198,7 @@ class _CameraPageState extends State<CameraPage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Response Data: $data");  // Log data untuk memeriksa struktur data
+        print("Data Respons: $data");  // Log data untuk memeriksa struktur data
         
         // Mengakses skintone_id yang ada dalam objek skintone dan memastikan ia merupakan tipe int
         final skintoneId = data['skintone']?['skintone_id'] ?? null;
@@ -207,13 +207,13 @@ class _CameraPageState extends State<CameraPage> {
 
         return skintoneId is int ? skintoneId : null;  // Mengembalikan skintone_id jika tipe int
       } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized access. Please login again.');
+        throw Exception('Akses tidak sah. Silakan masuk lagi.');
       } else {
-        print("Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
+        print("Kesalahan: Gagal mengambil data warna kulit. Kode status: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Error fetching skintone: $e");
+      print("Terjadi kesalahan saat mengambil warna kulit: $e");
       return null;
     }
   }
@@ -301,7 +301,7 @@ class _CameraPageState extends State<CameraPage> {
                   try {
                     await _captureAndPredict();
                   } catch (e) {
-                    print("Error capturing image: $e");
+                    print("Terjadi kesalahan saat mengambil gambar: $e");
                   }
                 },
               ),
@@ -320,7 +320,7 @@ class _CameraPageState extends State<CameraPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Skin Tone Result: $skinToneResult',
+                          'Hasil Warna Kulit: $skinToneResult',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -338,7 +338,7 @@ class _CameraPageState extends State<CameraPage> {
                         ),
                         SizedBox(height: 10),
                         Text(
-                          skinToneResult ?? 'No result available',
+                          skinToneResult ?? 'Tidak ada hasil yang tersedia',
                           style: TextStyle(fontSize: 16, color: Colors.black),
                         ),
                         SizedBox(height: 20),
@@ -371,7 +371,7 @@ class _CameraPageState extends State<CameraPage> {
                                       ),
                                     );
                                   },
-                                  child: Text("Recommendations"),
+                                  child: Text("Rekomendasi"),
                                 ),
                               ElevatedButton(
                                 onPressed: () {
@@ -381,7 +381,7 @@ class _CameraPageState extends State<CameraPage> {
                                     hasRecommendations = false;
                                   });
                                 },
-                                child: Text("Retake"),
+                                child: Text("Foto ulang"),
                               ),
                             ],
                           ),

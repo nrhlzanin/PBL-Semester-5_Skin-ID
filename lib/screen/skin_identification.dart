@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers
+// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers, unnecessary_string_interpolations, use_super_parameters, non_constant_identifier_names, avoid_print, use_build_context_synchronously, unnecessary_null_comparison, prefer_final_fields
 
 import 'dart:convert';
 import 'dart:math';
@@ -33,7 +33,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   List<dynamic>? recommendedProducts = [];
   bool isLoading = true;
   Color skinToneColor = Colors.grey; // Default color placeholder
-  String skinTone = "Unknown";
+  String skinTone = "Tidak dikenal";
   // bool isLoading = true;
   String product_name = '';
   String brand = '';
@@ -44,27 +44,13 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   String colour_name = '';
   String price = '';
   bool hasSkintone = false;
-  String skinDescription = "No description available";
-  // // Daftar kategori untuk filter
-  // List<String> categories = [
-  //   'All',
-  //   'Foundation',
-  //   'Lipstick',
-  //   'Eyeliner',
-  //   'Mascara',
-  //   'Cushion',
-  //   'bronzer',
-  //   'eyeshadow',
-  //   'blush',
-  //   'lip_liner',
-  //   'nail_polish',
-  // ];
+  String skinDescription = "Tidak ada deskripsi tersedia";
 
   @override
   void initState() {
     super.initState();
-    skinToneResult = widget.skinToneResult ?? "Unknown";
-    skinDescription = widget.skinDescription ?? "No description available";
+    skinToneResult = widget.skinToneResult ?? "Tidak dikenal";
+    skinDescription = widget.skinDescription ?? "Tidak ada deskripsi tersedia";
     _getRecommendations(); // Call to fetch recommendations
     _loadUserData();
   }
@@ -76,7 +62,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Token tidak ditemukan. Silakan masuk lagi.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -104,17 +90,17 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 skinDescription = skinDescription;
               });
             } catch (e) {
-              print("Error parsing hex color: $e");
+              print("Terjadi kesalahan saat mengurai warna heksadesimal: $e");
             }
           }
         });
       } else {
-        throw Exception('Failed to fetch user profile.');
+        throw Exception('Gagal mengambil profil pengguna.');
       }
     } catch (e) {
-      print("Error fetching user profile: $e");
+      print("Terjadi kesalahan saat mengambil profil pengguna: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching user profile.')),
+        SnackBar(content: Text('Terjadi kesalahan saat mengambil profil pengguna.')),
       );
     }
   }
@@ -124,7 +110,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       try {
         return Color(int.parse(hexColor.substring(1), radix: 16) + 0xFF000000);
       } catch (e) {
-        print("Error parsing hex color: $e");
+        print("Terjadi kesalahan saat mengurai warna heksadesimal: $e");
         return Colors.grey;
       }
     }
@@ -136,7 +122,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      throw Exception('User is not logged in or token is missing.');
+      throw Exception('Pengguna tidak masuk atau token hilang.');
     }
     try {
       final baseUrl = dotenv.env['BASE_URL'];
@@ -148,9 +134,9 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          imageUrl = data['image_link'] ?? "No image";
-          product_name = data['product_name'] ?? "Unknown";
-          brand = data['brand'] ?? "Unknown brand";
+          imageUrl = data['image_link'] ?? "Tidak ada gambar";
+          product_name = data['product_name'] ?? "Tidak diketahui";
+          brand = data['brand'] ?? "Merek tidak dikenal";
           colour_name = data['colour_name'] ?? "";
           recommendedProducts = data['recommendations'] ?? [];
           isLoading = false;
@@ -160,14 +146,14 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           isLoading = false;
           recommendedProducts = [];
         });
-        throw Exception('Failed to fetch recommendations');
+        throw Exception('Gagal mengambil rekomendasi');
       }
     } catch (e) {
       setState(() {
         isLoading = false;
         recommendedProducts = [];
       });
-      print("Error getting recommendations: $e");
+      print("Terjadi kesalahan saat mendapatkan rekomendasi: $e");
     }
   }
 
@@ -177,7 +163,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(product['product_name'] ?? 'Unknown Product'),
+          title: Text(product['product_name'] ?? 'Produk Tidak Dikenal'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -194,12 +180,12 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               SizedBox(height: 16),
               // Product Details
               Text(
-                'Brand: ${product['brand'] ?? 'Unknown Brand'}',
+                'Brand: ${product['brand'] ?? 'Merek Tidak Dikenal'}',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 8),
               Text(
-                'Color: ${product['colour_name'] ?? 'Unknown Color'}',
+                'Color: ${product['colour_name'] ?? 'Warna Tidak Diketahui'}',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 8),
@@ -226,7 +212,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: Text('Tutup'),
             ),
           ],
         );
@@ -236,21 +222,6 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    // List<dynamic> filteredProducts = selectedCategory == 'All'
-    //     ? _makeupProducts
-    //     : _makeupProducts
-    //         .where((product) =>
-    //             product['product_type']?.toString().toLowerCase() ==
-    //             selectedCategory.toLowerCase())
-    //         .toList();
-// Filter produk yang memiliki gambar valid
-
-    // List<dynamic> validFilteredProducts = filteredProducts.where((product) {
-    //   final imageUrl = product['image_link'] as String?;
-    //   return imageUrl != null &&
-    //       imageUrl.isNotEmpty &&
-    //       Uri.tryParse(imageUrl)?.isAbsolute == true;
-    // }).toList();
     return Scaffold(
       endDrawer: Navbar(),
       appBar: AppBar(
@@ -296,7 +267,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Skin Identification',
+            'Identifikasi Kulit',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -313,7 +284,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Your Skin Tone Is',
+                  'Warna Kulit Anda Adalah',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,
@@ -415,7 +386,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Makeup Recommendation',
+          'Rekomendasi Makeup',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -584,7 +555,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 borderRadius: BorderRadius.circular(24.0),
               ),
             ),
-            child: Text('Full View'),
+            child: Text('Tampilan Lengkap'),
           ),
         ),
       ],
@@ -617,7 +588,7 @@ class FilterButton extends StatelessWidget {
 }
 
 // Assuming you have a list of products with 'brand' and 'name'
-String selectedCategory = 'All';
+String selectedCategory = 'Semua';
 
 class ProductCard extends StatelessWidget {
   // final String imageUrl;
@@ -662,15 +633,6 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Expanded(
-            //   child: ClipRRect(
-            //     borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-            //     child: Image.network(
-            //       imageUrl,
-            //       fit: BoxFit.cover,
-            //     ),
-            //   ),
-            // ),
             Padding(
               padding: const EdgeInsets.all(9.0),
               child: Column(
@@ -735,14 +697,6 @@ class ProductDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image.network(
-            //   imageUrl,
-            //   fit: BoxFit.cover,
-            //   errorBuilder: (context, error, stackTrace) {
-            //     return Image.asset('assets/image/makeup.jpg'); // Placeholder
-            //   },
-            //   width: double.infinity,
-            // ),
             SizedBox(height: 16.0),
             Text(
               title,
@@ -753,7 +707,7 @@ class ProductDetailPage extends StatelessWidget {
             ),
             SizedBox(height: 8.0),
             Text(
-              "Brand: $brand",
+              "Merek: $brand",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
@@ -763,12 +717,12 @@ class ProductDetailPage extends StatelessWidget {
             Text(
               description.isNotEmpty
                   ? description
-                  : "No description available.",
+                  : "Tidak ada deskripsi tersedia.",
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 16.0),
             Text(
-              "Available Colors:",
+              "Warna yang tersedia:",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,

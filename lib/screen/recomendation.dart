@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, unused_element, avoid_print, unnecessary_null_in_if_null_operators, unnecessary_string_interpolations, prefer_interpolation_to_compose_strings, non_constant_identifier_names, prefer_const_constructors_in_immutables, deprecated_member_use
+// ignore_for_file: use_build_context_synchronously, unused_element, avoid_print, unnecessary_null_in_if_null_operators, unnecessary_string_interpolations, prefer_interpolation_to_compose_strings, non_constant_identifier_names, prefer_const_constructors_in_immutables, deprecated_member_use, use_super_parameters
 
 import 'dart:convert';
 import 'dart:math';
@@ -52,7 +52,7 @@ class _RecommendationState extends State<Recomendation> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(product['product_name'] ?? 'Unknown Product'),
+          title: Text(product['product_name'] ?? 'Produk Tidak Tersedia'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -69,12 +69,12 @@ class _RecommendationState extends State<Recomendation> {
               SizedBox(height: 16),
               // Product Details
               Text(
-                'Brand: ${product['brand'] ?? 'Unknown Brand'}',
+                'Brand: ${product['brand'] ?? 'Merek Tidak Tersedia'}',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 8),
               Text(
-                'Color: ${product['colour_name'] ?? 'Unknown Color'}',
+                'Color: ${product['colour_name'] ?? 'Warna Tidak Dikenal'}',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 8),
@@ -130,7 +130,7 @@ class _RecommendationState extends State<Recomendation> {
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      throw Exception('User is not logged in or token is missing.');
+      throw Exception('Pengguna tidak masuk atau token hilang.');
     }
     try {
       final baseUrl = dotenv.env['BASE_URL'];
@@ -142,9 +142,9 @@ class _RecommendationState extends State<Recomendation> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          imageUrl = data['image_link'] ?? "No image";
-          product_name = data['product_name'] ?? "Unknown";
-          brand = data['brand'] ?? "Unknown brand";
+          imageUrl = data['image_link'] ?? "Tidak ada gambar";
+          product_name = data['product_name'] ?? "Tidak dikenal";
+          brand = data['brand'] ?? "Merek tidak ditemukn";
           colour_name = data['colour_name'] ?? "";
           recommendedProducts = data['recommendations'] ?? [];
           isLoading = false;
@@ -154,14 +154,14 @@ class _RecommendationState extends State<Recomendation> {
           isLoading = false;
           recommendedProducts = [];
         });
-        throw Exception('Failed to fetch recommendations');
+        throw Exception('Tidak diketahui Gagal mengambil rekomendasi');
       }
     } catch (e) {
       setState(() {
         isLoading = false;
         recommendedProducts = [];
       });
-      print("Error getting recommendations: $e");
+      print("Terjadi kesalahan saat mendapatkan rekomendasi: $e");
     }
   }
 
@@ -171,7 +171,7 @@ class _RecommendationState extends State<Recomendation> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Token tidak ditemukan. Silakan masuk kembali.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -182,7 +182,7 @@ class _RecommendationState extends State<Recomendation> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Response Data: $data"); // Log data untuk memeriksa struktur data
+        print("Data Respons: $data"); // Log data untuk memeriksa struktur data
 
         // Mengakses skintone_id yang ada dalam objek skintone dan memastikan ia merupakan tipe int
         final skintoneId = data['skintone']?['skintone_id'] ?? null;
@@ -194,14 +194,14 @@ class _RecommendationState extends State<Recomendation> {
             ? skintoneId
             : null; // Mengembalikan skintone_id jika tipe int
       } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized access. Please login again.');
+        throw Exception('Akses tidak sah. Silakan masuk lagi.');
       } else {
         print(
-            "Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
+            "Kesalahan: Gagal mengambil data warna kulit. Kode status: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Error fetching skintone: $e");
+      print("Terjadi kesalahan saat mengambil warna kulit: $e");
       return null;
     }
   }
@@ -260,12 +260,12 @@ class _RecommendationState extends State<Recomendation> {
               }
             },
           ),
-          title: Text('Your Recommendations'),
+          title: Text('Rekomendasi Anda'),
         ),
         body: isLoading
             ? Center(child: CircularProgressIndicator())
             : (recommendedProducts?.isEmpty ?? true)
-                ? Center(child: Text('No products found'))
+                ? Center(child: Text('Tidak ada produk yang ditemukan'))
                 : GridView.builder(
                     padding: EdgeInsets.all(16.0),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -439,7 +439,7 @@ class FilterButton extends StatelessWidget {
   }
 }
 
-String selectedCategory = 'All';
+String selectedCategory = 'Semua';
 
 class ColorCircle extends StatelessWidget {
   final Color color;

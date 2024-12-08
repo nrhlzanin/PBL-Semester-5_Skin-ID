@@ -116,7 +116,7 @@ class MakeupSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Brand List',
+                      'Daftar Merek',
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 20,
@@ -147,7 +147,7 @@ class MakeupSection extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                'Brand Logo',
+                                'Logo Merek',
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 14,

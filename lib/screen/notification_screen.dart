@@ -112,7 +112,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ),
         body: Center(
-          child: Text("Notification Screen Content Here"),
+          child: Text("Konten Layar Notifikasi Di Sini"),
         ),
       ),
     );
