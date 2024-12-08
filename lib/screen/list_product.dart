@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print, unnecessary_null_in_if_null_operators, curly_braces_in_flow_control_structures, prefer_const_constructors_in_immutables
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print, unnecessary_null_in_if_null_operators, curly_braces_in_flow_control_structures, prefer_const_constructors_in_immutables, avoid_unnecessary_containers, non_constant_identifier_names, prefer_final_fields, unused_field
 
 import 'dart:convert';
 import 'dart:math';
@@ -74,7 +74,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Daftar kategori untuk filter
   List<String> categories = [
-    'All',
+    'Semua',
     'Foundation',
     'Lipstick',
     'Eyeliner',
@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
     'nail_polish',
   ];
   // Menyimpan kategori yang dipilih
-  String selectedCategory = 'All';
+  String selectedCategory = 'Semua';
 
 // Check if the image URL is valid
   Future<bool> isImageValid(String imageUrl) async {
@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Token tidak ditemukan. Silakan masuk.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -136,13 +136,13 @@ class _HomePageState extends State<HomePage> {
 
         return skintoneId is int ? skintoneId : null;  // Mengembalikan skintone_id jika tipe int
       } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized access. Please login again.');
+        throw Exception('Akses tidak sah. Silakan masuk lagi.');
       } else {
-        print("Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
+        print("Kesalahan: Gagal mengambil data warna kulit. Kode status: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Error fetching skintone: $e");
+      print("Terjadi kesalahan saat mengambil warna kulit: $e");
       return null;
     }
   }
@@ -227,7 +227,7 @@ leading: IconButton(
               Padding(
                 padding: const EdgeInsets.only(left: 16, bottom: 0.2),
                 child: Text(
-                  'Search for Beauty',
+                  'Pencarian Untuk Kecantikan',
                   style: TextStyle(
                     color: const Color.fromARGB(255, 0, 0, 0),
                     fontSize: 30,
@@ -244,7 +244,7 @@ leading: IconButton(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 0, bottom: 5),
                       child: Text(
-                        'Find the makeup that suits you from many brands across the world with many categories.',
+                        'Temukan riasan yang cocok untuk Anda dari berbagai merek di seluruh dunia dengan berbagai kategori.',
                         style: TextStyle(
                           color: const Color.fromARGB(255, 0, 0, 0),
                           fontSize: 12,
@@ -279,7 +279,7 @@ leading: IconButton(
                     ),
                     SizedBox(height: 15.0),
                     Text(
-                      'Find makeup that suits you with choices from many brands around the world.',
+                      'Temukan makeup yang cocok untuk Anda dari berbagai merek di seluruh dunia dengan berbagai kategori.',
                       style: TextStyle(
                         color: Colors.white,
                       ),
@@ -492,7 +492,7 @@ class FilterButton extends StatelessWidget {
 }
 
 // Assuming you have a list of products with 'brand' and 'name'
-String selectedCategory = 'All';
+String selectedCategory = 'Semua';
 
 class ProductCard extends StatelessWidget {
   // final String imageUrl;
@@ -640,12 +640,12 @@ class ProductDetailPage extends StatelessWidget {
             Text(
               description.isNotEmpty
                   ? description
-                  : "No description available.",
+                  : "Tidak ada deskripsi tersedia.",
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 16.0),
             Text(
-              "Available Colors:",
+              "Warna yang tersedia:",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,

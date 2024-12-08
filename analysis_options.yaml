@@ -15,6 +15,7 @@ analyzer:
     unused_import: ignore
     use_key_in_widget_constructors: ignore
     deprecated_member_use: ignore
+    unused_field: ignore
 include: package:flutter_lints/flutter.yaml
 
 linter:

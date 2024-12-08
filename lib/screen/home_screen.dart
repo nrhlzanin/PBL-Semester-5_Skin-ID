@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last, unnecessary_string_interpolations, non_constant_identifier_names, sized_box_for_whitespace, curly_braces_in_flow_control_structures
+// ignore_for_file: prefer_final_fields, unused_field, use_key_in_widget_constructors, prefer_const_declarations, avoid_print, prefer_const_literals_to_create_immutables, prefer_const_constructors, sort_child_properties_last, unnecessary_string_interpolations, non_constant_identifier_names, unused_element, sized_box_for_whitespace, curly_braces_in_flow_control_structures
 
 import 'dart:convert';
 import 'dart:math';
@@ -102,8 +102,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool hasSkintone = false;
-  String skinTone = "Tidak diketahui";
-  String skinDescription = "Deskripsi tidak tersedia";
+  String skinTone = "Tidak dikenal";
+  String skinDescription = "Tidak ada deskripsi tersedia";
   Color skinToneColor = Colors.grey;
 
   Future<void> _loadUserData() async {
@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token ditemukan. Silakan masuk.');
+        throw Exception('Token tidak ditemukan. Silakan masuk kembali.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -188,7 +188,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> filteredProducts = selectedCategory == 'All'
+    List<dynamic> filteredProducts = selectedCategory == 'Semua'
         ? _makeupProducts
         : _makeupProducts
             .where((product) =>
@@ -260,7 +260,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   TextSpan(
                                     text:
-                                        ' untuk lebih memahami kulit Anda. Lebih banyak preferensi makeup dan rekomendasi konten berdasarkan warna kulit Anda.',
+                                        ' untuk lebih memahami kulit Anda. Lebih banyak preferensi tata rias dan rekomendasi konten berdasarkan warna kulit Anda.',
                                   ),
                                 ],
                               ),
@@ -308,7 +308,7 @@ class _HomePageState extends State<HomePage> {
                   child: CameraButton(),
                 ),
                 Text(
-                  'Gunakan saya!',
+                  'Gunakan Saya!',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -484,7 +484,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   SizedBox(height: 15.0),
                   Text(
-                    'Temukan makeup yang cocok untuk Anda dengan pilihan dari berbagai merek di seluruh dunia.',
+                    'Temukan makeuo yang cocok untuk Anda dengan pilihan dari berbagai merek di seluruh dunia.',
                     style: TextStyle(
                       color: Colors.white,
                     ),
