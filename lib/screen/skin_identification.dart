@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers, unnecessary_string_interpolations, use_super_parameters, non_constant_identifier_names, avoid_print, use_build_context_synchronously, unnecessary_null_comparison, prefer_final_fields
+// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers, unnecessary_string_interpolations, use_super_parameters, non_constant_identifier_names, avoid_print, use_build_context_synchronously, unnecessary_null_comparison, prefer_final_fields, prefer_const_constructors, sort_child_properties_last
 
 import 'dart:convert';
 import 'dart:math';
@@ -367,7 +367,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 Text(
                   skinDescription,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 14,
                   ),
                   textAlign: TextAlign.center,
@@ -431,7 +431,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                DetailRecom(product: product),
+                              DetailRecom(product: product),
                           ),
                         );
                       },
@@ -518,17 +518,6 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                    Text(
-                            product?['colour_name'] ?? 'Warna Terpilih :',
-                         style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
-                                              0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                          ),
                                 ],
                               ),
                             ),
@@ -546,16 +535,17 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
             onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => Recomendation()),
+                MaterialPageRoute(
+                  builder: (context) => Recomendation()),
               );
             },
+            child: Text('Telusuri lebih banyak'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color.fromARGB(255, 255, 255, 255),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24.0),
               ),
             ),
-            child: Text('Tampilan Lengkap'),
           ),
         ),
       ],
@@ -589,158 +579,6 @@ class FilterButton extends StatelessWidget {
 
 // Assuming you have a list of products with 'brand' and 'name'
 String selectedCategory = 'Semua';
-
-class ProductCard extends StatelessWidget {
-  // final String imageUrl;
-  final String title;
-  final String brand;
-  final String description;
-  final List<dynamic> productColors;
-  final int id;
-
-  const ProductCard({
-    required this.id,
-    // required this.imageUrl,
-    required this.title,
-    required this.brand,
-    required this.description,
-    required this.productColors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailPage(
-              id: id,
-              title: title,
-              brand: brand,
-              // imageUrl: imageUrl,
-              description: description,
-              productColors: productColors,
-            ),
-          ),
-        );
-      },
-      child: Card(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(9.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14, // Adjusted font size
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1, // Ensures the title does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    brand,
-                    style: TextStyle(
-                      fontSize: 12, // Adjusted font size
-                      color: Colors.grey[700],
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1, // Ensures the brand does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProductDetailPage extends StatelessWidget {
-  final int id;
-  final String title;
-  final String brand;
-  // final String imageUrl;
-  final String description;
-  final List<dynamic> productColors;
-
-  const ProductDetailPage({
-    required this.id,
-    required this.title,
-    required this.brand,
-    // required this.imageUrl,
-    required this.description,
-    required this.productColors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 16.0),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              "Merek: $brand",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              description.isNotEmpty
-                  ? description
-                  : "Tidak ada deskripsi tersedia.",
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              "Warna yang tersedia:",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Wrap(
-              spacing: 8.0,
-              children: productColors.map((color) {
-                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class ColorCircle extends StatelessWidget {
   final Color color;

@@ -24,7 +24,7 @@ class _DetailRecom extends State<DetailRecom> {
   List<dynamic>? recommendedProducts = [];
   bool isLoading = true;
   Color skinToneColor = Colors.grey; // Default color placeholder
-  String skinTone = "Unknown";
+  String skinTone = "Tidak diketahui";
   String product_name = '';
   String brand = '';
   String product_type = '';
@@ -45,6 +45,7 @@ class _DetailRecom extends State<DetailRecom> {
       final response = await http.get(Uri.parse('$baseUrl$endpoint'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        print("Makeup Products fetched: $data");  // Debugging line
         return data;
       } else {
         throw Exception('Gagal memuat produk makeup');
@@ -71,6 +72,7 @@ class _DetailRecom extends State<DetailRecom> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print("Recommendations fetched: $data");  // Debugging line
         setState(() {
           imageUrl = data['image_link'] ?? "Tidak ada gambar";
           product_name = data['product_name'] ?? "Tidak dikenal";
@@ -101,8 +103,10 @@ class _DetailRecom extends State<DetailRecom> {
     fetchMakeupProducts().then((product) {
       setState(() {
         _makeupProducts = product;
+        print("_makeupProducts: $_makeupProducts");  // Debugging line
       });
     });
+    _getRecommendations();  // Added to fetch recommendations at the start
   }
 
   // Fungsi untuk memparsing hex color
@@ -116,6 +120,15 @@ class _DetailRecom extends State<DetailRecom> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product; // Akses data produk
+
+    // Debugging output if product is missing or invalid
+    print("Product data: $product");  // Debugging line
+    
+    if (product == null || product.isEmpty) {
+      print("Data produk tidak ditemukan.");
+    } else if (product['name'] == null) {
+      print("Nama produk tidak ditemukan.");
+    }
 
     return MaterialApp(
       title: 'YourSkin-ID',
@@ -135,7 +148,7 @@ class _DetailRecom extends State<DetailRecom> {
             },
           ),
           title: Text(
-            product['Nama'] ?? 'Detail Produk',
+            product['name'] ?? 'Detail Produk',
             style: GoogleFonts.caveat(
               color: Colors.white,
               fontSize: 28,
@@ -165,7 +178,7 @@ class _DetailRecom extends State<DetailRecom> {
               const SizedBox(height: 16.0),
               // Product Name
               Text(
-                product['Nama'] ?? 'Produk Tidak Dikenal',
+                product['product_name'] ?? 'Produk Tidak Dikenal',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -184,7 +197,7 @@ class _DetailRecom extends State<DetailRecom> {
               const SizedBox(height: 16.0),
               // Product Description
               Text(
-                product['Deskripsi'] ?? 'Tidak ada deskripsi tersedia',
+                product['description'] ?? 'Tidak ada deskripsi tersedia',
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white,
@@ -193,7 +206,7 @@ class _DetailRecom extends State<DetailRecom> {
               const SizedBox(height: 16.0),
               // Product Price
               Text(
-                'Price: \$${product['price'] ?? 'N/A'}',
+                'Price: ${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -218,7 +231,7 @@ class _DetailRecom extends State<DetailRecom> {
                     Wrap(
                       children: (product['product_colors'] as List<dynamic>)
                           .map<Widget>((color) {
-                        final colorHex = color['hex_value'] ?? '#FFFFFF';
+                        final colorHex = color['hex_color'] ?? '#FFFFFF';
                         final colorName = color['colour_name'] ?? 'Warna Tidak Dikenal';
 
                         return Padding(
@@ -254,8 +267,9 @@ class _DetailRecom extends State<DetailRecom> {
 
 class ColorCircle extends StatelessWidget {
   final Color color;
+  final String colorName;
 
-  const ColorCircle({required this.color, Key? key, required String colorName})
+  const ColorCircle({required this.color, required this.colorName, Key? key})
       : super(key: key);
 
   @override
