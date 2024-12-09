@@ -17,8 +17,8 @@ import os
 import mediapipe as mp
 
 # Mendapatkan path file model dan scaler
-MODEL_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/knn_skin_tone_model_hsv_optimized_smote.pkl')
-SCALER_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/scaler_model_hsv_optimized_smote.pkl')
+MODEL_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/knn_model_14.joblib')
+SCALER_PATH = os.path.join(settings.BASE_DIR, 'api/machine_learning/scaler_14.joblib')
 HAARCASCADE = os.path.join(settings.BASE_DIR, 'api/machine_learning/haarcascade_frontalface_default.xml')
 
 # Load model dan scaler
