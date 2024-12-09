@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:skin_id/screen/create-login.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
-import 'package:skin_id/screen/notification_screen.dart';
 import 'package:skin_id/screen/account_screen.dart';
 import 'package:skin_id/screen/skin_identification.dart';
 import 'dart:convert';
@@ -217,16 +216,7 @@ class _NavbarState extends State<Navbar> {
                     );
                   },
                 ),
-                ListTile(
-                  leading: Icon(Icons.notifications, color: Colors.white),
-                  title: Text('Notifikasi', style: TextStyle(color: Colors.white)),
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => NotificationScreen()),
-                    );
-                  },
-                ),
+             
               ],
             ),
           ),

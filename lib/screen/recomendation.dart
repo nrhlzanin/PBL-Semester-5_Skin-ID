@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/detail_recom.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
@@ -230,37 +231,34 @@ class _RecommendationState extends State<Recomendation> {
     return false; // Menghentikan aksi kembali default
   }
 
+
   @override
   Widget build(BuildContext context) {
+   
+      
     return WillPopScope(
       onWillPop: _onWillPop, // Menangani aksi tombol back
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () async {
-              int? skintoneId = await _getSkintoneId();
-              // Tentukan halaman tujuan berdasarkan skintone_id
-              if (skintoneId != null) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()), // Jika skintone_id ada
-                  (Route<dynamic> route) => false,
-                );
-              } else {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()), // Jika skintone_id tidak ada
-                  (Route<dynamic> route) => false,
-                );
-              }
-            },
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
+          title: Text(
+          'Rekomendasi Produk',
+          style: GoogleFonts.caveat(
+            color: Colors.black,
+            fontSize: 23,
+            fontWeight: FontWeight.w400,
+          
           ),
-          title: Text('Rekomendasi Anda'),
+        ),
         ),
         body: isLoading
             ? Center(child: CircularProgressIndicator())
@@ -290,13 +288,13 @@ class _RecommendationState extends State<Recomendation> {
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            // Assuming the product has a 'product_colors' field that contains the list of color details
-                            List<Map<String, dynamic>> productColors = product[
-                                    'product_colors'] ??
-                                []; // Access the colors field from the product
-
-                            _showProductDetailDialog(context, product,
-                                productColors); // Pass colors to the dialog
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailRecom(product: product),
+                              ),
+                            );
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
