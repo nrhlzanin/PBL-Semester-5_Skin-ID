@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:skin_id/button/navbar.dart';
-import 'package:skin_id/screen/home.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
@@ -26,6 +24,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String profilePictureUrl = '';
   bool _passwordVisible = false;
   bool _isLoading = false;
+  String? _selectedGender;
+  List<String> genderOptions = ['Pria', 'Wanita', 'Lainnya'];
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Tidak ada token yang ditemukan. Silakan masuk lagi.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -52,12 +52,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          _usernameController.text = data['username'] ?? 'Unknown';
+          _usernameController.text = data['username'] ?? 'Tidak diketahui';
           _emailController.text = data['email'] ?? 'unknown@example.com';
+          _selectedGender = data['jenis_kelamin'] ?? 'Lainnya';
           profilePictureUrl = data['profile_picture'] ?? '';
         });
       } else {
-        throw Exception('Failed to load user data.');
+        throw Exception('Gagal memuat data pengguna.');
       }
     } catch (e) {
       print("Terjadi kesalahan saat mengambil profil: $e");
@@ -94,7 +95,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Tidak ada token yang ditemukan. Silakan masuk lagi.');
       }
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['EDIT_PROFILE_ENDPOINT'];
@@ -105,6 +106,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       request.fields['username'] = _usernameController.text;
       request.fields['email'] = _emailController.text;
+      request.fields['jenis_kelamin'] = _selectedGender ?? 'Lainnya';
+
       if (_oldPasswordController.text.isNotEmpty &&
           _newPasswordController.text.isNotEmpty) {
         request.fields['old_password'] = _oldPasswordController.text;
@@ -154,61 +157,78 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: _pickImage,
-              child: CircleAvatar(
-                radius: 60,
-                backgroundImage: _selectedImage != null
-                    ? FileImage(_selectedImage!)
-                    : (profilePictureUrl.isNotEmpty
-                        ? NetworkImage(profilePictureUrl)
-                        : AssetImage('assets/image/default_profile.jpg')
-                            as ImageProvider),
-              ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Nama Pengguna'),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _oldPasswordController,
-              obscureText: !_passwordVisible,
-              decoration: InputDecoration(
-                labelText: 'Kata sandi lama',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _passwordVisible = !_passwordVisible;
-                    });
-                  },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: _pickImage,
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundImage: _selectedImage != null
+                      ? FileImage(_selectedImage!)
+                      : (profilePictureUrl.isNotEmpty
+                          ? NetworkImage(profilePictureUrl)
+                          : AssetImage('assets/image/default_profile.jpg')
+                              as ImageProvider),
                 ),
               ),
-            ),
-            TextField(
-              controller: _newPasswordController,
-              obscureText: !_passwordVisible,
-              decoration: InputDecoration(
-                labelText: 'Kata sandi baru',
+              SizedBox(height: 20),
+              TextField(
+                controller: _usernameController,
+                decoration: InputDecoration(labelText: 'Nama Pengguna'),
               ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _saveChanges,
-              child: _isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text('Simpan'),
-            ),
-          ],
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+              ),
+              DropdownButtonFormField<String>(
+                value: _selectedGender,
+                items: genderOptions.map((gender) {
+                  return DropdownMenuItem(
+                    value: gender,
+                    child: Text(gender),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedGender = value;
+                  });
+                },
+                decoration: InputDecoration(labelText: 'Jenis Kelamin'),
+              ),
+              TextField(
+                controller: _oldPasswordController,
+                obscureText: !_passwordVisible,
+                decoration: InputDecoration(
+                  labelText: 'Kata sandi lama',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _passwordVisible = !_passwordVisible;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              TextField(
+                controller: _newPasswordController,
+                obscureText: !_passwordVisible,
+                decoration: InputDecoration(
+                  labelText: 'Kata sandi baru',
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _saveChanges,
+                child: _isLoading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text('Simpan'),
+              ),
+            ],
+          ),
         ),
       ),
     );
