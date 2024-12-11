@@ -336,12 +336,12 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: List.generate(6, (index) {
+                    children: List.generate(5, (index) {
                       final tones = [
                         "very_light",
                         "light",
                         "medium",
-                        "olive",
+                        // "olive",
                         "brown",
                         "dark"
                       ];
@@ -349,7 +349,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                         Color(0xFFFFDFC4),
                         Color(0xFFF0D5BE),
                         Color(0xFFD1A684),
-                        Color(0xFFA67C52),
+                        // Color(0xFFA67C52),
                         Color(0xFF825C3A),
                         Color(0xFF4A312C),
                       ];
