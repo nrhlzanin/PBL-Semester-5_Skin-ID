@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, avoid_print, use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -16,12 +18,12 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  String username = "Loading...";
-  String email = "Loading...";
-  String jenis_kelamin = "Loading...";
+  String username = "Memuat...";
+  String email = "Memuat...";
+  String jenis_kelamin = "Memuat...";
   String profilePictureUrl = '';
-  String skinTone = "Unknown";
-  String skinDescription = "No description available";
+  String skinTone = "Tidak diketahui";
+  String skinDescription = "Tidak ada deskripsi tersedia";
   Color skinToneColor = Colors.grey; // Default color placeholder
 
   @override
@@ -37,22 +39,23 @@ class _AccountScreenState extends State<AccountScreen> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Token tidak ditemukan. Silakan masuk kembali.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
-      final response = await http.get(url, headers: {'Authorization': '$token'});
+      final response =
+          await http.get(url, headers: {'Authorization': '$token'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final skintone = data['skintone'];
 
         setState(() {
-          username = data['username'] ?? "Unknown";
-          email = data['email'] ?? "Unknown";
-          jenis_kelamin = data['jenis_kelamin'] ?? "Unknown";
+          username = data['username'] ?? "Tidak diketahui";
+          email = data['email'] ?? "Tidak diketahui";
+          jenis_kelamin = data['jenis_kelamin'] ?? "Tidak diketahui";
 
           if (skintone != null && skintone.isNotEmpty) {
             profilePictureUrl =
@@ -66,25 +69,25 @@ class _AccountScreenState extends State<AccountScreen> {
                 skinToneColor = Color(
                     int.parse(hexColor.substring(1), radix: 16) + 0xFF000000);
               } catch (e) {
-                print("Error parsing hex color: $e");
+                print("Terjadi kesalahan saat mengurai warna heksadesimal: $e");
               }
             }
           } else {
-            skinTone = 'Not Detected';
+            skinTone = 'Tidak terdeteksi';
             skinDescription =
-                'You can find out your Skin Tone by using our scan menu from Home';
+                'Anda dapat mengetahui Warna Kulit Anda dengan menggunakan menu pemindaian kami dari Beranda';
             profilePictureUrl = 'default_profile.jpg';
           }
         });
       } else {
-        throw Exception('Failed to fetch user profile.');
+        throw Exception('Gagal mengambil profil pengguna.');
       }
     } catch (e) {
-      print("Error fetching user profile: $e");
+      print("Terjadi kesalahan saat mengambil profil pengguna: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Skin tone not detected, you can find out your skin tone using our "Scan Feature" at home :D',
+            'Warna kulit tidak terdeteksi, Anda dapat mengetahui warna kulit Anda menggunakan "Fitur Pemindaian" kami di rumah :D',
           ),
         ),
       );
@@ -122,7 +125,7 @@ class _AccountScreenState extends State<AccountScreen> {
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Text(
-                'Your Profile',
+                'Profil kamu',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 30,
@@ -239,7 +242,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                               horizontal: 0, vertical: 3),
                                         ),
                                         child: Text(
-                                          'Edit Profile',
+                                          'Edit Profil',
                                           style: TextStyle(
                                             fontSize: 14,
                                             decoration: TextDecoration
@@ -274,7 +277,7 @@ class _AccountScreenState extends State<AccountScreen> {
                               child: Column(
                                 children: [
                                   Text(
-                                    'Your Skin Tone Is',
+                                    'Warna Kulit Anda Adalah',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -332,13 +335,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                     ),
                                     child: Wrap(
                                       direction: Axis.horizontal,
-                                      children: List.generate(6, (index) {
+                                      children: List.generate(5, (index) {
                                         // Map index to skin tone
                                         final tones = [
                                           "very_light",
                                           "light",
                                           "medium",
-                                          "olive",
+                                          // "olive",
                                           "brown",
                                           "dark"
                                         ];
@@ -346,7 +349,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                           Color(0xFFFFDFC4),
                                           Color(0xFFF0D5BE),
                                           Color(0xFFD1A684),
-                                          Color(0xFFA67C52),
+                                          // Color(0xFFA67C52),
                                           Color(0xFF825C3A),
                                           Color(0xFF4A312C),
                                         ];
@@ -366,9 +369,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                                   left: index == 0
                                                       ? Radius.circular(16)
                                                       : Radius.zero,
-                                                  right: index == 5
-                                                      ? Radius.circular(16)
-                                                      : Radius.zero,
+                                                  right:
+                                                      index == tones.length - 1
+                                                          ? Radius.circular(16)
+                                                          : Radius.zero,
                                                 ),
                                                 border: isSelected
                                                     ? Border.all(

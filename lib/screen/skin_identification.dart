@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers
+// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers, unnecessary_string_interpolations, use_super_parameters, non_constant_identifier_names, avoid_print, use_build_context_synchronously, unnecessary_null_comparison, prefer_final_fields, prefer_const_constructors, sort_child_properties_last
 
 import 'dart:convert';
 import 'dart:math';
@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/detail_recom.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/recomendation.dart';
@@ -33,7 +34,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   List<dynamic>? recommendedProducts = [];
   bool isLoading = true;
   Color skinToneColor = Colors.grey; // Default color placeholder
-  String skinTone = "Unknown";
+  String skinTone = "Tidak dikenal";
   // bool isLoading = true;
   String product_name = '';
   String brand = '';
@@ -44,27 +45,13 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   String colour_name = '';
   String price = '';
   bool hasSkintone = false;
-  String skinDescription = "No description available";
-  // // Daftar kategori untuk filter
-  // List<String> categories = [
-  //   'All',
-  //   'Foundation',
-  //   'Lipstick',
-  //   'Eyeliner',
-  //   'Mascara',
-  //   'Cushion',
-  //   'bronzer',
-  //   'eyeshadow',
-  //   'blush',
-  //   'lip_liner',
-  //   'nail_polish',
-  // ];
+  String skinDescription = "Tidak ada deskripsi tersedia";
 
   @override
   void initState() {
     super.initState();
-    skinToneResult = widget.skinToneResult ?? "Unknown";
-    skinDescription = widget.skinDescription ?? "No description available";
+    skinToneResult = widget.skinToneResult ?? "Tidak dikenal";
+    skinDescription = widget.skinDescription ?? "Tidak ada deskripsi tersedia";
     _getRecommendations(); // Call to fetch recommendations
     _loadUserData();
   }
@@ -76,7 +63,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Token tidak ditemukan. Silakan masuk lagi.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -104,17 +91,18 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 skinDescription = skinDescription;
               });
             } catch (e) {
-              print("Error parsing hex color: $e");
+              print("Terjadi kesalahan saat mengurai warna heksadesimal: $e");
             }
           }
         });
       } else {
-        throw Exception('Failed to fetch user profile.');
+        throw Exception('Gagal mengambil profil pengguna.');
       }
     } catch (e) {
-      print("Error fetching user profile: $e");
+      print("Terjadi kesalahan saat mengambil profil pengguna: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching user profile.')),
+        SnackBar(
+            content: Text('Terjadi kesalahan saat mengambil profil pengguna.')),
       );
     }
   }
@@ -124,7 +112,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       try {
         return Color(int.parse(hexColor.substring(1), radix: 16) + 0xFF000000);
       } catch (e) {
-        print("Error parsing hex color: $e");
+        print("Terjadi kesalahan saat mengurai warna heksadesimal: $e");
         return Colors.grey;
       }
     }
@@ -136,7 +124,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      throw Exception('User is not logged in or token is missing.');
+      throw Exception('Pengguna tidak masuk atau token hilang.');
     }
     try {
       final baseUrl = dotenv.env['BASE_URL'];
@@ -148,9 +136,9 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          imageUrl = data['image_link'] ?? "No image";
-          product_name = data['product_name'] ?? "Unknown";
-          brand = data['brand'] ?? "Unknown brand";
+          imageUrl = data['image_link'] ?? "Tidak ada gambar";
+          product_name = data['product_name'] ?? "Tidak diketahui";
+          brand = data['brand'] ?? "Merek tidak dikenal";
           colour_name = data['colour_name'] ?? "";
           recommendedProducts = data['recommendations'] ?? [];
           isLoading = false;
@@ -160,14 +148,14 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           isLoading = false;
           recommendedProducts = [];
         });
-        throw Exception('Failed to fetch recommendations');
+        throw Exception('Gagal mengambil rekomendasi');
       }
     } catch (e) {
       setState(() {
         isLoading = false;
         recommendedProducts = [];
       });
-      print("Error getting recommendations: $e");
+      print("Terjadi kesalahan saat mendapatkan rekomendasi: $e");
     }
   }
 
@@ -177,7 +165,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(product['product_name'] ?? 'Unknown Product'),
+          title: Text(product['product_name'] ?? 'Produk Tidak Dikenal'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -194,12 +182,12 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               SizedBox(height: 16),
               // Product Details
               Text(
-                'Brand: ${product['brand'] ?? 'Unknown Brand'}',
+                'Brand: ${product['brand'] ?? 'Merek Tidak Dikenal'}',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 8),
               Text(
-                'Color: ${product['colour_name'] ?? 'Unknown Color'}',
+                'Color: ${product['colour_name'] ?? 'Warna Tidak Diketahui'}',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 8),
@@ -226,7 +214,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: Text('Tutup'),
             ),
           ],
         );
@@ -236,21 +224,6 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    // List<dynamic> filteredProducts = selectedCategory == 'All'
-    //     ? _makeupProducts
-    //     : _makeupProducts
-    //         .where((product) =>
-    //             product['product_type']?.toString().toLowerCase() ==
-    //             selectedCategory.toLowerCase())
-    //         .toList();
-// Filter produk yang memiliki gambar valid
-
-    // List<dynamic> validFilteredProducts = filteredProducts.where((product) {
-    //   final imageUrl = product['image_link'] as String?;
-    //   return imageUrl != null &&
-    //       imageUrl.isNotEmpty &&
-    //       Uri.tryParse(imageUrl)?.isAbsolute == true;
-    // }).toList();
     return Scaffold(
       endDrawer: Navbar(),
       appBar: AppBar(
@@ -259,7 +232,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => Home()),
+              MaterialPageRoute(builder: (context) => HomeScreen()),
               (Route<dynamic> route) => false,
             );
           },
@@ -275,8 +248,8 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+       
+        
           child: Column(
             children: [
               _buildSkinIdentificationSection(),
@@ -284,7 +257,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               _buildMakeupRecommendationSection(context),
             ],
           ),
-        ),
+        
       ),
     );
   }
@@ -296,10 +269,14 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Skin Identification',
+            'Identifikasi Kulit',
             style: TextStyle(
+              color: Colors.black,
               fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontFamily: 'Playfair Display',
+              fontWeight: FontWeight.w700,
+              height: 0,
+              letterSpacing: 0.03,
             ),
           ),
           SizedBox(height: 16),
@@ -313,11 +290,14 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Your Skin Tone Is',
+                  'Warna Kulit Anda Adalah',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,
+                    fontFamily: 'Playfair Display',
                     fontWeight: FontWeight.w700,
+                    height: 0,
+                    letterSpacing: 0.03,
                   ),
                 ),
                 SizedBox(height: 12),
@@ -356,12 +336,12 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: List.generate(6, (index) {
+                    children: List.generate(5, (index) {
                       final tones = [
                         "very_light",
                         "light",
                         "medium",
-                        "olive",
+                        // "olive",
                         "brown",
                         "dark"
                       ];
@@ -369,7 +349,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                         Color(0xFFFFDFC4),
                         Color(0xFFF0D5BE),
                         Color(0xFFD1A684),
-                        Color(0xFFA67C52),
+                        // Color(0xFFA67C52),
                         Color(0xFF825C3A),
                         Color(0xFF4A312C),
                       ];
@@ -396,7 +376,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 Text(
                   skinDescription,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 14,
                   ),
                   textAlign: TextAlign.center,
@@ -412,179 +392,199 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   List<dynamic> _makeupProducts = [];
   Widget _buildMakeupRecommendationSection(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Makeup Recommendation',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+        Container(
+             width: double.infinity, // Mengisi lebar penuh layar
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+          decoration: BoxDecoration(
+            color: Color(0xFF242424),
           ),
-        ),
-        SizedBox(height: 16),
-        // Filter Buttons Section
-
-        recommendedProducts!.isEmpty
-            ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+  
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+             
+                Text(
+                  'Rekomendasi Makeup',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontFamily: 'Playfair Display',
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.03,
+                  ),
                 ),
-              )
-            : GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.all(16.0),
-
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount:
-                      MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.6, // Mengatur rasio lebar-tinggi item
-                ),
-                itemCount:
-                    min(recommendedProducts!.length, 6), // Maksimal 6 item
-                itemBuilder: (context, index) {
-                  final product = recommendedProducts?[index];
-
-                  return Card(
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+              
+              SizedBox(height: 16),
+              if (isLoading)
+                Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              else if (recommendedProducts?.isEmpty ?? true)
+                Center(
+                  child: Text(
+                    "Tidak ada produk yang direkomendasikan",
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
+                  ),
+                )
+              else
+  
+                   GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(16.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                      childAspectRatio: 0.6,
                     ),
-                    child: GestureDetector(
-                      onTap: () {
-                        // Navigasi ke MakeupDetail dengan data produk
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                DetailRecom(product: product),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Container untuk gambar
-                          Expanded(
-                            flex:
-                                3, // Bagian gambar mengambil lebih banyak ruang
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(8.0)),
-                              child: Image.network(
-                                product['image_link'] ?? '',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Center(
-                                    child: Icon(
-                                      Icons.broken_image,
-                                      size: MediaQuery.of(context).size.width *
-                                          0.1,
-                                      color: Colors.grey,
-                                    ),
-                                  );
-                                },
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                },
+                    itemCount: (recommendedProducts?.length ?? 0).clamp(0, 6),
+                    itemBuilder: (context, index) {
+                      final product = recommendedProducts?[index];
+
+                      return Card(
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailRecom(product: product),
                               ),
-                            ),
-                          ),
-                          // Container untuk teks
-                          Expanded(
-                            flex: 2, // Bagian teks lebih kecil dibanding gambar
-                            child: Padding(
-                              padding: EdgeInsets.all(
-                                  MediaQuery.of(context).size.width * 0.02),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product['product_type'] ?? 'Tipe Produk',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(8.0)),
+                                  child: Image.network(
+                                    product['image_link'] ?? '',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.1,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                      MediaQuery.of(context).size.width * 0.02),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['product_type'] ??
+                                            'Tipe Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.03,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
                                               0.005),
-                                  Text(
-                                    product['product_name'] ?? 'Nama Produk',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                                      Text(
+                                        product['product_name'] ??
+                                            'Nama Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
                                               0.005),
-                                  Text(
-                                    product['brand'] ?? 'Merek Produk',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                                      Text(
+                                        product['brand'] ?? 'Merek Produk',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ),
-                                    Text(
-                            product?['colour_name'] ?? 'Warna Terpilih :',
-                         style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
-                                              0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                          ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      );
+                    },
+                  ),
+                
+              SizedBox(height: 16.0),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Recomendation()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24.0),
                     ),
-                  );
-                },
+                  ),
+                  child: Text(
+                    'Telusuri lebih banyak',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
               ),
-
-        SizedBox(height: 16.0),
-        Center(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Recomendation()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
-              ),
-            ),
-            child: Text('Full View'),
+              SizedBox(height: 10.0),
+            ],
           ),
         ),
       ],
@@ -617,176 +617,7 @@ class FilterButton extends StatelessWidget {
 }
 
 // Assuming you have a list of products with 'brand' and 'name'
-String selectedCategory = 'All';
-
-class ProductCard extends StatelessWidget {
-  // final String imageUrl;
-  final String title;
-  final String brand;
-  final String description;
-  final List<dynamic> productColors;
-  final int id;
-
-  const ProductCard({
-    required this.id,
-    // required this.imageUrl,
-    required this.title,
-    required this.brand,
-    required this.description,
-    required this.productColors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailPage(
-              id: id,
-              title: title,
-              brand: brand,
-              // imageUrl: imageUrl,
-              description: description,
-              productColors: productColors,
-            ),
-          ),
-        );
-      },
-      child: Card(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Expanded(
-            //   child: ClipRRect(
-            //     borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-            //     child: Image.network(
-            //       imageUrl,
-            //       fit: BoxFit.cover,
-            //     ),
-            //   ),
-            // ),
-            Padding(
-              padding: const EdgeInsets.all(9.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14, // Adjusted font size
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1, // Ensures the title does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    brand,
-                    style: TextStyle(
-                      fontSize: 12, // Adjusted font size
-                      color: Colors.grey[700],
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1, // Ensures the brand does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProductDetailPage extends StatelessWidget {
-  final int id;
-  final String title;
-  final String brand;
-  // final String imageUrl;
-  final String description;
-  final List<dynamic> productColors;
-
-  const ProductDetailPage({
-    required this.id,
-    required this.title,
-    required this.brand,
-    // required this.imageUrl,
-    required this.description,
-    required this.productColors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image.network(
-            //   imageUrl,
-            //   fit: BoxFit.cover,
-            //   errorBuilder: (context, error, stackTrace) {
-            //     return Image.asset('assets/image/makeup.jpg'); // Placeholder
-            //   },
-            //   width: double.infinity,
-            // ),
-            SizedBox(height: 16.0),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              "Brand: $brand",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              description.isNotEmpty
-                  ? description
-                  : "No description available.",
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              "Available Colors:",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Wrap(
-              spacing: 8.0,
-              children: productColors.map((color) {
-                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+String selectedCategory = 'Semua';
 
 class ColorCircle extends StatelessWidget {
   final Color color;

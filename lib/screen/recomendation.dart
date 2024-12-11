@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, unused_element, avoid_print, unnecessary_null_in_if_null_operators, unnecessary_string_interpolations, prefer_interpolation_to_compose_strings, non_constant_identifier_names, prefer_const_constructors_in_immutables, deprecated_member_use
+// ignore_for_file: use_build_context_synchronously, unused_element, avoid_print, unnecessary_null_in_if_null_operators, unnecessary_string_interpolations, prefer_interpolation_to_compose_strings, non_constant_identifier_names, prefer_const_constructors_in_immutables, deprecated_member_use, use_super_parameters
 
 import 'dart:convert';
 import 'dart:math';
@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/detail_recom.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
@@ -46,69 +47,6 @@ class _RecommendationState extends State<Recomendation> {
     _getRecommendations();
   }
 
-  void _showProductDetailDialog(BuildContext context,
-      Map<String, dynamic> product, List<Map<String, dynamic>> productColors) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(product['product_name'] ?? 'Unknown Product'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Product Image
-              Image.network(
-                product['image_link'] ?? '',
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.broken_image, size: 50, color: Colors.grey);
-                },
-              ),
-              SizedBox(height: 16),
-              // Product Details
-              Text(
-                'Brand: ${product['brand'] ?? 'Unknown Brand'}',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Color: ${product['colour_name'] ?? 'Unknown Color'}',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 8),
-              // Display Color Circles for product colors
-              Column(
-                children: productColors.map((color) {
-                  String colorHex = color['hex_value'] ??
-                      'FFFFFF'; // Default to white if hex is missing
-                  String colorName = color['colour_name'] ??
-                      'Warna Tidak Dikenal'; // Default to 'Unknown Color'
-
-                  return ColorCircle(
-                    color: parseColor(colorHex), // Parse hex color
-                    colorName: colorName, // Display color name
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 8),
-              // Additional details can be added here
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
 // Fungsi untuk memparsing hex color
   Color parseColor(String hexColor) {
     // Ensure the color string is prefixed with '0xFF' for proper parsing
@@ -130,7 +68,7 @@ class _RecommendationState extends State<Recomendation> {
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      throw Exception('User is not logged in or token is missing.');
+      throw Exception('Pengguna tidak masuk atau token hilang.');
     }
     try {
       final baseUrl = dotenv.env['BASE_URL'];
@@ -142,9 +80,9 @@ class _RecommendationState extends State<Recomendation> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          imageUrl = data['image_link'] ?? "No image";
-          product_name = data['product_name'] ?? "Unknown";
-          brand = data['brand'] ?? "Unknown brand";
+          imageUrl = data['image_link'] ?? "Tidak ada gambar";
+          product_name = data['product_name'] ?? "Tidak dikenal";
+          brand = data['brand'] ?? "Merek tidak ditemukn";
           colour_name = data['colour_name'] ?? "";
           recommendedProducts = data['recommendations'] ?? [];
           isLoading = false;
@@ -154,14 +92,14 @@ class _RecommendationState extends State<Recomendation> {
           isLoading = false;
           recommendedProducts = [];
         });
-        throw Exception('Failed to fetch recommendations');
+        throw Exception('Tidak diketahui Gagal mengambil rekomendasi');
       }
     } catch (e) {
       setState(() {
         isLoading = false;
         recommendedProducts = [];
       });
-      print("Error getting recommendations: $e");
+      print("Terjadi kesalahan saat mendapatkan rekomendasi: $e");
     }
   }
 
@@ -171,7 +109,7 @@ class _RecommendationState extends State<Recomendation> {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        throw Exception('No token found. Please log in.');
+        throw Exception('Token tidak ditemukan. Silakan masuk kembali.');
       }
 
       final baseUrl = dotenv.env['BASE_URL'];
@@ -182,7 +120,7 @@ class _RecommendationState extends State<Recomendation> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Response Data: $data"); // Log data untuk memeriksa struktur data
+        print("Data Respons: $data"); // Log data untuk memeriksa struktur data
 
         // Mengakses skintone_id yang ada dalam objek skintone dan memastikan ia merupakan tipe int
         final skintoneId = data['skintone']?['skintone_id'] ?? null;
@@ -194,14 +132,14 @@ class _RecommendationState extends State<Recomendation> {
             ? skintoneId
             : null; // Mengembalikan skintone_id jika tipe int
       } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized access. Please login again.');
+        throw Exception('Akses tidak sah. Silakan masuk lagi.');
       } else {
         print(
-            "Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
+            "Kesalahan: Gagal mengambil data warna kulit. Kode status: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Error fetching skintone: $e");
+      print("Terjadi kesalahan saat mengambil warna kulit: $e");
       return null;
     }
   }
@@ -215,7 +153,8 @@ class _RecommendationState extends State<Recomendation> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-            builder: (context) => HomeScreen()), // Halaman Home jika skintone_id ada
+            builder: (context) =>
+                HomeScreen()), // Halaman Home jika skintone_id ada
         (Route<dynamic> route) => false,
       );
     } else {
@@ -238,34 +177,27 @@ class _RecommendationState extends State<Recomendation> {
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () async {
-              int? skintoneId = await _getSkintoneId();
-              // Tentukan halaman tujuan berdasarkan skintone_id
-              if (skintoneId != null) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()), // Jika skintone_id ada
-                  (Route<dynamic> route) => false,
-                );
-              } else {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()), // Jika skintone_id tidak ada
-                  (Route<dynamic> route) => false,
-                );
-              }
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+                (Route<dynamic> route) => false,
+              );
             },
           ),
-          title: Text('Your Recommendations'),
+          title: Text(
+            'Rekomendasi Produk',
+            style: GoogleFonts.caveat(
+              color: Colors.black,
+              fontSize: 23,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
         ),
         body: isLoading
             ? Center(child: CircularProgressIndicator())
             : (recommendedProducts?.isEmpty ?? true)
-                ? Center(child: Text('No products found'))
+                ? Center(child: Text('Tidak ada produk yang ditemukan'))
                 : GridView.builder(
                     padding: EdgeInsets.all(16.0),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -273,11 +205,12 @@ class _RecommendationState extends State<Recomendation> {
                           MediaQuery.of(context).size.width > 600 ? 3 : 2,
                       crossAxisSpacing: 16.0,
                       mainAxisSpacing: 16.0,
-                      childAspectRatio: 0.75, // Rasio lebar-tinggi item
+                      childAspectRatio: 0.65, // Rasio lebar-tinggi item
                     ),
                     itemCount: recommendedProducts?.length ?? 0,
                     itemBuilder: (context, index) {
                       final product = recommendedProducts?[index];
+                      final colors = product['recommended_colors'] ?? [];
 
                       if (recommendedProducts == null) {
                         return SizedBox(); // Tampilkan widget kosong jika `product` null
@@ -290,13 +223,13 @@ class _RecommendationState extends State<Recomendation> {
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            // Assuming the product has a 'product_colors' field that contains the list of color details
-                            List<Map<String, dynamic>> productColors = product[
-                                    'product_colors'] ??
-                                []; // Access the colors field from the product
-
-                            _showProductDetailDialog(context, product,
-                                productColors); // Pass colors to the dialog
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailRecom(product: product),
+                              ),
+                            );
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -391,18 +324,6 @@ class _RecommendationState extends State<Recomendation> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      Text(
-                                        product['colour_name'] ?? '',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.025,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -439,7 +360,7 @@ class FilterButton extends StatelessWidget {
   }
 }
 
-String selectedCategory = 'All';
+String selectedCategory = 'Semua';
 
 class ColorCircle extends StatelessWidget {
   final Color color;

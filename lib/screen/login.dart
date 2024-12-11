@@ -76,14 +76,14 @@ class _LoginAccountState extends State<Login> {
 
         if (response.statusCode == 400) {
           if (errorMessage.contains('Password salah')) {
-            _showErrorMessage('Password salah.');
+            _showErrorMessage('Email atau Password salah');
           } else if (errorMessage
               .contains('Username dan password diperlukan')) {
             _showErrorMessage('Email dan password diperlukan.');
           }
         } else if (response.statusCode == 404) {
           if (errorMessage.contains('Email tidak ditemukan')) {
-            _showErrorMessage('Email Salah');
+            _showErrorMessage('Email atau Password salah');
           }
         } else {
           _showErrorMessage('Login gagal: $errorMessage');
@@ -217,7 +217,7 @@ class _LoginAccountState extends State<Login> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'Welcome Back!',
+                        'Selamat Datang Kembali!',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -240,7 +240,7 @@ class _LoginAccountState extends State<Login> {
                         controller: _passwordController,
                         obscureText: !_isPasswordVisible,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'Kata Sandi',
                           hintText: 'Masukkan password Anda',
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
@@ -293,7 +293,7 @@ class _LoginAccountState extends State<Login> {
                             ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )
-                            : const Text('Login'),
+                            : const Text('Login' ,style: TextStyle(color: Colors.white),),
                       ),
                       const SizedBox(height: 20),
                       GestureDetector(
@@ -313,14 +313,14 @@ class _LoginAccountState extends State<Login> {
                             ),
                             children: [
                               TextSpan(
-                                text: 'Create account, ',
+                                text: 'Buat Akun, ',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
                               TextSpan(
-                                text: "If you don't have an account",
+                                text: "Jika kamu belum memiliki akun",
                               ),
                             ],
                           ),

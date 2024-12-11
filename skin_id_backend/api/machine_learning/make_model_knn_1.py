@@ -178,7 +178,7 @@ for subject_folder in os.listdir(dataset_dir):
             image = cv2.imread(image_path)
             if image is not None:
                 skin_features = preprocess_skin(image)
-                # Gambar tetap dimasukkan meskipun wajah tidak terdeteksi
+                # Hanya ditambahkan ketika wajah terdeteksi
                 if skin_features is not None:
                     data.append(skin_features)
                     labels.append(label)
@@ -188,10 +188,10 @@ data = np.array(data)
 labels = np.array(labels)
 
 # Tangani NaN jika ada
-if np.any(np.isnan(data)):
-    print("Ada nilai NaN pada data. Menangani NaN...")
-    imputer = SimpleImputer(strategy='mean')
-    data = imputer.fit_transform(data)
+# if np.any(np.isnan(data)):
+#     print("Ada nilai NaN pada data. Menangani NaN...")
+#     imputer = SimpleImputer(strategy='mean')
+#     data = imputer.fit_transform(data)
 
 # Label encoding
 label_encoder = LabelEncoder()
@@ -213,7 +213,6 @@ X_test_scaled = scaler.transform(X_test)
 
 # Membuat model KNN
 knn = KNeighborsClassifier()
-
 # Daftar hyperparameter untuk GridSearchCV
 param_dist = {
     'n_neighbors': [3, 5, 7, 9, 11, 13, 15],

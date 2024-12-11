@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:url_launcher/url_launcher.dart'; //SEK ERROR
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(MakeupDetail(product: {}));
@@ -18,6 +20,17 @@ class MakeupDetail extends StatefulWidget {
 
 class _MakeUpDetailState extends State<MakeupDetail> {
   List<dynamic> _makeupProducts = [];
+
+  // UNTUK MENGARAHKAN LINK KE URL
+  Future<void> openLink(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      print("Tidak dapat membuka URL: $url");
+    }
+  }
+  // END MENGARAHKAN LINK KE URL
 
   // Fetch makeup products from the API
   Future<List<dynamic>> fetchMakeupProducts() async {
@@ -87,7 +100,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
               fontWeight: FontWeight.w400,
             ),
           ),
-          
+
           backgroundColor: Colors.black, // Set app bar background to black
           iconTheme:
               IconThemeData(color: Colors.white), // Set icon color to white
@@ -97,7 +110,6 @@ class _MakeUpDetailState extends State<MakeupDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
               // Product Image
               Center(
                 child: ClipRRect(
@@ -139,6 +151,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                   fontSize: 16,
                   color: Colors.white, // White color for description
                 ),
+                textAlign: TextAlign.justify,
               ),
               const SizedBox(height: 16.0),
               // Product Price
@@ -150,9 +163,114 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                   color: Colors.white, // White color for price
                 ),
               ),
-              const SizedBox(height: 16.0),
-
-              // Warna Produk
+              const SizedBox(height: 8.0),
+              // LINK PEMBELIAN
+              // if (product['product_link'] != null)
+              //   GestureDetector(
+              //     onTap: () {
+              //       openLink(product['product_link']);
+              //     },
+              //     child: Container(
+              //       margin: const EdgeInsets.symmetric(
+              //           vertical: 6.0, horizontal: 0),
+              //       padding: const EdgeInsets.all(8.0),
+              //       decoration: BoxDecoration(
+              //         color: Colors.white.withOpacity(0.2),
+              //         borderRadius: BorderRadius.circular(10.0),
+              //         boxShadow: [
+              //           BoxShadow(color: const Color.fromARGB(255, 24, 24, 24)),
+              //         ],
+              //         border: Border.all(
+              //           color: Colors.white.withOpacity(0.3),
+              //           width: 1.0,
+              //         ),
+              //       ),
+              //       child: Text(
+              //         'Beli Sekarang',
+              //         textAlign: TextAlign.center,
+              //         style: const TextStyle(
+              //           fontSize: 16,
+              //           fontWeight: FontWeight.w100,
+              //           color: Colors.white,
+              //           decoration: TextDecoration.underline,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              Text(
+                'Link Pembelian', // Perbaiki agar harga dapat muncul
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              Container(
+                margin:
+                    const EdgeInsets.symmetric(vertical: 5.0, horizontal: 0),
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white
+                      .withOpacity(0.2), // Warna latar belakang semi-transparan
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10.0,
+                      spreadRadius: 5.0,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: Colors.white
+                        .withOpacity(0.3), // Warna border semi-transparan
+                    width: 1.0,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // Teks Link
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${product['product_link'] ?? 'N/A'}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    // Ikon Salin di Pojok Kanan Atas
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          final link = product['product_link'] ?? 'N/A';
+                          print('Link yang disalin: $link');
+                          if (link != 'N/A') {
+                            Clipboard.setData(ClipboardData(text: link));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Link telah disalin ke clipboard!'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                        child: Icon(
+                          Icons.copy,
+                          size: 20.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // END LINK PEMBELIAN
+              // WARNA PRODUK
               if (product['product_colors'] != null)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,18 +298,22 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                           child: Column(
                             children: [
                               ColorCircle(
-                                color:
-                                    parseColor(colorHex), colorName: '', // Memparse warna hex
+                                color: parseColor(colorHex),
+                                colorName: '', // Memparse warna hex
                               ),
                               const SizedBox(
                                   height:
                                       4.0), // Spasi antara lingkaran warna dan nama warna
-                              Text(
-                                colorName, // Nama warna, jika null akan menampilkan 'Warna Tidak Dikenal'
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors
-                                      .white, // Warna putih untuk nama warna
+                              SizedBox(
+                                width: 100,
+                                child: Text(
+                                  colorName, // Nama warna, jika null akan menampilkan 'Warna Tidak Dikenal'
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors
+                                        .white, // Warna putih untuk nama warna
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ],
@@ -215,7 +337,6 @@ class _MakeUpDetailState extends State<MakeupDetail> {
             ],
           ),
         ),
-        
       ),
     );
   }
@@ -224,7 +345,8 @@ class _MakeUpDetailState extends State<MakeupDetail> {
 class ColorCircle extends StatelessWidget {
   final Color color;
 
-  const ColorCircle({required this.color, Key? key, required String colorName}) : super(key: key);
+  const ColorCircle({required this.color, Key? key, required String colorName})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

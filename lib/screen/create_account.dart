@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element, use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,37 +27,37 @@ class _CreateAccountState extends State<CreateAccount> {
 
   String? _username(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter username';
+      return 'Silakan masukkan nama pengguna';
     } else if (value.length < 3 || value.length > 12) {
-      return 'Username must be between 3 ~ 12 characters';
+      return 'Nama pengguna harus terdiri dari 3 ~ 12 karakter';
     }
     return null;
   }
 
   String? _email(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter your email';
+      return 'Silakan masukkan email Anda';
     } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
         .hasMatch(value)) {
-      return 'Please enter a valid email address';
+      return 'Harap masukkan alamat email yang valid';
     }
     return null;
   }
 
   String? _password(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter your password';
+      return 'Silahkan masukkan kata sandi';
     } else if (value.length < 5) {
-      return 'Password must be at least 5 characters';
+      return 'Kata sandi harus minimal 5 karakter';
     }
     return null;
   }
 
   String? _confirmPassword(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please confirm your password';
+      return 'Harap konfirmasi kata sandi Anda';
     } else if (value != _passwordController.text) {
-      return 'Passwords do not match';
+      return 'Kata sandi tidak cocok';
     }
     return null;
   }
@@ -64,7 +66,7 @@ class _CreateAccountState extends State<CreateAccount> {
     final confirmPassword = _confirmPasswordController.text.trim();
     if (username.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('All fields are required')),
+        SnackBar(content: Text('Semua kolom wajib diisi')),
       );
       return;
     }
@@ -92,21 +94,21 @@ class _CreateAccountState extends State<CreateAccount> {
 
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Account created successfully')),
+          SnackBar(content: Text('Akun berhasil dibuat')),
         );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => Login()),
         );
       } else {
-        final error = jsonDecode(response.body)['error'];
+        final error = jsonDecode(response.body)['Terjadi kesalahan'];
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error)),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(content: Text('Terjadi kesalahan: $e')),
       );
     }
   }
@@ -156,7 +158,7 @@ class _CreateAccountState extends State<CreateAccount> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Create an Account',
+                        'Buat Akun Baru',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -166,8 +168,8 @@ class _CreateAccountState extends State<CreateAccount> {
                       TextFormField(
                         controller: _usernameController,
                         decoration: InputDecoration(
-                          labelText: 'Username',
-                          hintText: 'Type your username',
+                          labelText: 'Nama pengguna',
+                          hintText: 'Masukkan nama pengguna Anda',
                           border: OutlineInputBorder(),
                         ),
                         validator: _username,
@@ -177,7 +179,7 @@ class _CreateAccountState extends State<CreateAccount> {
                         controller: _emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          hintText: 'Enter your email',
+                          hintText: 'Masukkan Email Anda',
                           border: OutlineInputBorder(),
                         ),
                         validator: _email,
@@ -187,8 +189,8 @@ class _CreateAccountState extends State<CreateAccount> {
                         controller: _passwordController,
                         obscureText: isObscured,
                         decoration: InputDecoration(
-                          labelText: 'Password',
-                          hintText: 'Enter your password',
+                          labelText: 'Kata sandi',
+                          hintText: 'Masukkan kata Sandi Anda',
                           border: OutlineInputBorder(),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -207,8 +209,8 @@ class _CreateAccountState extends State<CreateAccount> {
                         controller: _confirmPasswordController,
                         obscureText: isObscured2,
                         decoration: InputDecoration(
-                          labelText: 'Confirm Password',
-                          hintText: 'Re-enter your password',
+                          labelText: 'Konfirmasi Kata Sandi',
+                          hintText: 'Masukkan kembali kata sandi Anda',
                           border: OutlineInputBorder(),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -242,7 +244,7 @@ class _CreateAccountState extends State<CreateAccount> {
                         ),
                         child: Center(
                           child: Text(
-                            'Create account',
+                            'Buat akun baru',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -257,7 +259,7 @@ class _CreateAccountState extends State<CreateAccount> {
                         },
                         child: Text.rich(
                           TextSpan(
-                            text: 'Already have one? ',
+                            text: 'Sudah mempunyai akun? ',
                             children: [
                               TextSpan(
                                 text: 'Log in',

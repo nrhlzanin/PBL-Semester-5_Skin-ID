@@ -101,7 +101,7 @@ class CreateLogin extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              "create an account",
+                              "Buat Akun Baru",
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18, // Ukuran font yang lebih besar
@@ -134,7 +134,7 @@ class CreateLogin extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              "existing account",
+                              "Akun Sudah Ada",
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18, // Ukuran font yang lebih besar

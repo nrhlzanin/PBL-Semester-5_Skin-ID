@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 
 class VerificationScreen extends StatelessWidget {
@@ -46,7 +48,7 @@ class VerificationScreen extends StatelessWidget {
                 children: [
                   // Title and Icon
                   Text(
-                    'Verification',
+                    'Verifikasi',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -64,7 +66,7 @@ class VerificationScreen extends StatelessWidget {
                   TextField(
                     controller: verificationController,
                     decoration: InputDecoration(
-                      labelText: 'Verification Code',
+                      labelText: 'Kode Verifikasi',
                       labelStyle: TextStyle(color: Colors.black),
                       border: OutlineInputBorder(),
                       filled: true,
@@ -77,7 +79,7 @@ class VerificationScreen extends StatelessWidget {
                   TextField(
                     controller: passwordController,
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: 'Kata sandi',
                       labelStyle: TextStyle(color: Colors.black),
                       border: OutlineInputBorder(),
                       filled: true,
@@ -90,7 +92,7 @@ class VerificationScreen extends StatelessWidget {
                   TextField(
                     controller: confirmPasswordController,
                     decoration: InputDecoration(
-                      labelText: 'Confirm Password',
+                      labelText: 'Konfirmasi Kata Sandi',
                       labelStyle: TextStyle(color: Colors.black),
                       border: OutlineInputBorder(),
                       filled: true,
@@ -113,17 +115,17 @@ class VerificationScreen extends StatelessWidget {
                         if (password == confirmPassword) {
                           // Submit the form
                           print(
-                              'Form submitted: Verification Code: $verificationCode, Password: $password');
+                              'Formulir yang dikirimkan: Kode Verifikasi: $verificationCode, Kata sandi: $password');
                         } else {
                           // Show error message if passwords don't match
-                          print('Passwords do not match');
+                          print('Kata sandi tidak cocok');
                         }
                       } else {
                         // Show an error message if any field is empty
-                        print('Please fill in all fields');
+                        print('Harap isi semua kolom');
                       }
                     },
-                    child: Text('Submit'),
+                    child: Text('Kirim'),
                   ),
                 ],
               ),
