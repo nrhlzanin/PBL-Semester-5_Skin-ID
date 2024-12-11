@@ -74,12 +74,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Daftar kategori untuk filter
   List<String> categories = [
-    'All',
+    'Semua',
     'Foundation',
     'Lipstick',
     'Eyeliner',
     'Mascara',
-    'Cushion',
+    // 'Cushion',
     'bronzer',
     'eyeshadow',
     'blush',
@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
     'nail_polish',
   ];
   // Menyimpan kategori yang dipilih
-  String selectedCategory = 'All';
+  String selectedCategory = 'Semua';
 
 // Check if the image URL is valid
   Future<bool> isImageValid(String imageUrl) async {
@@ -127,18 +127,22 @@ class _HomePageState extends State<HomePage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Response Data: $data");  // Log data untuk memeriksa struktur data
-        
+        print("Response Data: $data"); // Log data untuk memeriksa struktur data
+
         // Mengakses skintone_id yang ada dalam objek skintone dan memastikan ia merupakan tipe int
         final skintoneId = data['skintone']?['skintone_id'] ?? null;
 
-        print("Skintone ID: $skintoneId");  // Log untuk memeriksa nilai skintone_id
+        print(
+            "Skintone ID: $skintoneId"); // Log untuk memeriksa nilai skintone_id
 
-        return skintoneId is int ? skintoneId : null;  // Mengembalikan skintone_id jika tipe int
+        return skintoneId is int
+            ? skintoneId
+            : null; // Mengembalikan skintone_id jika tipe int
       } else if (response.statusCode == 401) {
         throw Exception('Unauthorized access. Please login again.');
       } else {
-        print("Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
+        print(
+            "Error: Failed to fetch skintone data. Status code: ${response.statusCode}");
         return null;
       }
     } catch (e) {
@@ -155,17 +159,21 @@ class _HomePageState extends State<HomePage> {
     if (skintoneId != null) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),  // Halaman Home jika skintone_id ada
+        MaterialPageRoute(
+            builder: (context) =>
+                HomeScreen()), // Halaman Home jika skintone_id ada
         (Route<dynamic> route) => false,
       );
     } else {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),  // Halaman HomeScreen jika skintone_id tidak ada
+        MaterialPageRoute(
+            builder: (context) =>
+                HomeScreen()), // Halaman HomeScreen jika skintone_id tidak ada
         (Route<dynamic> route) => false,
       );
     }
-    return false;  // Menghentikan aksi kembali default
+    return false; // Menghentikan aksi kembali default
   }
 
   @override
@@ -186,11 +194,11 @@ class _HomePageState extends State<HomePage> {
           Uri.tryParse(imageUrl)?.isAbsolute == true;
     }).toList();
     return WillPopScope(
-      onWillPop: _onWillPop,  // Menangani aksi tombol back
+      onWillPop: _onWillPop, // Menangani aksi tombol back
       child: Scaffold(
         endDrawer: Navbar(),
         appBar: AppBar(
-leading: IconButton(
+          leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () async {
               int? skintoneId = await _getSkintoneId();
@@ -198,13 +206,17 @@ leading: IconButton(
               if (skintoneId != null) {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id ada
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          HomeScreen()), // Jika skintone_id ada
                   (Route<dynamic> route) => false,
                 );
               } else {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id tidak ada
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          HomeScreen()), // Jika skintone_id tidak ada
                   (Route<dynamic> route) => false,
                 );
               }
@@ -224,41 +236,71 @@ leading: IconButton(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 0.2),
-                child: Text(
-                  'Search for Beauty',
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 0, 0, 0),
-                    fontSize: 30,
-                    fontFamily: 'Playfair Display',
-                    fontWeight: FontWeight.w700,
-                    height: 2,
-                  ),
-                ),
-              ),
-              Row(
+              // BAGIAN ATAS GAMBAR
+              Stack(
                 children: [
-                  SizedBox(width: 16.0),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 0, bottom: 5),
-                      child: Text(
-                        'Find the makeup that suits you from many brands across the world with many categories.',
-                        style: TextStyle(
-                          color: const Color.fromARGB(255, 0, 0, 0),
-                          fontSize: 12,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w400,
-                        ),
+                  // Gambar
+                  Container(
+                    height: 200, // Tinggi gambar
+                    width: double.infinity, // Lebar gambar penuh
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/image/brush.jpeg'),
+                        fit: BoxFit.cover,
                       ),
+                    ),
+                  ),
+                  // Teks di atas gambar
+                  Positioned(
+                    bottom: 16, // Jarak dari bawah
+                    left: 16, // Jarak dari kiri
+                    right: 16, // Jarak dari kanan
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Search for Beauty',
+                          style: TextStyle(
+                            color: Colors.white, // Warna teks putih
+                            fontSize: 30,
+                            fontFamily: 'Playfair Display',
+                            fontWeight: FontWeight.w700,
+                            shadows: [
+                              Shadow(
+                                color:
+                                    Colors.black.withOpacity(0.5), // Bayangan
+                                blurRadius: 4,
+                                offset: Offset(1, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8), // Jarak antar teks
+                        Text(
+                          'Temukan makeup yang cocok untuk Anda dengan pilihan dari berbagai merek di seluruh dunia.',
+                          style: TextStyle(
+                            color: Colors.white, // Warna teks putih
+                            fontSize: 12,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w400,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.5),
+                                blurRadius: 4,
+                                offset: Offset(1, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
               // Updated makeup section with proper styling
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
                 width: double.infinity, // Mengisi lebar penuh layar
                 decoration: BoxDecoration(
                   color: Color(0xFF242424),
@@ -266,26 +308,6 @@ leading: IconButton(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 7.0),
-                    Text(
-                      'Makeup',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontFamily: 'Playfair Display',
-                        fontWeight: FontWeight.w700,
-                        height: 1.2,
-                      ),
-                    ),
-                    SizedBox(height: 15.0),
-                    Text(
-                      'Find makeup that suits you with choices from many brands around the world.',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 15.0),
-
                     // Filter Buttons Section
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -295,6 +317,12 @@ leading: IconButton(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: FilterButton(
                               label: product_type,
+                              textStyle: TextStyle(
+                                fontFamily: 'Playfair Display',
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black,
+                              ),
                               isSelected: selectedCategory ==
                                   product_type, // Check if this category is selected
                               onTap: () => setState(() {
@@ -323,14 +351,16 @@ leading: IconButton(
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount:
-                                  MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                                  MediaQuery.of(context).size.width > 600
+                                      ? 3
+                                      : 2,
                               crossAxisSpacing: 16.0,
                               mainAxisSpacing: 16.0,
                               childAspectRatio:
                                   0.75, // Mengatur rasio lebar-tinggi item
                             ),
-                            itemCount:
-                                (validFilteredProducts.length), // Maksimal 6 item
+                            itemCount: (validFilteredProducts
+                                .length), // Maksimal 6 item
                             itemBuilder: (context, index) {
                               final product = validFilteredProducts[index];
 
@@ -395,7 +425,9 @@ leading: IconButton(
                                             2, // Bagian teks lebih kecil dibanding gambar
                                         child: Padding(
                                           padding: EdgeInsets.all(
-                                              MediaQuery.of(context).size.width *
+                                              MediaQuery.of(context)
+                                                      .size
+                                                      .width *
                                                   0.02),
                                           child: Column(
                                             crossAxisAlignment:
@@ -406,10 +438,11 @@ leading: IconButton(
                                                     'Tipe Produk',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      0.03,
+                                                  fontSize:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.03,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -420,13 +453,15 @@ leading: IconButton(
                                                           .height *
                                                       0.005),
                                               Text(
-                                                product['name'] ?? 'Nama Produk',
+                                                product['name'] ??
+                                                    'Nama Produk',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      0.025,
+                                                  fontSize:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.025,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -441,10 +476,11 @@ leading: IconButton(
                                                     'Merek Produk',
                                                 style: TextStyle(
                                                   color: Colors.grey,
-                                                  fontSize: MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      0.025,
+                                                  fontSize:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.025,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -473,11 +509,15 @@ leading: IconButton(
 // FilterButton widget
 class FilterButton extends StatelessWidget {
   final String label;
+  final TextStyle textStyle;
   final bool isSelected;
   final VoidCallback onTap;
 
   FilterButton(
-      {required this.label, required this.isSelected, required this.onTap});
+      {required this.label,
+      required this.textStyle,
+      required this.isSelected,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -486,7 +526,10 @@ class FilterButton extends StatelessWidget {
         backgroundColor: isSelected ? Colors.grey : Colors.white,
       ),
       onPressed: onTap,
-      child: Text(label),
+      child: Text(
+        label,
+        style: textStyle,
+      ),
     );
   }
 }

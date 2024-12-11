@@ -76,14 +76,14 @@ class _LoginAccountState extends State<Login> {
 
         if (response.statusCode == 400) {
           if (errorMessage.contains('Password salah')) {
-            _showErrorMessage('Password salah.');
+            _showErrorMessage('Email atau Password salah');
           } else if (errorMessage
               .contains('Username dan password diperlukan')) {
             _showErrorMessage('Email dan password diperlukan.');
           }
         } else if (response.statusCode == 404) {
           if (errorMessage.contains('Email tidak ditemukan')) {
-            _showErrorMessage('Email Salah');
+            _showErrorMessage('Email atau Password salah');
           }
         } else {
           _showErrorMessage('Login gagal: $errorMessage');

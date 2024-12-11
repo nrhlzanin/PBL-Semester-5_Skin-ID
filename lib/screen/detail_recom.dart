@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart'; //INI SEK BLM ISO DIPAKE
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(DetailRecom(product: {}));
@@ -32,12 +34,24 @@ class _DetailRecom extends State<DetailRecom> {
   String imageUrl = '';
   String hex_color = '';
   String colour_name = '';
-  String price = '';
   bool hasSkintone = false;
   String skinDescription = "Tidak ada deskripsi tersedia";
   List<dynamic> _makeupProducts = [];
 
-  // Fetch makeup products from the API
+  String price = '';
+
+  // UNTUK MENGARAHKAN LINK KE URL
+  Future<void> openLink(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      print("Tidak dapat membuka URL: $url");
+    }
+  }
+  // END MENGARAHKAN LINK KE URL
+
+  // AMBIL DATA PRODUK DARI API
   Future<List<dynamic>> fetchMakeupProducts() async {
     final baseUrl = dotenv.env['BASE_URL'];
     final endpoint = dotenv.env['PRODUCT_ENDPOINT'];
@@ -45,7 +59,7 @@ class _DetailRecom extends State<DetailRecom> {
       final response = await http.get(Uri.parse('$baseUrl$endpoint'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        print("Makeup Products fetched: $data");  // Debugging line
+        print("Makeup Products fetched: $data"); // Debugging line
         return data;
       } else {
         throw Exception('Gagal memuat produk makeup');
@@ -68,11 +82,12 @@ class _DetailRecom extends State<DetailRecom> {
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['GET_RECOMMENDATION_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
-      final response = await http.get(url, headers: {'Authorization': '$token'});
+      final response =
+          await http.get(url, headers: {'Authorization': '$token'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Recommendations fetched: $data");  // Debugging line
+        print("Recommendations fetched: $data"); // Debugging line
         setState(() {
           imageUrl = data['image_link'] ?? "Tidak ada gambar";
           product_name = data['product_name'] ?? "Tidak dikenal";
@@ -103,18 +118,20 @@ class _DetailRecom extends State<DetailRecom> {
     fetchMakeupProducts().then((product) {
       setState(() {
         _makeupProducts = product;
-        print("_makeupProducts: $_makeupProducts");  // Debugging line
+        print("_makeupProducts: $_makeupProducts"); // Debugging line
       });
     });
-    _getRecommendations();  // Added to fetch recommendations at the start
+    _getRecommendations(); // Added to fetch recommendations at the start
   }
 
   // Fungsi untuk memparsing hex color
   Color parseColor(String hexColor) {
     if (hexColor.startsWith('#')) {
-      hexColor = hexColor.replaceFirst('#', '0xFF');
+      return Color(int.parse('0xFF${hexColor.substring(1)}'));
+    } else {
+      return Colors.grey;
     }
-    return Color(int.parse(hexColor));
+    // return Color(int.parse(hexColor));
   }
 
   @override
@@ -122,8 +139,8 @@ class _DetailRecom extends State<DetailRecom> {
     final product = widget.product; // Akses data produk
 
     // Debugging output if product is missing or invalid
-    print("Product data: $product");  // Debugging line
-    
+    print("Product data: $product"); // Debugging line
+
     if (product == null || product.isEmpty) {
       print("Data produk tidak ditemukan.");
     } else if (product['name'] == null) {
@@ -202,37 +219,147 @@ class _DetailRecom extends State<DetailRecom> {
                   fontSize: 16,
                   color: Colors.white,
                 ),
+                textAlign: TextAlign.justify,
               ),
               const SizedBox(height: 16.0),
-              // Product Price
+              // LINK PEMBELIAN PRODUK (BAGIAN YG KU COMMAND MASIH ERROR KARENA APP TIDAK MAU DIRECT KE URL)
+              // if (product['product_link'] != null)
+              //   GestureDetector(
+              //     onTap: () {
+              //       openLink(product['product_link']);
+              //     },
+              //     child: Container(
+              //       margin: const EdgeInsets.symmetric(
+              //           vertical: 6.0, horizontal: 0),
+              //       padding: const EdgeInsets.all(8.0),
+              //       decoration: BoxDecoration(
+              //         color: Colors.white.withOpacity(0.2),
+              //         borderRadius: BorderRadius.circular(10.0),
+              //         boxShadow: [
+              //           BoxShadow(color: const Color.fromARGB(255, 24, 24, 24)),
+              //         ],
+              //         border: Border.all(
+              //           color: Colors.white.withOpacity(0.3),
+              //           width: 1.0,
+              //         ),
+              //       ),
+              //       child: Text(
+              //         'Beli Sekarang',
+              //         textAlign: TextAlign.center,
+              //         style: const TextStyle(
+              //           fontSize: 16,
+              //           fontWeight: FontWeight.w100,
+              //           color: Colors.white,
+              //           decoration: TextDecoration.underline,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
               Text(
-                'Price: ${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
+                'Link Pembelian', // Perbaiki agar harga dapat muncul
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 16.0),
+              Container(
+                margin:
+                    const EdgeInsets.symmetric(vertical: 5.0, horizontal: 0),
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white
+                      .withOpacity(0.2), // Warna latar belakang semi-transparan
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10.0,
+                      spreadRadius: 5.0,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: Colors.white
+                        .withOpacity(0.3), // Warna border semi-transparan
+                    width: 1.0,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // Teks Link
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${product['product_link'] ?? 'N/A'}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    // Ikon Salin di Pojok Kanan Atas
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          final link = product['product_link'] ?? 'N/A';
+                          print('Link yang disalin: $link');
+                          if (link != 'N/A') {
+                            Clipboard.setData(ClipboardData(text: link));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Link telah disalin ke clipboard!'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                        child: Icon(
+                          Icons.copy,
+                          size: 20.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // END LINK PEMBELIAN
+              // PRODUCT PRICE
+              const SizedBox(height: 8.0),
+              Text(
+                'Price: \u0024${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 16.0),
               // Warna Produk
-              if (product['product_colors'] != null && product['product_colors'] is List)
+              if (product['recommended_colors'] != null &&
+                  product['recommended_colors'] is List)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Warna Tersedia:',
+                      'Rekomendasi Warna:',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 8.0),
+                    SizedBox(height: 8.0),
                     Wrap(
-                      children: (product['product_colors'] as List<dynamic>)
+                      children: (product['recommended_colors'] as List<dynamic>)
                           .map<Widget>((color) {
-                        final colorHex = color['hex_color'] ?? '#FFFFFF';
-                        final colorName = color['colour_name'] ?? 'Warna Tidak Dikenal';
+                        final colorHex = color['hex_value'] ?? '#FFFFFF';
+                        final colorName =
+                            color['color_name'] ?? 'Warna Tidak Dikenal';
 
                         return Padding(
                           padding: const EdgeInsets.all(4.0),
@@ -243,11 +370,16 @@ class _DetailRecom extends State<DetailRecom> {
                                 colorName: colorName,
                               ),
                               const SizedBox(height: 4.0),
-                              Text(
-                                colorName,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
+                              SizedBox(
+                                width: 100,
+                                child: Text(
+                                  colorName, // Nama warna, jika null akan menampilkan 'Warna Tidak Dikenal'
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors
+                                        .white, // Warna putih untuk nama warna
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ],

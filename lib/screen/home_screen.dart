@@ -144,13 +144,15 @@ class _HomePageState extends State<HomePage> {
               print("Terjadi kesalahan saat mengurai warna heksadesimal: $e");
             }
           } else {
-            print("Tidak Ada Warna Kulit yang Terdeteksi, tidak dapat menampilkan Warna Kulit");
+            print(
+                "Tidak Ada Warna Kulit yang Terdeteksi, tidak dapat menampilkan Warna Kulit");
             hasSkintone = false;
           }
         });
       }
     } catch (e) {
-      print("Tidak Ada Warna Kulit yang Terdeteksi, tidak dapat menampilkan Warna Kulit");
+      print(
+          "Tidak Ada Warna Kulit yang Terdeteksi, tidak dapat menampilkan Warna Kulit");
     }
   }
 
@@ -161,7 +163,7 @@ class _HomePageState extends State<HomePage> {
     'Lipstick',
     'Eyeliner',
     'Mascara',
-    'Cushion',
+    // 'Cushion',
     'bronzer',
     'eyeshadow',
     'blush',
@@ -245,7 +247,8 @@ class _HomePageState extends State<HomePage> {
                             padding: const EdgeInsets.all(16.0),
                             child: Text.rich(
                               TextSpan(
-                                text: 'Identifikasi warna kulit Anda menggunakan ',
+                                text:
+                                    'Identifikasi warna kulit Anda menggunakan ',
                                 style: TextStyle(
                                     fontSize: 14,
                                     fontFamily: 'Montserrat',
@@ -384,13 +387,13 @@ class _HomePageState extends State<HomePage> {
                             ),
                             child: Wrap(
                               direction: Axis.horizontal,
-                              children: List.generate(6, (index) {
+                              children: List.generate(5, (index) {
                                 // Map index to skin tone
                                 final tones = [
                                   "very_light",
                                   "light",
                                   "medium",
-                                  "olive",
+                                  // "olive",
                                   "brown",
                                   "dark"
                                 ];
@@ -398,7 +401,7 @@ class _HomePageState extends State<HomePage> {
                                   Color(0xFFFFDFC4),
                                   Color(0xFFF0D5BE),
                                   Color(0xFFD1A684),
-                                  Color(0xFFA67C52),
+                                  // Color(0xFFA67C52),
                                   Color(0xFF825C3A),
                                   Color(0xFF4A312C),
                                 ];
@@ -417,7 +420,7 @@ class _HomePageState extends State<HomePage> {
                                           left: index == 0
                                               ? Radius.circular(16)
                                               : Radius.zero,
-                                          right: index == 5
+                                          right: index == tones.length - 1
                                               ? Radius.circular(16)
                                               : Radius.zero,
                                         ),
@@ -498,6 +501,12 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.only(right: 8.0),
                           child: FilterButton(
                             label: product_type,
+                            textStyle: TextStyle(
+                              fontFamily: 'Playfair Display',
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black,
+                            ),
                             isSelected: selectedCategory ==
                                 product_type, // Check if this category is selected
                             onTap: () => setState(() {
@@ -673,7 +682,10 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                      child: Text('Telusuri lebih banyak'),
+                      child: Text(
+                        'Telusuri lebih banyak',
+                        style: TextStyle(color: Colors.black),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             const Color.fromARGB(255, 255, 255, 255),
@@ -761,11 +773,15 @@ class SkinToneColor extends StatelessWidget {
 // FilterButton widget
 class FilterButton extends StatelessWidget {
   final String label;
+  final TextStyle textStyle;
   final bool isSelected;
   final VoidCallback onTap;
 
   const FilterButton(
-      {required this.label, required this.isSelected, required this.onTap});
+      {required this.label,
+      required this.textStyle,
+      required this.isSelected,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -774,8 +790,12 @@ class FilterButton extends StatelessWidget {
         backgroundColor: isSelected ? Colors.grey : Colors.white,
       ),
       onPressed: onTap,
-      child: Text(label),
+      child: Text(
+        label,
+        style: textStyle,
+      ),
     );
   }
 }
+
 String selectedCategory = 'Semua';
