@@ -8,12 +8,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http; // Import http package
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/account_screen.dart';
 import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/notification_screen.dart'; // Import CameraPage
 import 'dart:async';
+
+import 'package:skin_id/screen/skin_identification.dart';
 
 void main() {
   runApp(HomeScreen());
@@ -188,7 +191,11 @@ class _HomePageState extends State<HomePage> {
     _loadUserData();
   }
 
+//bottomnavigation
+  int _selectedIndex = 0;
+  final ScrollController _homeController = ScrollController();
   @override
+
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'Semua'
         ? _makeupProducts
@@ -701,6 +708,52 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
+      ),
+      //bottomnavigation
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Beranda',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Akun',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.recommend),
+            label: 'Identifikasi',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 0, 0),
+        onTap: (int index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
+
+            case 1:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => AccountScreen()),
+              );
+
+            case 2:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SkinIdentificationPage()),
+              );
+          }
+          setState(
+            () {
+              _selectedIndex = index;
+            },
+          );
+        },
       ),
     );
   }
