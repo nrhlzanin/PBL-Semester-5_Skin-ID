@@ -154,78 +154,41 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              // Product Description
-              Text(
-                product['description'] ??
-                    'Tidak ada deskripsi tersedia', // Product description
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white, // White color for description
-                ),
-                textAlign: TextAlign.justify,
-              ),
-                            const SizedBox(height: 16.0),
+                            // LINK PEMBELIAN
               if (product['product_link'] != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: GestureDetector(
-                    onTap: () => _launchURL(product['product_link']),
+                GestureDetector(
+                  onTap: () {
+                    openLink(product['product_link']);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 6.0, horizontal: 0),
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(color: const Color.fromARGB(255, 24, 24, 24)),
+                      ],
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1.0,
+                      ),
+                    ),
                     child: Text(
-                      'Link Produk',
-                      style: TextStyle(
-                        fontSize: 16,  // Sesuaikan ukuran font agar konsisten
-                        color: Colors.blue,
+                      'Beli Sekarang',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                         decoration: TextDecoration.underline,
                       ),
                     ),
                   ),
                 ),
-              const SizedBox(height: 16.0),
-              // Product Price
               Text(
-                'Price: \$${product['price'] ?? 'N/A'}', // Product price
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // White color for price
-                ),
-              ),
-              const SizedBox(height: 8.0),
-              // LINK PEMBELIAN
-              // if (product['product_link'] != null)
-              //   GestureDetector(
-              //     onTap: () {
-              //       openLink(product['product_link']);
-              //     },
-              //     child: Container(
-              //       margin: const EdgeInsets.symmetric(
-              //           vertical: 6.0, horizontal: 0),
-              //       padding: const EdgeInsets.all(8.0),
-              //       decoration: BoxDecoration(
-              //         color: Colors.white.withOpacity(0.2),
-              //         borderRadius: BorderRadius.circular(10.0),
-              //         boxShadow: [
-              //           BoxShadow(color: const Color.fromARGB(255, 24, 24, 24)),
-              //         ],
-              //         border: Border.all(
-              //           color: Colors.white.withOpacity(0.3),
-              //           width: 1.0,
-              //         ),
-              //       ),
-              //       child: Text(
-              //         'Beli Sekarang',
-              //         textAlign: TextAlign.center,
-              //         style: const TextStyle(
-              //           fontSize: 16,
-              //           fontWeight: FontWeight.w100,
-              //           color: Colors.white,
-              //           decoration: TextDecoration.underline,
-              //         ),
-              //       ),
-              //     ),
-              //   ),
-              Text(
-                'Link Pembelian', // Perbaiki agar harga dapat muncul
+                'Atau salin link berikut:', // Perbaiki agar harga dapat muncul
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -350,7 +313,55 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                     ),
                   ],
                 ),
+              const SizedBox(height: 8.0),
+              // Product Description
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "Deskripsi:",
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    product['description'] ?? 'Tidak ada deskripsi tersedia',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.justify,
+                  ),
+                ],
+              ),
               const SizedBox(height: 16.0),
+              if (product['product_link'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: GestureDetector(
+                    onTap: () => _launchURL(product['product_link']),
+                    child: Text(
+                      'Link Produk',
+                      style: TextStyle(
+                        fontSize: 16, // Sesuaikan ukuran font agar konsisten
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16.0),
+              // Product Price
+              Text(
+                'Price: \$${product['price'] ?? 'N/A'}', // Product price
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white, // White color for price
+                ),
+              ),
+              const SizedBox(height: 8.0),
             ],
           ),
         ),

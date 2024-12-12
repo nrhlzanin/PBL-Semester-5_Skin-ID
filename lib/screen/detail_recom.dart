@@ -43,11 +43,19 @@ class _DetailRecom extends State<DetailRecom> {
 
   // UNTUK MENGARAHKAN LINK KE URL
   Future<void> openLink(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      print("Tidak dapat membuka URL: $url");
+    if (url.isEmpty) {
+      print("URL kosong, tidak dapat membuka link.");
+      return;
+    }
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        print("Tidak dapat membuka URL: $url");
+      }
+    } catch (e) {
+      print("Error saat membuka URL: $e");
     }
   }
   // END MENGARAHKAN LINK KE URL
@@ -217,52 +225,125 @@ class _DetailRecom extends State<DetailRecom> {
                   color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 16.0),
-              // Product Description
+              // PRODUCT PRICE
+              const SizedBox(height: 8.0),
               Text(
-                product['description'] ?? 'Tidak ada deskripsi tersedia',
+                'Price: \u0024${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
-                textAlign: TextAlign.justify,
+              ),
+              SizedBox(height: 16.0),
+              // Warna Produk
+              if (product['recommended_colors'] != null &&
+                  product['recommended_colors'] is List)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Rekomendasi Warna:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 8.0),
+                    Wrap(
+                      children: (product['recommended_colors'] as List<dynamic>)
+                          .map<Widget>((color) {
+                        final colorHex = color['hex_value'] ?? '#FFFFFF';
+                        final colorName =
+                            color['color_name'] ?? 'Warna Tidak Dikenal';
+
+                        return Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Column(
+                            children: [
+                              ColorCircle(
+                                color: parseColor(colorHex),
+                                colorName: colorName,
+                              ),
+                              const SizedBox(height: 4.0),
+                              SizedBox(
+                                width: 100,
+                                child: Text(
+                                  colorName, // Nama warna, jika null akan menampilkan 'Warna Tidak Dikenal'
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors
+                                        .white, // Warna putih untuk nama warna
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 16.0),
+              // Product Description
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "Deskripsi:",
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    product['description'] ?? 'Tidak ada deskripsi tersedia',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.justify,
+                  ),
+                ],
               ),
               const SizedBox(height: 16.0),
               // LINK PEMBELIAN PRODUK (BAGIAN YG KU COMMAND MASIH ERROR KARENA APP TIDAK MAU DIRECT KE URL)
-              // if (product['product_link'] != null)
-              //   GestureDetector(
-              //     onTap: () {
-              //       openLink(product['product_link']);
-              //     },
-              //     child: Container(
-              //       margin: const EdgeInsets.symmetric(
-              //           vertical: 6.0, horizontal: 0),
-              //       padding: const EdgeInsets.all(8.0),
-              //       decoration: BoxDecoration(
-              //         color: Colors.white.withOpacity(0.2),
-              //         borderRadius: BorderRadius.circular(10.0),
-              //         boxShadow: [
-              //           BoxShadow(color: const Color.fromARGB(255, 24, 24, 24)),
-              //         ],
-              //         border: Border.all(
-              //           color: Colors.white.withOpacity(0.3),
-              //           width: 1.0,
-              //         ),
-              //       ),
-              //       child: Text(
-              //         'Beli Sekarang',
-              //         textAlign: TextAlign.center,
-              //         style: const TextStyle(
-              //           fontSize: 16,
-              //           fontWeight: FontWeight.w100,
-              //           color: Colors.white,
-              //           decoration: TextDecoration.underline,
-              //         ),
-              //       ),
-              //     ),
-              //   ),
+              if (product['product_link'] != null)
+                GestureDetector(
+                  onTap: () {
+                    openLink(product['product_link']);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 6.0, horizontal: 0),
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(color: const Color.fromARGB(255, 24, 24, 24)),
+                      ],
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Text(
+                      'Beli Sekarang',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ),
               Text(
-                'Link Pembelian', // Perbaiki agar harga dapat muncul
+                'Atau salin link berikut:', // Perbaiki agar harga dapat muncul
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -334,67 +415,6 @@ class _DetailRecom extends State<DetailRecom> {
                 ),
               ),
               // END LINK PEMBELIAN
-              // PRODUCT PRICE
-              const SizedBox(height: 8.0),
-              Text(
-                'Price: \u0024${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 16.0),
-              // Warna Produk
-              if (product['recommended_colors'] != null &&
-                  product['recommended_colors'] is List)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Rekomendasi Warna:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 8.0),
-                    Wrap(
-                      children: (product['recommended_colors'] as List<dynamic>)
-                          .map<Widget>((color) {
-                        final colorHex = color['hex_value'] ?? '#FFFFFF';
-                        final colorName =
-                            color['color_name'] ?? 'Warna Tidak Dikenal';
-
-                        return Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Column(
-                            children: [
-                              ColorCircle(
-                                color: parseColor(colorHex),
-                                colorName: colorName,
-                              ),
-                              const SizedBox(height: 4.0),
-                              SizedBox(
-                                width: 100,
-                                child: Text(
-                                  colorName, // Nama warna, jika null akan menampilkan 'Warna Tidak Dikenal'
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors
-                                        .white, // Warna putih untuk nama warna
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
             ],
           ),
         ),
