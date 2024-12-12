@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/detail_recom.dart';
+import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/list_product.dart';
@@ -222,21 +223,13 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
     );
   }
 
+  int _selectedIndex = 2;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       endDrawer: Navbar(),
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-              (Route<dynamic> route) => false,
-            );
-          },
-        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
@@ -248,8 +241,6 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
         ),
       ),
       body: SingleChildScrollView(
-       
-        
           child: Column(
             children: [
               _buildSkinIdentificationSection(),
@@ -257,8 +248,54 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               _buildMakeupRecommendationSection(context),
             ],
           ),
-        
       ),
+      //bottomnavigation
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Beranda',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera),
+            label: 'Scanner',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.recommend),
+            label: 'Identifikasi',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.black,
+        onTap: (int index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
+
+            case 1:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => CameraPage()),
+              );
+
+            case 2:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SkinIdentificationPage()),
+              );
+          }
+          setState(
+            () {
+              _selectedIndex = index;
+            },
+          );
+        },
+      ),
+    
     );
   }
 

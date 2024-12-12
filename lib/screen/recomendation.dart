@@ -14,6 +14,7 @@ import 'package:skin_id/screen/detail_recom.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
+import 'package:skin_id/screen/skin_identification.dart';
 
 class Recomendation extends StatefulWidget {
   final String? skinToneResult;
@@ -181,7 +182,7 @@ class _RecommendationState extends State<Recomendation> {
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => HomeScreen()),
+                MaterialPageRoute(builder: (context) => SkinIdentificationPage()),
                 (Route<dynamic> route) => false,
               );
             },
