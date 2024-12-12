@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print, unnecessary_null_in_if_null_operators, curly_braces_in_flow_control_structures, prefer_const_constructors_in_immutables
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print, unnecessary_null_in_if_null_operators, curly_braces_in_flow_control_structures, prefer_const_constructors_in_immutables, non_constant_identifier_names
 
 import 'dart:convert';
 import 'dart:math';
@@ -8,10 +8,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/face-scan_screen.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/notification_screen.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
+import 'package:skin_id/screen/skin_identification.dart';
 
 void main() {
   runApp(ListProduct());
@@ -176,6 +178,8 @@ class _HomePageState extends State<HomePage> {
     return false; // Menghentikan aksi kembali default
   }
 
+  int _selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'Semua'
@@ -198,30 +202,6 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         endDrawer: Navbar(),
         appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () async {
-              int? skintoneId = await _getSkintoneId();
-              // Tentukan halaman tujuan berdasarkan skintone_id
-              if (skintoneId != null) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()), // Jika skintone_id ada
-                  (Route<dynamic> route) => false,
-                );
-              } else {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()), // Jika skintone_id tidak ada
-                  (Route<dynamic> route) => false,
-                );
-              }
-            },
-          ),
           title: Text(
             'YourSkin-ID',
             style: GoogleFonts.caveat(
@@ -500,6 +480,52 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
+        ),
+        //bottomnavigation
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Beranda',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.camera),
+              label: 'Scanner',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.recommend),
+              label: 'Identifikasi',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.black,
+          onTap: (int index) {
+            switch (index) {
+              case 0:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                );
+
+              case 1:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => CameraPage()),
+                );
+
+              case 2:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SkinIdentificationPage()),
+                );
+            }
+            setState(
+              () {
+                _selectedIndex = index;
+              },
+            );
+          },
         ),
       ),
     );

@@ -717,8 +717,8 @@ class _HomePageState extends State<HomePage> {
             label: 'Beranda',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Akun',
+            icon: Icon(Icons.camera),
+            label: 'Scanner',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.recommend),
@@ -726,7 +726,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 0, 0, 0),
+        selectedItemColor: Colors.black,
         onTap: (int index) {
           switch (index) {
             case 0:
@@ -738,7 +738,7 @@ class _HomePageState extends State<HomePage> {
             case 1:
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => AccountScreen()),
+                MaterialPageRoute(builder: (context) => CameraPage()),
               );
 
             case 2:

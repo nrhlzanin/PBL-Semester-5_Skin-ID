@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:skin_id/screen/skin_identification.dart';
 import 'package:url_launcher/url_launcher.dart'; //INI SEK BLM ISO DIPAKE
 import 'package:flutter/services.dart';
 
@@ -161,7 +162,12 @@ class _DetailRecom extends State<DetailRecom> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SkinIdentificationPage(),
+                ),
+              );
             },
           ),
           title: Text(
