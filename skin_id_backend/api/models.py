@@ -128,6 +128,7 @@ class Recommendation(models.Model):
     user = models.ForeignKey(Pengguna, on_delete=models.CASCADE, related_name='makeup_recommendations')
     skintone = models.ForeignKey(SkinTone, on_delete=models.CASCADE, related_name='makeup_recommendations')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='makeup_recommendations')
+    color = models.ForeignKey(ProductColor, on_delete=models.CASCADE, related_name='recommendation_colors')
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

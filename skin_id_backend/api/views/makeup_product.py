@@ -14,6 +14,7 @@ from rest_framework.exceptions import ValidationError
 from api.models import Pengguna, SkinTone, Product, ProductColor, Recommendation
 from api.views.user_views import token_required 
 from math import sqrt
+from collections import defaultdict
 
 
 def is_valid_image_url(url):
@@ -199,7 +200,7 @@ def recommend_product(request):
                             user=user,
                             skintone=skintone,
                             product=product,
-                            # color=color,
+                            color=color,
                         )
                         recommendations.append({
                             "product_id": product.product_id,
@@ -242,23 +243,55 @@ def get_recommendations(request):
         return Response(
             {"message":"Belum ada rekomendasi untuk pengguna ini."},status=status.HTTP_404_NOT_FOUND,
             )
-    data = [
-        {
-            "user_skintone": rec.skintone.skintone_name,
-            "product_name": rec.product.product_name,
-            "brand": rec.product.brand,
-            "image_link": rec.product.image_url,
-            "product_link": rec.product.product_link,
-            "description": rec.product.description,
-            "product_type": rec.product.product_type,
-            "product_colors":[
-                {
-                "hex_color": color.hex_value,
-                "colour_name": color.color_name,
-                }
-                for color in rec.product.colors.all()
-            ]
-        }
-        for rec in recommendations
-    ]
-    return Response({"recommendations": data}, status=status.HTTP_200_OK)
+    
+    # PAKAI DICTIONARY PENGELOMPOKAN
+    grouped_data = defaultdict(lambda:{
+        "user_skintone":None,
+        "product_name":None,
+        "brand": None,
+        "price": None,
+        "image_link": None,
+        "product_link": None,
+        "description": None,
+        "product_type": None,
+        "recommended_colors": []
+    })
+    
+    for rec in recommendations:
+        key = rec.product.product_id
+        if not grouped_data[key]["user_skintone"]:
+            grouped_data[key].update({
+                "user_skintone": rec.skintone.skintone_name,
+                "product_name": rec.product.product_name,
+                "brand": rec.product.brand,
+                "price": rec.product.price,
+                "image_link": rec.product.image_url,
+                "product_link": rec.product.product_link,
+                "description": rec.product.description,
+                "product_type": rec.product.product_type,
+            })
+        grouped_data[key]["recommended_colors"].append({
+            "hex_value":rec.color.hex_value,
+            "color_name":rec.color.color_name
+        })
+    
+    # MENGUBAH DEFAULTDICT KE LIST
+    result = list(grouped_data.values())
+    # data = [
+    #     {
+    #         "user_skintone": rec.skintone.skintone_name,
+    #         "product_name": rec.product.product_name,
+    #         "brand": rec.product.brand,
+    #         "price": rec.product.price,
+    #         "image_link": rec.product.image_url,
+    #         "product_link": rec.product.product_link,
+    #         "description": rec.product.description,
+    #         "product_type": rec.product.product_type,
+    #         "recommended_color":{
+    #             "hex_value": rec.color.hex_value,
+    #             "color_name": rec.color.color_name,
+    #         },
+    #     }
+    #     for rec in recommendations
+    # ]
+    return Response({"recommendations": result}, status=status.HTTP_200_OK)

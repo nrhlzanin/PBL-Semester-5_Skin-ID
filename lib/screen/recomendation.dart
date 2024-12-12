@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
+import 'package:skin_id/screen/detail_recom.dart';
 import 'package:skin_id/screen/home.dart';
 import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
@@ -37,6 +38,7 @@ class _RecommendationState extends State<Recomendation> {
   String hex_color = '';
   String colour_name = '';
   String price = '';
+  String product_colors = '';
 
   @override
   void initState() {
@@ -44,69 +46,6 @@ class _RecommendationState extends State<Recomendation> {
     skinToneResult = widget.skinToneResult;
     skinDescription = widget.skinDescription;
     _getRecommendations();
-  }
-
-  void _showProductDetailDialog(BuildContext context,
-      Map<String, dynamic> product, List<Map<String, dynamic>> productColors) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(product['product_name'] ?? 'Produk Tidak Tersedia'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Product Image
-              Image.network(
-                product['image_link'] ?? '',
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.broken_image, size: 50, color: Colors.grey);
-                },
-              ),
-              SizedBox(height: 16),
-              // Product Details
-              Text(
-                'Brand: ${product['brand'] ?? 'Merek Tidak Tersedia'}',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Color: ${product['colour_name'] ?? 'Warna Tidak Dikenal'}',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 8),
-              // Display Color Circles for product colors
-              Column(
-                children: productColors.map((color) {
-                  String colorHex = color['hex_value'] ??
-                      'FFFFFF'; // Default to white if hex is missing
-                  String colorName = color['colour_name'] ??
-                      'Warna Tidak Dikenal'; // Default to 'Unknown Color'
-
-                  return ColorCircle(
-                    color: parseColor(colorHex), // Parse hex color
-                    colorName: colorName, // Display color name
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 8),
-              // Additional details can be added here
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
 // Fungsi untuk memparsing hex color
@@ -215,7 +154,8 @@ class _RecommendationState extends State<Recomendation> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-            builder: (context) => HomeScreen()), // Halaman Home jika skintone_id ada
+            builder: (context) =>
+                HomeScreen()), // Halaman Home jika skintone_id ada
         (Route<dynamic> route) => false,
       );
     } else {
@@ -238,29 +178,22 @@ class _RecommendationState extends State<Recomendation> {
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () async {
-              int? skintoneId = await _getSkintoneId();
-              // Tentukan halaman tujuan berdasarkan skintone_id
-              if (skintoneId != null) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()), // Jika skintone_id ada
-                  (Route<dynamic> route) => false,
-                );
-              } else {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen()), // Jika skintone_id tidak ada
-                  (Route<dynamic> route) => false,
-                );
-              }
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+                (Route<dynamic> route) => false,
+              );
             },
           ),
-          title: Text('Rekomendasi Anda'),
+          title: Text(
+            'Rekomendasi Produk',
+            style: GoogleFonts.caveat(
+              color: Colors.black,
+              fontSize: 23,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
         ),
         body: isLoading
             ? Center(child: CircularProgressIndicator())
@@ -273,11 +206,12 @@ class _RecommendationState extends State<Recomendation> {
                           MediaQuery.of(context).size.width > 600 ? 3 : 2,
                       crossAxisSpacing: 16.0,
                       mainAxisSpacing: 16.0,
-                      childAspectRatio: 0.75, // Rasio lebar-tinggi item
+                      childAspectRatio: 0.65, // Rasio lebar-tinggi item
                     ),
                     itemCount: recommendedProducts?.length ?? 0,
                     itemBuilder: (context, index) {
                       final product = recommendedProducts?[index];
+                      final colors = product['recommended_colors'] ?? [];
 
                       if (recommendedProducts == null) {
                         return SizedBox(); // Tampilkan widget kosong jika `product` null
@@ -290,13 +224,13 @@ class _RecommendationState extends State<Recomendation> {
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            // Assuming the product has a 'product_colors' field that contains the list of color details
-                            List<Map<String, dynamic>> productColors = product[
-                                    'product_colors'] ??
-                                []; // Access the colors field from the product
-
-                            _showProductDetailDialog(context, product,
-                                productColors); // Pass colors to the dialog
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailRecom(product: product),
+                              ),
+                            );
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -381,18 +315,6 @@ class _RecommendationState extends State<Recomendation> {
                                               0.005),
                                       Text(
                                         product['brand'] ?? 'Merek Produk',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.025,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        product['colour_name'] ?? '',
                                         style: TextStyle(
                                           color: Colors.grey,
                                           fontSize: MediaQuery.of(context)

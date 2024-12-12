@@ -45,7 +45,8 @@ class _AccountScreenState extends State<AccountScreen> {
       final baseUrl = dotenv.env['BASE_URL'];
       final endpoint = dotenv.env['GET_PROFILE_ENDPOINT'];
       final url = Uri.parse('$baseUrl$endpoint');
-      final response = await http.get(url, headers: {'Authorization': '$token'});
+      final response =
+          await http.get(url, headers: {'Authorization': '$token'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -334,13 +335,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                     ),
                                     child: Wrap(
                                       direction: Axis.horizontal,
-                                      children: List.generate(6, (index) {
+                                      children: List.generate(5, (index) {
                                         // Map index to skin tone
                                         final tones = [
                                           "very_light",
                                           "light",
                                           "medium",
-                                          "olive",
+                                          // "olive",
                                           "brown",
                                           "dark"
                                         ];
@@ -348,7 +349,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                           Color(0xFFFFDFC4),
                                           Color(0xFFF0D5BE),
                                           Color(0xFFD1A684),
-                                          Color(0xFFA67C52),
+                                          // Color(0xFFA67C52),
                                           Color(0xFF825C3A),
                                           Color(0xFF4A312C),
                                         ];
@@ -368,9 +369,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                                   left: index == 0
                                                       ? Radius.circular(16)
                                                       : Radius.zero,
-                                                  right: index == 5
-                                                      ? Radius.circular(16)
-                                                      : Radius.zero,
+                                                  right:
+                                                      index == tones.length - 1
+                                                          ? Radius.circular(16)
+                                                          : Radius.zero,
                                                 ),
                                                 border: isSelected
                                                     ? Border.all(

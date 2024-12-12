@@ -36,6 +36,47 @@ class _CameraPageState extends State<CameraPage> {
   void initState() {
     super.initState();
     _initializeCamera();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showLightingWarningDialog(); // Menampilkan dialog peringatan
+    });
+  }
+
+  void _showLightingWarningDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true, // Dialog bisa ditutup dengan tap di luar dialog
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Peringatan Pencahayaan',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            'Pastikan Anda berada di area dengan pencahayaan yang cukup untuk hasil scan terbaik.',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              child: Text(
+                'OK',
+                style: TextStyle(color: Colors.blue, fontSize: 16),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _initializeCamera() async {
@@ -180,7 +221,7 @@ class _CameraPageState extends State<CameraPage> {
     super.dispose();
   }
 
-    // Fungsi untuk memeriksa status pembaruan skintone dan menentukan halaman tujuan
+  // Fungsi untuk memeriksa status pembaruan skintone dan menentukan halaman tujuan
   Future<int?> _getSkintoneId() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -239,7 +280,6 @@ class _CameraPageState extends State<CameraPage> {
     return false;  // Menghentikan aksi kembali default
   }
 
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -254,7 +294,7 @@ class _CameraPageState extends State<CameraPage> {
                 if (skintoneId != null) {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => Home()),  // Jika skintone_id ada
+                    MaterialPageRoute(builder: (context) => HomeScreen()),  // Jika skintone_id ada
                     (Route<dynamic> route) => false,
                   );
                 } else {
@@ -295,15 +335,30 @@ class _CameraPageState extends State<CameraPage> {
             Positioned(
               bottom: 20,
               left: MediaQuery.of(context).size.width / 2 - 30,
-              child: IconButton(
-                icon: Icon(Icons.camera, color: Colors.black, size: 40),
-                onPressed: () async {
-                  try {
-                    await _captureAndPredict();
-                  } catch (e) {
-                    print("Terjadi kesalahan saat mengambil gambar: $e");
-                  }
-                },
+              child: Container(
+                padding: EdgeInsets.all(12), // Memberi jarak antara ikon dan batas kotak
+                decoration: BoxDecoration(
+                  color: Colors.white, // Warna latar belakang kotak
+                  shape: BoxShape.circle, // Membuat kotak menjadi lingkaran
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3), // Memberi efek bayangan
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.camera, color: Colors.black, size: 40),
+                  onPressed: () async {
+                    try {
+                      await _captureAndPredict();
+                    } catch (e) {
+                      print("Terjadi kesalahan saat mengambil gambar: $e");
+                    }
+                  },
+                ),
               ),
             ),
             if (_imageBytes != null)
@@ -329,11 +384,17 @@ class _CameraPageState extends State<CameraPage> {
                         SizedBox(height: 10),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.memory(
-                            _imageBytes!,
-                            height: 200,
-                            width: 200,
-                            fit: BoxFit.cover,
+                          child: Transform(
+                            alignment: Alignment.center,
+                            transform: _controller?.description.lensDirection == CameraLensDirection.front
+                                ? Matrix4.rotationY(math.pi) // Membalikkan gambar secara horizontal
+                                : Matrix4.identity(), // Tidak ada transformasi untuk kamera belakang
+                            child: Image.memory(
+                              _imageBytes!,
+                              height: 200,
+                              width: 200,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                         SizedBox(height: 10),

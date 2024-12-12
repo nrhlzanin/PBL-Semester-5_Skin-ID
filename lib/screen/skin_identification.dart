@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers, unnecessary_string_interpolations, use_super_parameters, non_constant_identifier_names, avoid_print, use_build_context_synchronously, unnecessary_null_comparison, prefer_final_fields
+// ignore_for_file: unused_field, unused_element, avoid_unnecessary_containers, unnecessary_string_interpolations, use_super_parameters, non_constant_identifier_names, avoid_print, use_build_context_synchronously, unnecessary_null_comparison, prefer_final_fields, prefer_const_constructors, sort_child_properties_last
 
 import 'dart:convert';
 import 'dart:math';
@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/button/navbar.dart';
 import 'package:skin_id/screen/detail_recom.dart';
 import 'package:skin_id/screen/home.dart';
+import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/list_product.dart';
 import 'package:skin_id/screen/makeup_detail.dart';
 import 'package:skin_id/screen/recomendation.dart';
@@ -100,7 +101,8 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
     } catch (e) {
       print("Terjadi kesalahan saat mengambil profil pengguna: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan saat mengambil profil pengguna.')),
+        SnackBar(
+            content: Text('Terjadi kesalahan saat mengambil profil pengguna.')),
       );
     }
   }
@@ -230,7 +232,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => Home()),
+              MaterialPageRoute(builder: (context) => HomeScreen()),
               (Route<dynamic> route) => false,
             );
           },
@@ -246,8 +248,8 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+       
+        
           child: Column(
             children: [
               _buildSkinIdentificationSection(),
@@ -255,7 +257,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
               _buildMakeupRecommendationSection(context),
             ],
           ),
-        ),
+        
       ),
     );
   }
@@ -269,8 +271,12 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
           Text(
             'Identifikasi Kulit',
             style: TextStyle(
+              color: Colors.black,
               fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontFamily: 'Playfair Display',
+              fontWeight: FontWeight.w700,
+              height: 0,
+              letterSpacing: 0.03,
             ),
           ),
           SizedBox(height: 16),
@@ -288,7 +294,10 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,
+                    fontFamily: 'Playfair Display',
                     fontWeight: FontWeight.w700,
+                    height: 0,
+                    letterSpacing: 0.03,
                   ),
                 ),
                 SizedBox(height: 12),
@@ -327,12 +336,12 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: List.generate(6, (index) {
+                    children: List.generate(5, (index) {
                       final tones = [
                         "very_light",
                         "light",
                         "medium",
-                        "olive",
+                        // "olive",
                         "brown",
                         "dark"
                       ];
@@ -340,7 +349,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                         Color(0xFFFFDFC4),
                         Color(0xFFF0D5BE),
                         Color(0xFFD1A684),
-                        Color(0xFFA67C52),
+                        // Color(0xFFA67C52),
                         Color(0xFF825C3A),
                         Color(0xFF4A312C),
                       ];
@@ -367,7 +376,7 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
                 Text(
                   skinDescription,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 14,
                   ),
                   textAlign: TextAlign.center,
@@ -383,179 +392,199 @@ class _SkinIdentificationPageState extends State<SkinIdentificationPage> {
   List<dynamic> _makeupProducts = [];
   Widget _buildMakeupRecommendationSection(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Rekomendasi Makeup',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+        Container(
+             width: double.infinity, // Mengisi lebar penuh layar
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 30),
+          decoration: BoxDecoration(
+            color: Color(0xFF242424),
           ),
-        ),
-        SizedBox(height: 16),
-        // Filter Buttons Section
-
-        recommendedProducts!.isEmpty
-            ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+  
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+             
+                Text(
+                  'Rekomendasi Makeup',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontFamily: 'Playfair Display',
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.03,
+                  ),
                 ),
-              )
-            : GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.all(16.0),
-
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount:
-                      MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.6, // Mengatur rasio lebar-tinggi item
-                ),
-                itemCount:
-                    min(recommendedProducts!.length, 6), // Maksimal 6 item
-                itemBuilder: (context, index) {
-                  final product = recommendedProducts?[index];
-
-                  return Card(
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+              
+              SizedBox(height: 16),
+              if (isLoading)
+                Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              else if (recommendedProducts?.isEmpty ?? true)
+                Center(
+                  child: Text(
+                    "Tidak ada produk yang direkomendasikan",
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
+                  ),
+                )
+              else
+  
+                   GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(16.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                      childAspectRatio: 0.6,
                     ),
-                    child: GestureDetector(
-                      onTap: () {
-                        // Navigasi ke MakeupDetail dengan data produk
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                DetailRecom(product: product),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Container untuk gambar
-                          Expanded(
-                            flex:
-                                3, // Bagian gambar mengambil lebih banyak ruang
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(8.0)),
-                              child: Image.network(
-                                product['image_link'] ?? '',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Center(
-                                    child: Icon(
-                                      Icons.broken_image,
-                                      size: MediaQuery.of(context).size.width *
-                                          0.1,
-                                      color: Colors.grey,
-                                    ),
-                                  );
-                                },
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                },
+                    itemCount: (recommendedProducts?.length ?? 0).clamp(0, 6),
+                    itemBuilder: (context, index) {
+                      final product = recommendedProducts?[index];
+
+                      return Card(
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailRecom(product: product),
                               ),
-                            ),
-                          ),
-                          // Container untuk teks
-                          Expanded(
-                            flex: 2, // Bagian teks lebih kecil dibanding gambar
-                            child: Padding(
-                              padding: EdgeInsets.all(
-                                  MediaQuery.of(context).size.width * 0.02),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product['product_type'] ?? 'Tipe Produk',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(8.0)),
+                                  child: Image.network(
+                                    product['image_link'] ?? '',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.1,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                      MediaQuery.of(context).size.width * 0.02),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['product_type'] ??
+                                            'Tipe Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.03,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
                                               0.005),
-                                  Text(
-                                    product['product_name'] ?? 'Nama Produk',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                                      Text(
+                                        product['product_name'] ??
+                                            'Nama Produk',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
                                               0.005),
-                                  Text(
-                                    product['brand'] ?? 'Merek Produk',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
+                                      Text(
+                                        product['brand'] ?? 'Merek Produk',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
                                               0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ),
-                                    Text(
-                            product?['colour_name'] ?? 'Warna Terpilih :',
-                         style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
-                                              0.025,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                          ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      );
+                    },
+                  ),
+                
+              SizedBox(height: 16.0),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Recomendation()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24.0),
                     ),
-                  );
-                },
+                  ),
+                  child: Text(
+                    'Telusuri lebih banyak',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
               ),
-
-        SizedBox(height: 16.0),
-        Center(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Recomendation()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
-              ),
-            ),
-            child: Text('Tampilan Lengkap'),
+              SizedBox(height: 10.0),
+            ],
           ),
         ),
       ],
@@ -589,158 +618,6 @@ class FilterButton extends StatelessWidget {
 
 // Assuming you have a list of products with 'brand' and 'name'
 String selectedCategory = 'Semua';
-
-class ProductCard extends StatelessWidget {
-  // final String imageUrl;
-  final String title;
-  final String brand;
-  final String description;
-  final List<dynamic> productColors;
-  final int id;
-
-  const ProductCard({
-    required this.id,
-    // required this.imageUrl,
-    required this.title,
-    required this.brand,
-    required this.description,
-    required this.productColors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailPage(
-              id: id,
-              title: title,
-              brand: brand,
-              // imageUrl: imageUrl,
-              description: description,
-              productColors: productColors,
-            ),
-          ),
-        );
-      },
-      child: Card(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(9.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14, // Adjusted font size
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1, // Ensures the title does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    brand,
-                    style: TextStyle(
-                      fontSize: 12, // Adjusted font size
-                      color: Colors.grey[700],
-                      fontFamily: 'Montserrat',
-                    ),
-                    maxLines: 1, // Ensures the brand does not overflow
-                    overflow: TextOverflow.ellipsis, // Ellipsis for overflow
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProductDetailPage extends StatelessWidget {
-  final int id;
-  final String title;
-  final String brand;
-  // final String imageUrl;
-  final String description;
-  final List<dynamic> productColors;
-
-  const ProductDetailPage({
-    required this.id,
-    required this.title,
-    required this.brand,
-    // required this.imageUrl,
-    required this.description,
-    required this.productColors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 16.0),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Text(
-              "Merek: $brand",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              description.isNotEmpty
-                  ? description
-                  : "Tidak ada deskripsi tersedia.",
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              "Warna yang tersedia:",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Wrap(
-              spacing: 8.0,
-              children: productColors.map((color) {
-                return ColorBox(color: color['hex_value'] ?? "#FFFFFF");
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class ColorCircle extends StatelessWidget {
   final Color color;
