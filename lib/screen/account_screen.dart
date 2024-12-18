@@ -103,16 +103,6 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       endDrawer: Navbar(),
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-              (Route<dynamic> route) => false,
-            );
-          },
-        ),
         title: Text(
           'YourSkin-ID',
           style: GoogleFonts.caveat(
