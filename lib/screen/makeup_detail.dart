@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print, unused_field, use_super_parameters
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart'; //SEK ERROR
 import 'package:flutter/services.dart';
+import 'package:expandable_text/expandable_text.dart'; //UNTUK BAGIAN BACA SELENGKAPNYA
 
 void main() {
   runApp(MakeupDetail(product: {}));
@@ -128,7 +127,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                   child: Image.network(
                     product['image_link'] ??
                         'https://via.placeholder.com/300', // Placeholder if image link is empty
-                    height: 300,
+                    height: 400,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
@@ -140,21 +139,79 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                 product['name'] ?? 'Produk Tidak Dikenal',
                 style: const TextStyle(
                   fontSize: 24,
+                  fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   color: Colors.white, // Set text color to white
                 ),
               ),
               const SizedBox(height: 8.0),
               // Brand
-              Text(
-                product['brand'] ?? 'Brand Tidak Dikenali',
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey, // Light gray for brand text
-                ),
+              // Text(
+              //   product['brand'] ?? 'Brand Tidak Dikenali',
+              //   style: const TextStyle(
+              //     fontSize: 18,
+              //     color: Colors.grey, // Light gray for brand text
+              //   ),
+              // ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    product['brand'] ?? 'Brand Tidak Dikenali',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontFamily: 'Playfair Display',
+                      color: Colors.grey, // Light gray for brand text
+                    ),
+                  ),
+                  Text(
+                    'Price: \$${product['price'] ?? 'N/A'}', // Product price
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // White color for price
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16.0),
-                            // LINK PEMBELIAN
+              // Product Description
+              Text(
+                "Deskripsi:",
+                style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Montserrat',
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.start,
+              ),
+              const SizedBox(height: 8.0),
+              ExpandableText(
+                product['description'] ?? 'Tidak ada deskripsi tersedia',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Montserrat',
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.justify,
+                expandText: '(Baca Selengkapnya)',
+                collapseText: '(Tutup)',
+                maxLines: 6,
+                linkColor: Color(0xFFD1A684),
+              ),
+              const SizedBox(height: 16.0),
+              // Product Price
+              // Text(
+              //   'Price: \$${product['price'] ?? 'N/A'}', // Product price
+              //   style: const TextStyle(
+              //     fontSize: 18,
+              //     fontWeight: FontWeight.bold,
+              //     color: Colors.white, // White color for price
+              //   ),
+              // ),
+              // const SizedBox(height: 8.0),
+              // LINK PEMBELIAN
               if (product['product_link'] != null)
                 GestureDetector(
                   onTap: () {
@@ -180,6 +237,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 16,
+                        fontFamily: 'Montserrat',
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         decoration: TextDecoration.underline,
@@ -188,9 +246,10 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                   ),
                 ),
               Text(
-                'Atau salin link berikut:', // Perbaiki agar harga dapat muncul
+                'Atau salin link berikut:',
                 style: const TextStyle(
                   fontSize: 18,
+                  fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -269,6 +328,7 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                       'Warna Tersedia:',
                       style: TextStyle(
                         fontSize: 18,
+                        fontFamily: 'Montserrat',
                         fontWeight: FontWeight.bold,
                         color: Colors.white, // Warna putih untuk header
                       ),
@@ -287,9 +347,18 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                           padding: const EdgeInsets.all(4.0),
                           child: Column(
                             children: [
-                              ColorCircle(
-                                color: parseColor(colorHex),
-                                colorName: '', // Memparse warna hex
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2.0,
+                                  ),
+                                ),
+                                child: ColorCircle(
+                                  color: parseColor(colorHex),
+                                  colorName: '', // Memparse warna hex
+                                ),
                               ),
                               const SizedBox(
                                   height:
@@ -313,54 +382,6 @@ class _MakeUpDetailState extends State<MakeupDetail> {
                     ),
                   ],
                 ),
-              const SizedBox(height: 8.0),
-              // Product Description
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "Deskripsi:",
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    product['description'] ?? 'Tidak ada deskripsi tersedia',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.justify,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16.0),
-              if (product['product_link'] != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: GestureDetector(
-                    onTap: () => _launchURL(product['product_link']),
-                    child: Text(
-                      'Link Produk',
-                      style: TextStyle(
-                        fontSize: 16, // Sesuaikan ukuran font agar konsisten
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 16.0),
-              // Product Price
-              Text(
-                'Price: \$${product['price'] ?? 'N/A'}', // Product price
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // White color for price
-                ),
-              ),
               const SizedBox(height: 8.0),
             ],
           ),

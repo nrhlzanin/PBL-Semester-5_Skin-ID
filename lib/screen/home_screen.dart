@@ -195,7 +195,6 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final ScrollController _homeController = ScrollController();
   @override
-
   Widget build(BuildContext context) {
     List<dynamic> filteredProducts = selectedCategory == 'Semua'
         ? _makeupProducts
@@ -271,6 +270,10 @@ class _HomePageState extends State<HomePage> {
                                   TextSpan(
                                     text:
                                         ' untuk lebih memahami kulit Anda. Lebih banyak preferensi makeup dan rekomendasi konten berdasarkan warna kulit Anda.',
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontFamily: 'Montserrat',
+                                        fontWeight: FontWeight.w400),
                                   ),
                                 ],
                               ),
@@ -622,12 +625,11 @@ class _HomePageState extends State<HomePage> {
                                               product['product_type'] ??
                                                   'Tipe Produk',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.03,
-                                              ),
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize: 12,
+                                                  fontFamily:
+                                                      'Playfair Display',
+                                                  color: Colors.grey),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -644,6 +646,7 @@ class _HomePageState extends State<HomePage> {
                                                         .size
                                                         .width *
                                                     0.025,
+                                                fontFamily: 'Montserrat',
                                               ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -662,6 +665,7 @@ class _HomePageState extends State<HomePage> {
                                                         .size
                                                         .width *
                                                     0.025,
+                                                fontFamily: 'Montserrat',
                                               ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously, unused_element, avoid_print, unnecessary_null_in_if_null_operators, unnecessary_string_interpolations, prefer_interpolation_to_compose_strings, non_constant_identifier_names, prefer_const_constructors_in_immutables, deprecated_member_use, use_super_parameters
-
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -182,7 +180,8 @@ class _RecommendationState extends State<Recomendation> {
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => SkinIdentificationPage()),
+                MaterialPageRoute(
+                    builder: (context) => SkinIdentificationPage()),
                 (Route<dynamic> route) => false,
               );
             },
@@ -282,12 +281,10 @@ class _RecommendationState extends State<Recomendation> {
                                         product['product_type'] ??
                                             'Tipe Produk',
                                         style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.03,
-                                        ),
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 12,
+                                            fontFamily: 'Playfair Display',
+                                            color: Colors.grey),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -305,6 +302,7 @@ class _RecommendationState extends State<Recomendation> {
                                                   .size
                                                   .width *
                                               0.025,
+                                          fontFamily: 'Montserrat',
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -322,6 +320,7 @@ class _RecommendationState extends State<Recomendation> {
                                                   .size
                                                   .width *
                                               0.025,
+                                          fontFamily: 'Montserrat',
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,

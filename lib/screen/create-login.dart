@@ -1,16 +1,41 @@
-// ignore_for_file: unused_import, duplicate_import
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:skin_id/screen/create_account.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/screen/verification_screen.dart';
+import 'package:skin_id/screen/home_screen.dart';
 import 'package:skin_id/screen/login.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
-class CreateLogin extends StatelessWidget {
+class CreateLogin extends StatefulWidget {
   const CreateLogin({super.key});
+  @override
+  _CreateLogin createState() => _CreateLogin();
+}
+
+class _CreateLogin extends State<CreateLogin> {
+  // const CreateLogin({super.key});
+
+  // Check if token exists in SharedPreferences
+  Future<void> checkToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkToken();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +138,6 @@ class CreateLogin extends StatelessWidget {
                       ),
                     ),
 
-                   
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: Align(

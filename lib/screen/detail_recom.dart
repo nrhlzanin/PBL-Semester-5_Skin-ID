@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skin_id/screen/skin_identification.dart';
 import 'package:url_launcher/url_launcher.dart'; //INI SEK BLM ISO DIPAKE
 import 'package:flutter/services.dart';
+import 'package:expandable_text/expandable_text.dart'; //UNTUK BACA SELENGKAPMYA
 
 void main() {
   runApp(DetailRecom(product: {}));
@@ -200,7 +201,7 @@ class _DetailRecom extends State<DetailRecom> {
                   borderRadius: BorderRadius.circular(16.0),
                   child: Image.network(
                     product['image_link'] ?? 'https://via.placeholder.com/300',
-                    height: 300,
+                    height: 400,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
@@ -212,29 +213,52 @@ class _DetailRecom extends State<DetailRecom> {
                 product['product_name'] ?? 'Produk Tidak Dikenal',
                 style: const TextStyle(
                   fontSize: 24,
+                  fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8.0),
               // Brand
-              Text(
-                product['brand'] ?? 'Merek Tidak Dikenal',
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    product['brand'] ?? 'Brand Tidak Dikenali',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontFamily: 'Playfair Display',
+                      color: Colors.grey, // Light gray for brand text
+                    ),
+                  ),
+                  Text(
+                    'Price: \$${product['price'] ?? 'N/A'}', // Product price
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // White color for price
+                    ),
+                  ),
+                ],
               ),
+              // Text(
+              //   product['brand'] ?? 'Merek Tidak Dikenal',
+              //   style: const TextStyle(
+              //     fontSize: 18,
+              //     color: Colors.grey,
+              //   ),
+              // ),
               // PRODUCT PRICE
-              const SizedBox(height: 8.0),
-              Text(
-                'Price: \u0024${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+              // const SizedBox(height: 8.0),
+              // Text(
+              //   'Price: \u0024${product['price'] ?? 'N/A'}', // Perbaiki agar harga dapat muncul
+              //   style: const TextStyle(
+              //     fontSize: 18,
+              //     fontWeight: FontWeight.bold,
+              //     color: Colors.white,
+              //   ),
+              // ),
               SizedBox(height: 16.0),
               // Warna Produk
               if (product['recommended_colors'] != null &&
@@ -246,6 +270,7 @@ class _DetailRecom extends State<DetailRecom> {
                       'Rekomendasi Warna:',
                       style: TextStyle(
                         fontSize: 18,
+                        fontFamily: 'Montserrat',
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -262,9 +287,18 @@ class _DetailRecom extends State<DetailRecom> {
                           padding: const EdgeInsets.all(4.0),
                           child: Column(
                             children: [
-                              ColorCircle(
-                                color: parseColor(colorHex),
-                                colorName: colorName,
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2.0,
+                                  ),
+                                ),
+                                child: ColorCircle(
+                                  color: parseColor(colorHex),
+                                  colorName: colorName, // Memparse warna hex
+                                ),
                               ),
                               const SizedBox(height: 4.0),
                               SizedBox(
@@ -288,25 +322,27 @@ class _DetailRecom extends State<DetailRecom> {
                 ),
               const SizedBox(height: 16.0),
               // Product Description
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "Deskripsi:",
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    product['description'] ?? 'Tidak ada deskripsi tersedia',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.justify,
-                  ),
-                ],
+              Text(
+                "Deskripsi:",
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.start,
+              ),
+              const SizedBox(height: 8.0),
+              ExpandableText(
+                product['description'] ?? 'Tidak ada deskripsi tersedia',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Montserrat',
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.justify,
+                expandText: '(Baca Selengkapnya)',
+                collapseText: '(Tutup)',
+                maxLines: 6,
+                linkColor: Color(0xFFD1A684),
               ),
               const SizedBox(height: 16.0),
               // LINK PEMBELIAN PRODUK (BAGIAN YG KU COMMAND MASIH ERROR KARENA APP TIDAK MAU DIRECT KE URL)
@@ -335,6 +371,7 @@ class _DetailRecom extends State<DetailRecom> {
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 16,
+                        fontFamily: 'Montserrat',
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         decoration: TextDecoration.underline,
@@ -346,6 +383,7 @@ class _DetailRecom extends State<DetailRecom> {
                 'Atau salin link berikut:', // Perbaiki agar harga dapat muncul
                 style: const TextStyle(
                   fontSize: 18,
+                  fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),

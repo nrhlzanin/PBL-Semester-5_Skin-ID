@@ -417,13 +417,11 @@ class _HomePageState extends State<HomePage> {
                                                 product['product_type'] ??
                                                     'Tipe Produk',
                                                 style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize:
-                                                      MediaQuery.of(context)
-                                                              .size
-                                                              .width *
-                                                          0.03,
-                                                ),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12,
+                                                    fontFamily:
+                                                        'Playfair Display',
+                                                    color: Colors.grey),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -442,6 +440,7 @@ class _HomePageState extends State<HomePage> {
                                                               .size
                                                               .width *
                                                           0.025,
+                                                  fontFamily: 'Montserrat',
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -461,6 +460,7 @@ class _HomePageState extends State<HomePage> {
                                                               .size
                                                               .width *
                                                           0.025,
+                                                  fontFamily: 'Montserrat',
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
